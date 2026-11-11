@@ -119,7 +119,13 @@ def read_pending(reg, con, dry_run: bool, samples: int, since_hours: float, limi
         cur = [Image.open(p).convert("RGB") for p in _burst_paths(Path(row["path"]))]
         ref_im, _ = _ref(cam.id)
         prev = store.last_read_frame(con, cam.id)
-        prev_t = (Image.open(prev["path"]).convert("RGB"), prev["ts"]) if prev and prev["path"] else None
+        prev_t = None
+        if prev and prev["path"]:
+            # Frames are not kept between cloud runs; fall back to the saved copy of the last read frame.
+            for cand in (Path(prev["path"]), store.DATA / "last" / f"{cam.id}.jpg"):
+                if cand.exists():
+                    prev_t = (Image.open(cand).convert("RGB"), prev["ts"])
+                    break
         req = reader.build_request(cam, cur, _local_label(row["ts"], cam.tz), ref_im,
                                    (prev_t[0], _local_label(prev_t[1], cam.tz)) if prev_t else None,
                                    reader.DEFAULT_MODEL)
@@ -139,6 +145,9 @@ def read_pending(reg, con, dry_run: bool, samples: int, since_hours: float, limi
             fields = {k: ({**v, "conf": 0.0} if isinstance(v, dict) else v) for k, v in fields.items()}
             fields["stale_clock_lag_min"] = {"value": lag, "conf": 1.0}
         store.insert_reading(con, row["id"], cam.id, row["ts"], r1.model, reader.PROMPT_VERSION, fields, r1.evidence, r1.raw)
+        last = store.DATA / "last" / f"{cam.id}.jpg"
+        last.parent.mkdir(parents=True, exist_ok=True)
+        cur[0].save(last, format="JPEG", quality=85)
         print(f"{cam.id:22s} " + ", ".join(f"{k}={v['value']}({v['conf']})" for k, v in fields.items() if isinstance(v, dict)))
 
 

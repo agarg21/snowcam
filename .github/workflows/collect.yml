@@ -31,6 +31,7 @@ jobs:
             git show data:snowcam.db > data/snowcam.db || true
             git show data:offline_hashes.txt > data/offline_hashes.txt 2>/dev/null || true
             git archive data refs 2>/dev/null | tar -x -C data 2>/dev/null || true
+            git archive data last 2>/dev/null | tar -x -C data 2>/dev/null || true
           fi
 
       - uses: actions/setup-python@v5
@@ -58,17 +59,21 @@ jobs:
             data/report.html
           retention-days: 30
 
+      # Only the database, reference frames and each cam's last read frame go to the data
+      # branch (one commit, replaced every run). Raw frames stay in the run artifact above.
       - name: Save database to the data branch
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          git config user.name "snowcam-bot"
-          git config user.email "snowcam-bot@users.noreply.github.com"
           tmp=$(mktemp -d)
           cp data/snowcam.db "$tmp/"
           [ -d data/refs ] && cp -r data/refs "$tmp/" || true
+          [ -d data/last ] && cp -r data/last "$tmp/" || true
           [ -f data/offline_hashes.txt ] && cp data/offline_hashes.txt "$tmp/" || true
-          git checkout --orphan data-new
-          git rm -rf --quiet . || true
-          cp -r "$tmp"/. .
+          cd "$tmp"
+          git init -q -b data
+          git config user.name "snowcam-bot"
+          git config user.email "snowcam-bot@users.noreply.github.com"
           git add -A
           git commit -qm "data $(date -u +%FT%TZ)"
-          git push -f origin data-new:data
+          git push -qf "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" data:data
