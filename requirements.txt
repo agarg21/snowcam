@@ -1,0 +1,9 @@
+anthropic>=0.40
+astral>=3.2
+imagehash>=4.3
+numpy>=1.26
+opencv-python-headless>=4.9
+Pillow>=10.0
+PyYAML>=6.0
+requests>=2.31
+pytest>=8.0

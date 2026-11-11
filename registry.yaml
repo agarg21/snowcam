@@ -1,0 +1,144 @@
+# Cam registry: one entry per cam. Adding a resort = adding config here.
+#
+# feed types:
+#   brownrice  - public snapshot endpoint https://player.brownrice.com/snapshot/<stream>
+#   still      - any direct JPEG/PNG URL (url: ...)
+#   hls        - an .m3u8 playlist (url: ...); grabs a 3-frame burst with ffmpeg
+#
+# roles decide which fields the reader is asked for:
+#   summit, trail -> snow + visibility
+#   base          -> busyness, lifts, lines
+#   stake         -> snow stake reading (works at night when lit)
+#   tubing, road  -> later
+#
+# night_ok: read this cam even when the sun is down (lit snow stakes)
+#
+# Excluded for now (see design doc): Camelback and Blue Mountain (WetMet streams locked
+# to the resorts' own sites), Belleayre (site refuses automated access), Jack Frost (offline).
+
+defaults:
+  poll_minutes: 15
+  user_agent: "snowcam/0.1 (research prototype; contact via repo)"
+
+resorts:
+  hunter:
+    name: Hunter Mountain
+    state: NY
+    lat: 42.2017
+    lon: -74.2251
+    tz: America/New_York
+    cam_page: https://www.huntermtn.com/the-mountain/mountain-conditions/mountain-cams.aspx
+    cams:
+      - id: hunter-base
+        name: Base Area
+        feed: brownrice
+        stream: hunter1
+        role: base
+        describe: "Base area deck with picnic tables and a flagpole; lifts and lodge in the background."
+      - id: hunter-mid
+        name: Midstation
+        feed: brownrice
+        stream: huntermidstation
+        role: trail
+        describe: "Mid-mountain slope beside a chairlift tower; tree branches at top of frame."
+      - id: hunter-east
+        name: Hunter East
+        feed: brownrice
+        stream: hunternorthside
+        role: trail
+        describe: "Lower slope with a chairlift line on the left; trees at the far edge."
+      - id: hunter-summit
+        name: Summit
+        feed: brownrice
+        stream: huntersummit
+        role: summit
+        describe: "Summit looking down a chairlift line toward the valley and town lights."
+
+  mount-snow:
+    name: Mount Snow
+    state: VT
+    lat: 42.9601
+    lon: -72.9204
+    tz: America/New_York
+    cam_page: https://www.mountsnow.com/the-mountain/mountain-conditions/mountain-cams.aspx
+    cams:
+      - id: mountsnow-stake
+        name: Snow Stake
+        feed: brownrice
+        stream: mountsnowsnowstake
+        role: stake
+        night_ok: true
+        describe: "Snow stake ruler in inches next to an analog clock and thermometer."
+      - id: mountsnow-summit
+        name: Summit
+        feed: brownrice
+        stream: mountsnowsummit
+        role: summit
+        describe: "Summit view; often in cloud."
+      - id: mountsnow-somerset
+        name: Somerset
+        feed: brownrice
+        stream: mountsnowsomerset
+        role: trail
+        describe: "Trail view toward Somerset reservoir side."
+      - id: mountsnow-carinthia
+        name: Carinthia
+        feed: brownrice
+        stream: mountsnowcarinthia
+        role: trail
+        describe: "Carinthia terrain-park side of the mountain."
+      - id: mountsnow-base
+        name: Main Base Area
+        feed: brownrice
+        stream: mountsnowbase
+        role: base
+        describe: "Main base area with lodge buildings and lift loading area."
+
+  okemo:
+    name: Okemo
+    state: VT
+    lat: 43.4015
+    lon: -72.7171
+    tz: America/New_York
+    cam_page: https://www.okemo.com/the-mountain/mountain-conditions/mountain-cams.aspx
+    cams:
+      - id: okemo-stake
+        name: Snow Stake
+        feed: brownrice
+        stream: okemosnowstake
+        role: stake
+        night_ok: true
+        describe: "Lit snow stake ruler in inches with a red digital clock behind it."
+      - id: okemo-summit
+        name: Summit
+        feed: brownrice
+        stream: okemosummit
+        role: summit
+        describe: "Summit looking over a slope toward the valley and Ludlow."
+      - id: okemo-sugarhouse
+        name: Sugar House
+        feed: brownrice
+        stream: okemosugarhouse
+        role: base
+        describe: "Sugar House area with lift and lodge."
+      - id: okemo-roundhouse
+        name: Roundhouse
+        feed: brownrice
+        stream: okemoroundhouse
+        role: base
+        describe: "Roundhouse building at the base area."
+
+  windham:
+    name: Windham Mountain Club
+    state: NY
+    lat: 42.2943
+    lon: -74.2563
+    tz: America/New_York
+    cam_page: https://www.windhammountainclub.com/mountain-cam/
+    cams:
+      - id: windham-base
+        name: Base
+        feed: brownrice
+        stream: windhammountainclub
+        role: base
+        describe: "Base area slopes and lifts seen from the lodge."
