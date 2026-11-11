@@ -125,6 +125,8 @@ def read_pending(reg, con, dry_run: bool, samples: int, since_hours: float, limi
                                    reader.DEFAULT_MODEL)
         if dry_run:
             out = store.DATA / "requests" / cam.id / row["ts"].replace(":", "")
+            if out.exists():
+                continue
             reader.write_bundle(req, out)
             print(f"{cam.id:22s} bundle -> {out}")
             continue
