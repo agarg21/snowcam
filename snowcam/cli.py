@@ -146,19 +146,23 @@ def fuse_all(reg, con, window_min: int = 45) -> list[fusion.ResortState]:
     since = (now_utc() - timedelta(minutes=window_min)).isoformat()
     out = []
     for rid, r in reg.resorts.items():
-        readings, reasons = [], []
+        readings, reasons, awaiting = [], [], 0
         for cam in reg.by_resort(rid):
             rd = con.execute("select fields from readings where cam=? and ts>=? order by ts desc limit 1",
                              (cam.id, since)).fetchone()
             if rd:
                 readings.append((cam.role, json.loads(rd["fields"])))
                 continue
-            fr = con.execute("select gates from frames where cam=? and ts>=? order by ts desc limit 1",
+            fr = con.execute("select gate_status, gates from frames where cam=? and ts>=? order by ts desc limit 1",
                              (cam.id, since)).fetchone()
-            if fr and fr["gates"]:
+            if fr and fr["gate_status"] in ("pass", "degraded"):
+                awaiting += 1
+            elif fr and fr["gates"]:
                 g = json.loads(fr["gates"])
                 reasons += [f"{cam.name} {k}: {c['note']}" for k, c in g.get("checks", {}).items()
                             if c.get("status") == "fail" and c.get("note")]
+        if awaiting and not readings:
+            reasons.insert(0, f"{awaiting} cam{'s' if awaiting > 1 else ''} clear but not read yet; reader is off")
         st = fusion.fuse(r["name"], readings, reasons)
         con.execute("insert into resort_state(resort, ts, verdict, line, fused) values (?,?,?,?,?)",
                     (rid, now_utc().isoformat(), st.verdict, st.line, json.dumps(st.fused)))

@@ -74,3 +74,11 @@ def test_stale_gate_in_daylight():
     h = gates.phash(im)
     res = gates.run_gates(reg.cam("hunter-base"), im, noon, h, [h, h], [])
     assert res.checks["stale"].status == "fail"
+
+
+def test_fusion_closed_on_bare_slopes_without_lift_motion():
+    st = fusion.fuse("Okemo", [
+        ("summit", {"snow_cover": {"value": "bare", "conf": 0.95}, "fresh_snow": {"value": "none", "conf": 0.9},
+                    "lifts_moving": {"value": "unknown", "conf": 0.2}}),
+    ], [])
+    assert st.verdict == "Closed" and "bare cover" in st.line

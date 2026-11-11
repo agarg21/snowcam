@@ -50,7 +50,7 @@ def fuse(resort_name: str, readings: list[tuple[str, dict]], no_read_reasons: li
         "stake_new_snow": best("stake_new_snow", ["stake"], SNOW_RANK),
         "snow_cover": best("snow_cover", ["trail", "summit", "base"]),
         "visibility": best("visibility", ["summit", "trail"]),
-        "snowmaking": best("snowmaking", ["trail", "base"]),
+        "snowmaking": best("snowmaking", ["summit", "trail", "base"]),
         "lifts_moving": best("lifts_moving", ["base", "trail", "summit"]),
         "base_busyness": best("base_busyness", ["base"], BUSY_RANK),
         "lift_line": best("lift_line", ["base"]),
@@ -83,7 +83,11 @@ def fuse(resort_name: str, readings: list[tuple[str, dict]], no_read_reasons: li
     if fused["precip_now"] in ("snow", "rain_or_mix"):
         parts.append("snowing now" if fused["precip_now"] == "snow" else "rain or mix now")
 
-    if fused["lifts_moving"] == "no" and fused["snow_cover"] in ("bare", None) and snow < 1:
+    # A single snapshot rarely shows whether lifts move, so bare slopes with no new snow
+    # also count as closed unless a cam clearly shows lifts running.
+    bare = fused["snow_cover"] == "bare"
+    if snow < 1 and ((fused["lifts_moving"] == "no" and fused["snow_cover"] in ("bare", None))
+                     or (bare and fused["lifts_moving"] != "yes")):
         verdict = "Closed"
     elif busy >= 3 or fused["lift_line"] == "long":
         verdict = "Busy"

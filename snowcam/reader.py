@@ -20,7 +20,7 @@ from PIL import Image
 
 from .config import Cam
 
-PROMPT_VERSION = "v0.1"
+PROMPT_VERSION = "v0.2"
 DEFAULT_MODEL = os.environ.get("SNOWCAM_MODEL", "claude-haiku-5-5")
 ESCALATE_MODEL = os.environ.get("SNOWCAM_ESCALATE_MODEL", "claude-sonnet-5-5")
 SEND_W = 1092  # 39 x 22 patches at 16:9, about 860 tokens per image
@@ -48,7 +48,7 @@ FIELDS: dict[str, dict] = {
 }
 
 ROLE_FIELDS: dict[str, list[str]] = {
-    "summit": ["fresh_snow", "snow_cover", "visibility", "precip_now", "lifts_moving"],
+    "summit": ["fresh_snow", "snow_cover", "snowmaking", "visibility", "precip_now", "lifts_moving"],
     "trail": ["fresh_snow", "snow_cover", "surface_look", "snowmaking", "visibility", "precip_now", "lifts_moving"],
     "base": ["fresh_snow", "snow_cover", "snowmaking", "lifts_moving", "base_busyness", "lift_line", "precip_now"],
     "stake": ["stake_new_snow", "precip_now"],
@@ -100,7 +100,8 @@ def _instructions(cam: Cam, fields: list[str], labels: list[str], burst: int) ->
     if cam.role == "stake":
         lines.append("- stake_inches: the snow depth read off the stake ruler in inches (0 if the board is bare), "
                      "or null if you cannot read it.")
-        lines.append("- clock_time: the time on any clock in the frame as HH:MM, or null.")
+        lines.append("- clock_time: the time on any clock in the frame as HH:MM, or null. Some displays alternate "
+                     "between the time and a temperature (e.g. 37F); if it shows a temperature, use null.")
     lines.append("Give conf between 0 and 1 for each field. Record your answers with the record_reading tool.")
     return "\n".join(lines)
 

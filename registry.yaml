@@ -34,25 +34,25 @@ resorts:
         feed: brownrice
         stream: hunter1
         role: base
-        describe: "Base area deck with picnic tables and a flagpole; lifts and lodge in the background."
+        describe: "Base plaza with a flagpole, picnic tables and stone steps; beginner lifts and the lower slopes behind."
       - id: hunter-mid
         name: Midstation
         feed: brownrice
         stream: huntermidstation
         role: trail
-        describe: "Mid-mountain slope beside a chairlift tower; tree branches at top of frame."
+        describe: "Mid-mountain view partly blocked by a tree trunk at left and leaves at top (daytime view not yet seen; feed was frozen on Nov 11)."
       - id: hunter-east
         name: Hunter East
         feed: brownrice
         stream: hunternorthside
         role: trail
-        describe: "Lower slope with a chairlift line on the left; trees at the far edge."
+        describe: "Chairlift tower and chairs close in the foreground over a lower slope; ridgeline and trees behind."
       - id: hunter-summit
         name: Summit
         feed: brownrice
         stream: huntersummit
         role: summit
-        describe: "Summit looking down a chairlift line toward the valley and town lights."
+        describe: "Summit looking down a chairlift line over the valley to distant ridges."
 
   mount-snow:
     name: Mount Snow
@@ -68,31 +68,31 @@ resorts:
         stream: mountsnowsnowstake
         role: stake
         night_ok: true
-        describe: "Snow stake ruler in inches next to an analog clock and thermometer."
+        describe: "Snow stake board marked 1-26 in. beside an analog clock and a dial thermometer, set in woods."
       - id: mountsnow-summit
         name: Summit
         feed: brownrice
         stream: mountsnowsummit
         role: summit
-        describe: "Summit view; often in cloud."
+        describe: "Upper trail crossed by a snowmaking pipe with blue fan guns and a lift line; evergreens beyond. Often in cloud."
       - id: mountsnow-somerset
         name: Somerset
         feed: brownrice
         stream: mountsnowsomerset
         role: trail
-        describe: "Trail view toward Somerset reservoir side."
+        describe: "From the top of a chairlift looking over Somerset Reservoir; the lift line drops away at right."
       - id: mountsnow-carinthia
         name: Carinthia
         feed: brownrice
         stream: mountsnowcarinthia
         role: trail
-        describe: "Carinthia terrain-park side of the mountain."
+        describe: "Looking up a Carinthia slope with a chairlift running up it and the lift terminal at right; snowmaking towers on the ridge."
       - id: mountsnow-base
         name: Main Base Area
         feed: brownrice
         stream: mountsnowbase
         role: base
-        describe: "Main base area with lodge buildings and lift loading area."
+        describe: "Bottom terminal of the Grand Summit Express (#11) at left with corral mazes; a trail climbs behind."
 
   okemo:
     name: Okemo
@@ -108,25 +108,25 @@ resorts:
         stream: okemosnowstake
         role: stake
         night_ok: true
-        describe: "Lit snow stake ruler in inches with a red digital clock behind it."
+        describe: "Snow stake ruler (0-24 in.) on a white board inside a wooden fence; red display alternates the time and the temperature."
       - id: okemo-summit
         name: Summit
         feed: brownrice
         stream: okemosummit
         role: summit
-        describe: "Summit looking over a slope toward the valley and Ludlow."
+        describe: "Summit with a lift line and small hut, looking out over the valley to distant peaks."
       - id: okemo-sugarhouse
         name: Sugar House
         feed: brownrice
         stream: okemosugarhouse
-        role: base
-        describe: "Sugar House area with lift and lodge."
+        role: trail
+        describe: "Lower slope with a curving groomed road across it; trees and houses at the far edge. No lodge or lift in view."
       - id: okemo-roundhouse
         name: Roundhouse
         feed: brownrice
         stream: okemoroundhouse
         role: base
-        describe: "Roundhouse building at the base area."
+        describe: "Coleman Brook base: small buildings and a chairlift running up a slope."
 
   windham:
     name: Windham Mountain Club
@@ -141,4 +141,4 @@ resorts:
         feed: brownrice
         stream: windhammountainclub
         role: base
-        describe: "Base area slopes and lifts seen from the lodge."
+        describe: "Looking up from behind the base lodge roofs at lift terminals and trails on the mountain."
