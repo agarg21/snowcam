@@ -25,6 +25,7 @@ class Cam:
     url: str | None = None
     night_ok: bool = False
     cam_page: str | None = None
+    crop: tuple[float, float, float, float] | None = None  # close-up box as fractions (x0, y0, x1, y1)
 
     @property
     def source_url(self) -> str:
@@ -73,6 +74,7 @@ def load_registry(path: Path | str | None = None) -> Registry:
                     url=c.get("url"),
                     night_ok=bool(c.get("night_ok", False)),
                     cam_page=r.get("cam_page"),
+                    crop=tuple(c["crop"]) if c.get("crop") else None,
                 )
             )
     return Registry(cams=cams, resorts=raw["resorts"], defaults=raw.get("defaults", {}))

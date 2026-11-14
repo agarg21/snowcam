@@ -96,3 +96,11 @@ def test_view_shift_ignores_scene_change_but_catches_pan():
     assert _view_shift(relit, ref) < MOVED_FRAC
     panned = ref.crop((int(w * 0.15), 0, w, h)).resize((w, h))  # camera panned and zoomed
     assert _view_shift(panned, ref) > MOVED_FRAC
+
+
+def test_stake_only_gives_snow_line_but_no_verdict():
+    from snowcam.fusion import fuse
+    st = fuse("Okemo", [("stake", {"stake_new_snow": {"value": "light", "conf": 0.8},
+                                   "precip_now": {"value": "none", "conf": 0.8}})], [])
+    assert st.verdict == "No read"
+    assert "fresh snow" in st.line and "snow stake only" in st.line

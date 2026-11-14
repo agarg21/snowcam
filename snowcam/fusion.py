@@ -98,5 +98,10 @@ def fuse(resort_name: str, readings: list[tuple[str, dict]], no_read_reasons: li
     else:
         verdict = "No read"
 
+    # A snow stake alone says nothing about the slopes, lifts or crowds: report its snow, no verdict.
+    if not any(by_role.get(r) for r in ("summit", "trail", "base")):
+        verdict = "No read"
+        parts.append("snow stake only, slopes not in view")
+
     line = f"{resort_name}: " + (", ".join(parts) if parts else "nothing notable visible") + "."
     return ResortState(verdict, line[0].upper() + line[1:], fused)

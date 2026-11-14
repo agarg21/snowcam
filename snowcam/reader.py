@@ -99,7 +99,8 @@ def _instructions(cam: Cam, fields: list[str], labels: list[str], burst: int) ->
         lines.append(f"- {f}: {FIELDS[f]['help']} Options: {', '.join(FIELDS[f]['enum'])}.")
     if cam.role == "stake":
         lines.append("- stake_inches: the snow depth read off the stake ruler in inches (0 if the board is bare), "
-                     "or null if you cannot read it.")
+                     "or null if you cannot read it. The ruler's 0 is at the board surface, so the depth is the "
+                     "number where the snow surface meets the ruler; numbers buried in snow are below it.")
         lines.append("- clock_time: the time on any clock in the frame as HH:MM, or null. Some displays alternate "
                      "between the time and a temperature (e.g. 37F); if it shows a temperature, use null.")
     lines.append("Give conf between 0 and 1 for each field. Record your answers with the record_reading tool.")
@@ -134,6 +135,14 @@ def build_request(cam: Cam, current: list[Image.Image], ts_label: str,
                     {"type": "image", "source": {"type": "base64", "media_type": "image/jpeg", "data": _b64(im)}}]
         labels.append(f"Image {n} = current frame{'' if len(current) == 1 else f' {i + 1}/{len(current)}'} at {ts_label}")
         n += 1
+    if cam.crop:
+        im = current[0]
+        x0, y0, x1, y1 = cam.crop
+        close = im.crop((int(x0 * im.width), int(y0 * im.height), int(x1 * im.width), int(y1 * im.height)))
+        content += [{"type": "text", "text": f"Image {n}:"},
+                    {"type": "image", "source": {"type": "base64", "media_type": "image/jpeg", "data": _b64(close)}}]
+        labels.append(f"Image {n} = full-resolution close-up of the current frame (read small markings here)")
+        n += 1
     if reference is not None:
         content += [{"type": "text", "text": f"Image {n}:"},
                     {"type": "image", "source": {"type": "base64", "media_type": "image/jpeg", "data": _b64(reference)}}]
@@ -165,6 +174,13 @@ def call(request: dict) -> Reading:
     evidence = data.pop("evidence", "")
     if "clock_time" in data:
         clock = data.pop("clock_time")
+        if isinstance(clock, dict):  # the model sometimes answers {value, conf} here too
+            clock = clock.get("value")
+        if isinstance(clock, str) and clock.strip().startswith("{"):
+            try:
+                clock = json.loads(clock).get("value")
+            except (ValueError, AttributeError):
+                clock = None
         data["clock_time"] = {"value": clock, "conf": 1.0 if clock else 0.0}
     return Reading(fields=data, evidence=evidence, model=request["model"],
                    raw={"usage": msg.usage.model_dump() if hasattr(msg.usage, "model_dump") else str(msg.usage)})

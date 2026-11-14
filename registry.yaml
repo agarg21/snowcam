@@ -67,7 +67,7 @@ resorts:
         feed: brownrice
         stream: mountsnowsnowstake
         role: stake
-        night_ok: true
+        night_ok: false   # the board is not lit at night (Nov 14: IR noise only)
         describe: "Snow stake board marked 1-26 in. beside an analog clock and a dial thermometer, set in woods."
       - id: mountsnow-summit
         name: Summit
@@ -108,6 +108,7 @@ resorts:
         stream: okemosnowstake
         role: stake
         night_ok: true
+        crop: [0.50, 0.12, 0.72, 0.92]
         describe: "Snow stake ruler (0-24 in.) on a white board inside a wooden fence; red display alternates the time and the temperature."
       - id: okemo-summit
         name: Summit
