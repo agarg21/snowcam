@@ -51,6 +51,7 @@ jobs:
           python -m snowcam.cli report
 
       - name: Upload this pass's frames (private, 30 days)
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: frames-${{ github.run_id }}
@@ -62,6 +63,7 @@ jobs:
       # Only the database, reference frames and each cam's last read frame go to the data
       # branch (one commit, replaced every run). Raw frames stay in the run artifact above.
       - name: Save database to the data branch
+        if: always()
         env:
           GH_TOKEN: ${{ github.token }}
         run: |

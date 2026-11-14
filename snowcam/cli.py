@@ -136,10 +136,14 @@ def read_pending(reg, con, dry_run: bool, samples: int, since_hours: float, limi
             reader.write_bundle(req, out)
             print(f"{cam.id:22s} bundle -> {out}")
             continue
-        r1 = reader.call(req)
-        fields = r1.fields
-        if samples > 1:
-            fields = reader.merge_samples(fields, reader.call(req).fields)
+        try:
+            r1 = reader.call(req)
+            fields = r1.fields
+            if samples > 1:
+                fields = reader.merge_samples(fields, reader.call(req).fields)
+        except Exception as e:  # one bad call must not cost the rest of the pass
+            print(f"{cam.id:22s} READ ERROR {type(e).__name__}: {str(e)[:200]}")
+            continue
         lag = clock_lag_minutes((fields.get("clock_time") or {}).get("value"), row["ts"], cam.tz)
         if lag is not None and lag > 20:  # frame clock disagrees with fetch time: feed is stale
             fields = {k: ({**v, "conf": 0.0} if isinstance(v, dict) else v) for k, v in fields.items()}

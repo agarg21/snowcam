@@ -168,8 +168,17 @@ def call(request: dict) -> Reading:
     import anthropic  # imported lazily so collection works without the SDK
 
     client = anthropic.Anthropic()
-    msg = client.messages.create(**request)
-    block = next(b for b in msg.content if b.type == "tool_use")
+    try:
+        msg = client.messages.create(**request)
+    except anthropic.BadRequestError as e:
+        # Some models refuse a forced tool call; let them choose it (the prompt asks for it).
+        if "tool_choice" not in str(e):
+            raise
+        request = {**request, "tool_choice": {"type": "auto"}}
+        msg = client.messages.create(**request)
+    block = next((b for b in msg.content if b.type == "tool_use"), None)
+    if block is None:
+        raise RuntimeError(f"{request['model']} answered without calling record_reading")
     data = dict(block.input)
     evidence = data.pop("evidence", "")
     if "clock_time" in data:
