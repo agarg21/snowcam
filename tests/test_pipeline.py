@@ -82,3 +82,17 @@ def test_fusion_closed_on_bare_slopes_without_lift_motion():
                     "lifts_moving": {"value": "unknown", "conf": 0.2}}),
     ], [])
     assert st.verdict == "Closed" and "bare cover" in st.line
+
+
+def test_view_shift_ignores_scene_change_but_catches_pan():
+    import numpy as np
+    from PIL import Image, ImageEnhance
+    from snowcam.gates import _view_shift, MOVED_FRAC
+    rng = np.random.default_rng(0)
+    base = (rng.random((90, 160)) > 0.5).astype("uint8") * 255
+    ref = Image.fromarray(np.kron(base, np.ones((8, 8), dtype="uint8"))).convert("RGB")
+    w, h = ref.size
+    relit = ImageEnhance.Brightness(ref).enhance(0.7)          # same view, different light
+    assert _view_shift(relit, ref) < MOVED_FRAC
+    panned = ref.crop((int(w * 0.15), 0, w, h)).resize((w, h))  # camera panned and zoomed
+    assert _view_shift(panned, ref) > MOVED_FRAC

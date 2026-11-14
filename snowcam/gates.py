@@ -33,7 +33,8 @@ ABS_LOW_CONTRAST = 18.0      # grey std-dev with no reference
 ABS_LOW_EDGES = 6.0          # mean Sobel magnitude with no reference
 REF_EDGE_FAIL = 0.35         # edge ratio vs clear-day reference
 REF_EDGE_DEGRADED = 0.60
-MOVED_FRAC = 0.06            # median feature shift as a fraction of width
+MOVED_FRAC = 0.06            # view shift (RANSAC fit) as a fraction of width
+MOVED_MIN_INLIERS = 12       # fewer agreeing features than this: can't tell (degraded)
 
 
 @dataclass
@@ -92,18 +93,32 @@ def sun_elevation(cam: Cam, when: datetime) -> float:
 
 
 def _view_shift(im: Image.Image, ref: Image.Image) -> float | None:
+    """How far the view has moved from the reference, as a fraction of frame width.
+
+    Matches ORB features with a ratio test, then fits a similarity transform with RANSAC so
+    that wrong matches (new snow, low sun, people) cannot drag the estimate. Returns None
+    when too few features agree to tell. A zoom change counts as moved.
+    """
     a = cv2.cvtColor(_work(im), cv2.COLOR_BGR2GRAY)
     b = cv2.cvtColor(_work(ref), cv2.COLOR_BGR2GRAY)
-    orb = cv2.ORB_create(800)
+    orb = cv2.ORB_create(1500)
     ka, da = orb.detectAndCompute(a, None)
     kb, db = orb.detectAndCompute(b, None)
     if da is None or db is None or len(ka) < 30 or len(kb) < 30:
         return None
-    matches = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True).match(da, db)
-    if len(matches) < 20:
+    pairs = cv2.BFMatcher(cv2.NORM_HAMMING).knnMatch(da, db, k=2)
+    good = [p[0] for p in pairs if len(p) == 2 and p[0].distance < 0.8 * p[1].distance]
+    if len(good) < MOVED_MIN_INLIERS:
         return None
-    shifts = [np.hypot(ka[m.queryIdx].pt[0] - kb[m.trainIdx].pt[0], ka[m.queryIdx].pt[1] - kb[m.trainIdx].pt[1]) for m in matches]
-    return float(np.median(shifts) / WORK_W)
+    src = np.float32([ka[m.queryIdx].pt for m in good])
+    dst = np.float32([kb[m.trainIdx].pt for m in good])
+    M, inliers = cv2.estimateAffinePartial2D(src, dst, method=cv2.RANSAC, ransacReprojThreshold=4.0)
+    if M is None or inliers is None or int(inliers.sum()) < MOVED_MIN_INLIERS:
+        return None
+    scale = float(np.hypot(M[0, 0], M[1, 0]))
+    if abs(scale - 1) > 0.15:
+        return 1.0
+    return float(np.hypot(M[0, 2], M[1, 2]) / a.shape[1])
 
 
 def run_gates(
