@@ -174,11 +174,12 @@ def call(request: dict) -> Reading:
         # Some models refuse a forced tool call; let them choose it (the prompt asks for it).
         if "tool_choice" not in str(e):
             raise
-        request = {**request, "tool_choice": {"type": "auto"}}
+        # Such models may think first, so give them room to finish the tool call.
+        request = {**request, "tool_choice": {"type": "auto"}, "max_tokens": 6000}
         msg = client.messages.create(**request)
     block = next((b for b in msg.content if b.type == "tool_use"), None)
-    if block is None:
-        raise RuntimeError(f"{request['model']} answered without calling record_reading")
+    if block is None or not block.input or msg.stop_reason == "max_tokens":
+        raise RuntimeError(f"{request['model']} gave no complete reading (stop_reason={msg.stop_reason})")
     data = dict(block.input)
     evidence = data.pop("evidence", "")
     if "clock_time" in data:
@@ -192,7 +193,8 @@ def call(request: dict) -> Reading:
                 clock = None
         data["clock_time"] = {"value": clock, "conf": 1.0 if clock else 0.0}
     return Reading(fields=data, evidence=evidence, model=request["model"],
-                   raw={"usage": msg.usage.model_dump() if hasattr(msg.usage, "model_dump") else str(msg.usage)})
+                   raw={"stop_reason": msg.stop_reason,
+                        "usage": msg.usage.model_dump() if hasattr(msg.usage, "model_dump") else str(msg.usage)})
 
 
 def merge_samples(a: dict, b: dict) -> dict:
