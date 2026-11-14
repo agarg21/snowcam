@@ -128,7 +128,7 @@ def read_pending(reg, con, dry_run: bool, samples: int, since_hours: float, limi
                     break
         req = reader.build_request(cam, cur, _local_label(row["ts"], cam.tz), ref_im,
                                    (prev_t[0], _local_label(prev_t[1], cam.tz)) if prev_t else None,
-                                   reader.DEFAULT_MODEL)
+                                   reader.ESCALATE_MODEL if cam.role == "stake" else reader.DEFAULT_MODEL)
         if dry_run:
             out = store.DATA / "requests" / cam.id / row["ts"].replace(":", "")
             if out.exists():
