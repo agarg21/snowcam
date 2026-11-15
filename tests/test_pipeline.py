@@ -7,10 +7,13 @@ from snowcam.cli import clock_lag_minutes
 from snowcam.config import load_registry
 
 
-def test_registry_loads_14_cams():
+def test_registry_loads_and_ids_are_unique():
     reg = load_registry()
-    assert len(reg.cams) == 14
+    ids = [c.id for c in reg.cams]
+    assert len(ids) == len(set(ids)) and len(reg.resorts) >= 32
     assert reg.cam("hunter-base").source_url.endswith("/snapshot/hunter1")
+    # cams added without a description wait for their one-time profile before being read
+    assert all(c.describe or c.resort_id not in ("hunter", "okemo", "mount-snow", "windham") for c in reg.cams)
 
 
 def test_clock_lag_handles_12h_and_24h():

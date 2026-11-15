@@ -35,7 +35,8 @@ def _get_still(url: str, user_agent: str) -> Grab:
     if r.status_code != 200:
         return Grab(False, [], f"http {r.status_code}", r.status_code)
     ctype = r.headers.get("content-type", "")
-    if not ctype.startswith("image/"):
+    # Some cam hosts send no or a generic type; accept those only if the bytes open as an image.
+    if not (ctype.startswith("image/") or ctype in ("", "application/octet-stream", "binary/octet-stream")):
         return Grab(False, [], f"not an image ({ctype})", r.status_code)
     try:
         im = Image.open(io.BytesIO(r.content))

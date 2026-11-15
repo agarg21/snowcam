@@ -25,7 +25,8 @@ class Cam:
     url: str | None = None
     night_ok: bool = False
     cam_page: str | None = None
-    crop: tuple[float, float, float, float] | None = None  # close-up box as fractions (x0, y0, x1, y1)
+    crop: tuple[float, float, float, float] | None = None
+    usable: bool = True  # false once a profile says the view is not a ski view  # close-up box as fractions (x0, y0, x1, y1)
 
     @property
     def source_url(self) -> str:

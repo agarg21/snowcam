@@ -32,7 +32,7 @@ def build(reg, con, window_min: int = 45, now: datetime | None = None) -> dict:
         st = con.execute("select ts, verdict, line, fused from resort_state where resort=? order by id desc limit 1",
                          (rid,)).fetchone()
         cams, used = [], 0
-        for cam in reg.by_resort(rid):
+        for cam in [c for c in reg.by_resort(rid) if c.usable]:
             rd = con.execute("select ts from readings where cam=? and ts>=? order by ts desc limit 1",
                              (cam.id, since)).fetchone()
             fr = con.execute("select ts, gate_status, gates from frames where cam=? and ts>=? order by ts desc limit 1",

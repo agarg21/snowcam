@@ -43,6 +43,9 @@ create table if not exists resort_state (
   resort text, ts text,
   verdict text, line text, fused json
 );
+create table if not exists cam_profiles (
+  cam text primary key, profile json, model text, created text
+);
 create table if not exists labels (
   id integer primary key,
   frame_id integer references frames(id),

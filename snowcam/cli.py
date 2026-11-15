@@ -45,11 +45,12 @@ def collect_once(reg, con, only: list[str] | None = None, quiet: bool = False) -
     ua = reg.defaults.get("user_agent", "snowcam/0.1")
     offline = store.offline_hashes()
     results = []
-    for cam in reg.cams:
-        if only and cam.id not in only and cam.resort_id not in only:
-            continue
-        ts = now_utc()
-        g = grab.grab(cam, ua)
+    cams = [c for c in reg.cams if c.usable and (not only or c.id in only or c.resort_id in only)]
+    # Fetch in parallel (at most 8 at a time, one request per cam); gate and store in order.
+    from concurrent.futures import ThreadPoolExecutor
+    with ThreadPoolExecutor(8) as ex:
+        grabbed = list(ex.map(lambda c: (now_utc(), grab.grab(c, ua)), cams))
+    for cam, (ts, g) in zip(cams, grabbed):
         if not g.ok:
             store.insert_frame(con, cam.id, ts, None, None, None, "fail",
                                {"status": "fail", "checks": {"fetch": {"status": "fail", "note": g.error}}}, g.error)
@@ -114,8 +115,14 @@ def read_pending(reg, con, dry_run: bool, samples: int, since_hours: float, limi
         return
     if not dry_run and not os.environ.get("ANTHROPIC_API_KEY"):
         sys.exit("ANTHROPIC_API_KEY is not set; use --dry-run to write request bundles instead")
+    jobs = []
     for row in rows:
-        cam = reg.cam(row["cam"])
+        try:
+            cam = reg.cam(row["cam"])
+        except KeyError:
+            continue
+        if not cam.usable or not cam.describe:
+            continue  # not a ski view, or waiting for its one-time profile
         cur = [Image.open(p).convert("RGB") for p in _burst_paths(Path(row["path"]))]
         ref_im, _ = _ref(cam.id)
         prev = store.last_read_frame(con, cam.id)
@@ -136,13 +143,25 @@ def read_pending(reg, con, dry_run: bool, samples: int, since_hours: float, limi
             reader.write_bundle(req, out)
             print(f"{cam.id:22s} bundle -> {out}")
             continue
+        jobs.append((row, cam, cur, req))
+
+    def run(job):
+        row, cam, cur, req = job
         try:
             r1 = reader.call(req)
             fields = r1.fields
             if samples > 1:
                 fields = reader.merge_samples(fields, reader.call(req).fields)
+            return job, r1, fields, None
         except Exception as e:  # one bad call must not cost the rest of the pass
-            print(f"{cam.id:22s} READ ERROR {type(e).__name__}: {str(e)[:200]}")
+            return job, None, None, e
+
+    from concurrent.futures import ThreadPoolExecutor
+    with ThreadPoolExecutor(8) as ex:
+        results = list(ex.map(run, jobs))
+    for (row, cam, cur, req), r1, fields, err in results:
+        if err is not None:
+            print(f"{cam.id:22s} READ ERROR {type(err).__name__}: {str(err)[:200]}")
             continue
         lag = clock_lag_minutes((fields.get("clock_time") or {}).get("value"), row["ts"], cam.tz)
         if lag is not None and lag > 20:  # frame clock disagrees with fetch time: feed is stale
@@ -160,7 +179,7 @@ def fuse_all(reg, con, window_min: int = 45) -> list[fusion.ResortState]:
     out = []
     for rid, r in reg.resorts.items():
         readings, reasons, awaiting = [], [], 0
-        for cam in reg.by_resort(rid):
+        for cam in [c for c in reg.by_resort(rid) if c.usable]:
             rd = con.execute("select fields from readings where cam=? and ts>=? order by ts desc limit 1",
                              (cam.id, since)).fetchone()
             if rd:
@@ -201,6 +220,47 @@ def auto_reference(reg, con) -> None:
             set_reference(cam.id, best[0])
         else:
             print(f"{cam.id:22s} no daylight pass frame yet")
+
+
+def describe_new(reg, con) -> None:
+    """One-time profile for cams without a description, from this run's clear daylight frame."""
+    from . import describe
+    if not os.environ.get("ANTHROPIC_API_KEY"):
+        print("ANTHROPIC_API_KEY not set; skipping profiles")
+        return
+    done = {r["cam"] for r in con.execute("select cam from cam_profiles")}
+    since = (now_utc() - timedelta(hours=1)).isoformat()
+    for cam in reg.cams:
+        if cam.describe or cam.id in done:
+            continue
+        row = con.execute("select path, gates from frames where cam=? and ts>=? and gate_status in ('pass','degraded') "
+                          "and path is not null order by ts desc limit 1", (cam.id, since)).fetchone()
+        if not row or not Path(row["path"]).exists():
+            continue
+        if json.loads(row["gates"] or "{}").get("metrics", {}).get("sun_elevation", -90) < 10:
+            continue
+        try:
+            prof = describe.call(describe.build_request(cam.resort_name, Image.open(row["path"]).convert("RGB")))
+        except Exception as e:
+            print(f"{cam.id:30s} PROFILE ERROR {type(e).__name__}: {str(e)[:150]}")
+            continue
+        describe.save(con, cam.id, prof, describe.PROFILE_MODEL)
+        print(f"{cam.id:30s} {prof.get('role'):7s} usable={prof.get('usable')} {prof.get('name')}: {prof.get('describe', '')[:90]}")
+
+
+def reference_missing(reg, con) -> None:
+    """Give cams without a clear-day reference this run's frame, if it is a clean daylight pass."""
+    since = (now_utc() - timedelta(hours=1)).isoformat()
+    for cam in reg.cams:
+        if store.reference_path(cam.id).exists():
+            continue
+        row = con.execute("select path, gates from frames where cam=? and ts>=? and gate_status='pass' "
+                          "and path is not null order by ts desc limit 1", (cam.id, since)).fetchone()
+        if not row or not Path(row["path"]).exists():
+            continue
+        m = json.loads(row["gates"] or "{}").get("metrics", {})
+        if m.get("sun_elevation", -90) >= 15:
+            set_reference(cam.id, row["path"])
 
 
 def set_reference(cam_id: str, frame_path: str) -> None:
@@ -268,6 +328,8 @@ def main(argv=None) -> None:
     s.add_argument("cam")
     s.add_argument("frame")
     sub.add_parser("auto-reference")
+    sub.add_parser("describe-new")
+    sub.add_parser("reference-missing")
     fx = sub.add_parser("export-feed")
     fx.add_argument("--out", default=str(ROOT / "feed" / "conditions.json"))
     rp = sub.add_parser("report")
@@ -276,6 +338,8 @@ def main(argv=None) -> None:
 
     reg = load_registry()
     con = store.connect()
+    from . import describe
+    describe.apply(reg, con)
     if a.cmd == "collect":
         end = time.time() + a.hours * 3600 if a.hours else None
         while True:
@@ -295,6 +359,10 @@ def main(argv=None) -> None:
         set_reference(a.cam, a.frame)
     elif a.cmd == "auto-reference":
         auto_reference(reg, con)
+    elif a.cmd == "describe-new":
+        describe_new(reg, con)
+    elif a.cmd == "reference-missing":
+        reference_missing(reg, con)
     elif a.cmd == "export-feed":
         from . import feed
         out = Path(a.out)

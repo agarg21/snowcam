@@ -147,3 +147,1069 @@ resorts:
         stream: windhammountainclub
         role: base
         describe: "Looking up from behind the base lodge roofs at lift terminals and trails on the mountain."
+
+  # Season list (owner 2026-11-15), added from the cam inventory in docs/cam-inventory-2026-11-15.
+  # describe is left empty on purpose: the first clear daylight frame gets a one-time profile
+  # (name, role, description, usable) from the model; see snowcam/describe.py.
+  killington:
+    name: Killington
+    state: VT
+    lat: 43.6045
+    lon: -72.8201
+    tz: America/New_York
+    cam_page: https://killington.com/webcams
+    publish: false
+    cams:
+    - id: killington-snowshed-adventure-center-17
+      name: cam_snowshed_adventure_center_1789055086
+      feed: still
+      url: https://watch.hdrelay.io/api/public/poster/cam_snowshed_adventure_center_1789055086968
+      role: trail
+      describe: ''
+    - id: killington-61e3ce02-faaa-4499-a547-6574
+      name: 61e3ce02-faaa-4499-a547-6574ef6fa4f6
+      feed: still
+      url: https://b15.hdrelay.com/camera/61e3ce02-faaa-4499-a547-6574ef6fa4f6/snapshot
+      role: trail
+      describe: ''
+    - id: killington-5f4fb731-c591-464f-a60d-dccc
+      name: 5f4fb731-c591-464f-a60d-dccc968e8fa0
+      feed: still
+      url: https://b15.hdrelay.com/camera/5f4fb731-c591-464f-a60d-dccc968e8fa0/snapshot
+      role: trail
+      describe: ''
+    - id: killington-48933086-3e4f-4093-818f-603f
+      name: 48933086-3e4f-4093-818f-603f6d084c81
+      feed: still
+      url: https://b15.hdrelay.com/camera/48933086-3e4f-4093-818f-603f6d084c81/snapshot
+      role: trail
+      describe: ''
+    - id: killington-2a8b98fa-994e-4e36-9c61-d62e
+      name: 2a8b98fa-994e-4e36-9c61-d62e00a500b0
+      feed: still
+      url: https://b15.hdrelay.com/camera/2a8b98fa-994e-4e36-9c61-d62e00a500b0/snapshot
+      role: trail
+      describe: ''
+    - id: killington-a0de9878-d7b7-4906-9e83-536f
+      name: a0de9878-d7b7-4906-9e83-536fde35c8a9
+      feed: still
+      url: https://b15.hdrelay.com/camera/a0de9878-d7b7-4906-9e83-536fde35c8a9/snapshot
+      role: trail
+      describe: ''
+    - id: killington-84943abb-01cd-4907-8cc2-a9a7
+      name: 84943abb-01cd-4907-8cc2-a9a7680d7529
+      feed: still
+      url: https://b15.hdrelay.com/camera/84943abb-01cd-4907-8cc2-a9a7680d7529/snapshot
+      role: trail
+      describe: ''
+  jay-peak:
+    name: Jay Peak
+    state: VT
+    lat: 44.9379
+    lon: -72.5045
+    tz: America/New_York
+    cam_page: https://jaypeakresort.com/resort/photo-day
+    publish: false
+    cams:
+    - id: jay-peak-6526ffaa1c3bd6b512d2585d
+      name: 6526ffaa1c3bd6b512d2585d
+      feed: still
+      url: https://b15.hdrelay.com/camera/6526ffaa1c3bd6b512d2585d/snapshot
+      role: trail
+      describe: ''
+    - id: jay-peak-6526fd5a071b19b5189bb07b
+      name: 6526fd5a071b19b5189bb07b
+      feed: still
+      url: https://b15.hdrelay.com/camera/6526fd5a071b19b5189bb07b/snapshot
+      role: trail
+      describe: ''
+    - id: jay-peak-prism58
+      name: prism58
+      feed: still
+      url: https://storage.googleapis.com/prism-cam-00058/720.jpg
+      role: trail
+      describe: ''
+  stowe:
+    name: Stowe
+    state: VT
+    lat: 44.5303
+    lon: -72.7814
+    tz: America/New_York
+    cam_page: https://www.stowe.com/the-mountain/mountain-conditions/mountain-cams.aspx
+    publish: false
+    cams:
+    - id: stowe-village2
+      name: stowevillage2
+      feed: brownrice
+      stream: stowevillage2
+      role: base
+      describe: ''
+    - id: stowe-snowstake
+      name: stowesnowstake
+      feed: brownrice
+      stream: stowesnowstake
+      role: stake
+      describe: ''
+    - id: stowe-midwaybasestation
+      name: stowemidwaybasestation
+      feed: brownrice
+      stream: stowemidwaybasestation
+      role: base
+      describe: ''
+    - id: stowe-village
+      name: stowevillage
+      feed: brownrice
+      stream: stowevillage
+      role: base
+      describe: ''
+  holiday-valley:
+    name: Holiday Valley
+    state: NY
+    lat: 42.2628
+    lon: -78.6694
+    tz: America/New_York
+    cam_page: https://www.holidayvalley.com/webcams/
+    publish: false
+    cams:
+    - id: holiday-valley-896d837c-d4b2-4d29-a555-0e5f
+      name: 896d837c-d4b2-4d29-a555-0e5fcd81a8ea
+      feed: still
+      url: https://b15.hdrelay.com/camera/896d837c-d4b2-4d29-a555-0e5fcd81a8ea/snapshot
+      role: trail
+      describe: ''
+    - id: holiday-valley-691f41e72fc3303fedc919b6
+      name: 691f41e72fc3303fedc919b6
+      feed: still
+      url: https://b15.hdrelay.com/camera/691f41e72fc3303fedc919b6/snapshot
+      role: trail
+      describe: ''
+    - id: holiday-valley-691f48292fc3303fedc919c3
+      name: 691f48292fc3303fedc919c3
+      feed: still
+      url: https://b15.hdrelay.com/camera/691f48292fc3303fedc919c3/snapshot
+      role: trail
+      describe: ''
+    - id: holiday-valley-691f44032fc3303fedc919bc
+      name: 691f44032fc3303fedc919bc
+      feed: still
+      url: https://b15.hdrelay.com/camera/691f44032fc3303fedc919bc/snapshot
+      role: trail
+      describe: ''
+    - id: holiday-valley-691f45852fc3303fedc919bf
+      name: 691f45852fc3303fedc919bf
+      feed: still
+      url: https://b15.hdrelay.com/camera/691f45852fc3303fedc919bf/snapshot
+      role: trail
+      describe: ''
+    - id: holiday-valley-691f43502fc3303fedc919b9
+      name: 691f43502fc3303fedc919b9
+      feed: still
+      url: https://b15.hdrelay.com/camera/691f43502fc3303fedc919b9/snapshot
+      role: trail
+      describe: ''
+  sugarbush:
+    name: Sugarbush
+    state: VT
+    lat: 44.1359
+    lon: -72.8944
+    tz: America/New_York
+    cam_page: https://www.sugarbush.com/mountain/webcams
+    publish: false
+    cams:
+    - id: sugarbush-yt-jhch3dsev-m
+      name: yt:jhCh3dsEv-M
+      feed: still
+      url: https://i.ytimg.com/vi/jhCh3dsEv-M/maxresdefault_live.jpg
+      role: trail
+      describe: ''
+    - id: sugarbush-yt-f5m1ac9zvkc
+      name: yt:F5m1Ac9ZvKc
+      feed: still
+      url: https://i.ytimg.com/vi/F5m1Ac9ZvKc/maxresdefault_live.jpg
+      role: trail
+      describe: ''
+    - id: sugarbush-yt-gwpiruoopee
+      name: yt:gWPiruOopeE
+      feed: still
+      url: https://i.ytimg.com/vi/gWPiruOopeE/maxresdefault_live.jpg
+      role: trail
+      describe: ''
+    - id: sugarbush-yt-2kjx9cnxrxa
+      name: yt:2Kjx9cnxRXA
+      feed: still
+      url: https://i.ytimg.com/vi/2Kjx9cnxRXA/maxresdefault_live.jpg
+      role: trail
+      describe: ''
+    - id: sugarbush-yt-dr2py9l3md8
+      name: yt:dR2pY9L3md8
+      feed: still
+      url: https://i.ytimg.com/vi/dR2pY9L3md8/maxresdefault_live.jpg
+      role: trail
+      describe: ''
+    - id: sugarbush-webcam-io
+      name: webcam.io
+      feed: still
+      url: https://assets2.webcam.io/w/z7DpwM/latest.jpg
+      role: trail
+      describe: ''
+  stratton:
+    name: Stratton
+    state: VT
+    lat: 43.1134
+    lon: -72.9081
+    tz: America/New_York
+    cam_page: https://www.stratton.com/the-mountain/webcams
+    publish: false
+    cams:
+    - id: stratton-yt-9e00w9r-cnc
+      name: yt:9E00W9R_Cnc
+      feed: still
+      url: https://i.ytimg.com/vi/9E00W9R_Cnc/maxresdefault_live.jpg
+      role: trail
+      describe: ''
+    - id: stratton-yt-ildhe-rg1mk
+      name: yt:ildHe_RG1Mk
+      feed: still
+      url: https://i.ytimg.com/vi/ildHe_RG1Mk/maxresdefault_live.jpg
+      role: trail
+      describe: ''
+    - id: stratton-yt-atm2utwoloe
+      name: yt:ATM2utwOLOE
+      feed: still
+      url: https://i.ytimg.com/vi/ATM2utwOLOE/maxresdefault_live.jpg
+      role: trail
+      describe: ''
+    - id: stratton-yt-ahch03hwuh0
+      name: yt:AhcH03HwuH0
+      feed: still
+      url: https://i.ytimg.com/vi/AhcH03HwuH0/maxresdefault_live.jpg
+      role: trail
+      describe: ''
+    - id: stratton-yt-h-sgi4sbtk
+      name: yt:H-_sGi4Sbtk
+      feed: still
+      url: https://i.ytimg.com/vi/H-_sGi4Sbtk/maxresdefault_live.jpg
+      role: trail
+      describe: ''
+    - id: stratton-yt-sqwptm63rjc
+      name: yt:SqWPtm63rJc
+      feed: still
+      url: https://i.ytimg.com/vi/SqWPtm63rJc/maxresdefault_live.jpg
+      role: trail
+      describe: ''
+  seven-springs:
+    name: Seven Springs
+    state: PA
+    lat: 40.0228
+    lon: -79.2973
+    tz: America/New_York
+    cam_page: https://www.7springs.com/the-mountain/mountain-conditions/mountain-cams.aspx
+    publish: false
+    cams:
+    - id: seven-springs-sevensprings
+      name: sevensprings
+      feed: brownrice
+      stream: sevensprings
+      role: trail
+      describe: ''
+    - id: seven-springs-northface
+      name: sevenspringsnorthface
+      feed: brownrice
+      stream: sevenspringsnorthface
+      role: trail
+      describe: ''
+    - id: seven-springs-tubing
+      name: sevenspringstubing
+      feed: brownrice
+      stream: sevenspringstubing
+      role: trail
+      describe: ''
+    - id: seven-springs-tahoe
+      name: sevenspringstahoe
+      feed: brownrice
+      stream: sevenspringstahoe
+      role: trail
+      describe: ''
+  breckenridge:
+    name: Breckenridge
+    state: CO
+    lat: 39.4817
+    lon: -106.0384
+    tz: America/Denver
+    cam_page: https://www.breckenridge.com/the-mountain/mountain-conditions/mountain-cams.aspx
+    publish: false
+    cams:
+    - id: breckenridge-9
+      name: breckenridge9
+      feed: brownrice
+      stream: breckenridge9
+      role: trail
+      describe: ''
+    - id: breckenridge-10
+      name: breckenridge10
+      feed: brownrice
+      stream: breckenridge10
+      role: trail
+      describe: ''
+    - id: breckenridge-7
+      name: breckenridge7
+      feed: brownrice
+      stream: breckenridge7
+      role: trail
+      describe: ''
+    - id: breckenridge-brecksnowstake
+      name: BreckSnowStake.jpg
+      feed: still
+      url: https://cache.snow.com/Mtncams/BreckSnowStake.jpg
+      role: stake
+      describe: ''
+  park-city:
+    name: Park City
+    state: UT
+    lat: 40.6514
+    lon: -111.508
+    tz: America/Denver
+    cam_page: https://www.parkcitymountain.com/the-mountain/mountain-conditions/mountain-cams.aspx
+    publish: false
+    cams:
+    - id: park-city-lookoutcabin
+      name: parkcitylookoutcabin
+      feed: brownrice
+      stream: parkcitylookoutcabin
+      role: trail
+      describe: ''
+    - id: park-city-highmeadow
+      name: parkcityhighmeadow
+      feed: brownrice
+      stream: parkcityhighmeadow
+      role: trail
+      describe: ''
+    - id: park-city-topobx
+      name: parkcitytopobx
+      feed: brownrice
+      stream: parkcitytopobx
+      role: summit
+      describe: ''
+    - id: park-city-topcrescent
+      name: parkcitytopcrescent
+      feed: brownrice
+      stream: parkcitytopcrescent
+      role: summit
+      describe: ''
+    - id: park-city-cnskibeach
+      name: parkcitycnskibeach
+      feed: brownrice
+      stream: parkcitycnskibeach
+      role: base
+      describe: ''
+    - id: park-city-crescentridge
+      name: parkcitycrescentridge
+      feed: brownrice
+      stream: parkcitycrescentridge
+      role: trail
+      describe: ''
+    - id: park-city-mtnvillage
+      name: parkcitymtnvillage
+      feed: brownrice
+      stream: parkcitymtnvillage
+      role: base
+      describe: ''
+  vail:
+    name: Vail
+    state: CO
+    lat: 39.6061
+    lon: -106.355
+    tz: America/Denver
+    cam_page: https://www.vail.com/the-mountain/mountain-conditions/mountain-cams.aspx
+    publish: false
+    cams:
+    - id: vail-ch11
+      name: vailch11
+      feed: brownrice
+      stream: vailch11
+      role: trail
+      describe: ''
+    - id: vail-ch2
+      name: vailch2
+      feed: brownrice
+      stream: vailch2
+      role: trail
+      describe: ''
+    - id: vail-eaglesnest
+      name: vaileaglesnest
+      feed: brownrice
+      stream: vaileaglesnest
+      role: summit
+      describe: ''
+    - id: vail-ch21
+      name: vailch21
+      feed: brownrice
+      stream: vailch21
+      role: trail
+      describe: ''
+    - id: vail-snowsummit
+      name: vailsnowsummit
+      feed: brownrice
+      stream: vailsnowsummit
+      role: stake
+      describe: ''
+  stevens-pass:
+    name: Stevens Pass
+    state: WA
+    lat: 47.7448
+    lon: -121.089
+    tz: America/Los_Angeles
+    cam_page: https://www.stevenspass.com/the-mountain/mountain-conditions/mountain-cams.aspx
+    publish: false
+    cams:
+    - id: stevens-pass-courtyard
+      name: stevenspasscourtyard
+      feed: brownrice
+      stream: stevenspasscourtyard
+      role: base
+      describe: ''
+    - id: stevens-pass-jupiter
+      name: stevenspassjupiter
+      feed: brownrice
+      stream: stevenspassjupiter
+      role: trail
+      describe: ''
+    - id: stevens-pass-snowstake
+      name: stevenspasssnowstake
+      feed: brownrice
+      stream: stevenspasssnowstake
+      role: stake
+      describe: ''
+    - id: stevens-pass-school
+      name: stevenspassschool
+      feed: brownrice
+      stream: stevenspassschool
+      role: base
+      describe: ''
+    - id: stevens-pass-skyline
+      name: stevenspassskyline
+      feed: brownrice
+      stream: stevenspassskyline
+      role: trail
+      describe: ''
+  alta:
+    name: Alta
+    state: UT
+    lat: 40.5884
+    lon: -111.6386
+    tz: America/Denver
+    cam_page: https://www.alta.com/weather
+    publish: false
+    cams:
+    - id: alta-superior
+      name: Superior.jpg
+      feed: still
+      url: https://alta-webcams.sfo3.cdn.digitaloceanspaces.com/Superior.jpg
+      role: summit
+      describe: ''
+    - id: alta-collins-snow-stake
+      name: Collins_Snow_Stake.jpg
+      feed: still
+      url: https://alta-webcams.sfo3.cdn.digitaloceanspaces.com/Collins_Snow_Stake.jpg
+      role: stake
+      describe: ''
+    - id: alta-highrustler
+      name: Highrustler.jpg
+      feed: still
+      url: https://alta-webcams.sfo3.cdn.digitaloceanspaces.com/Highrustler.jpg
+      role: summit
+      describe: ''
+    - id: alta-greeley
+      name: Greeley.jpg
+      feed: still
+      url: https://alta-webcams.sfo3.cdn.digitaloceanspaces.com/Greeley.jpg
+      role: summit
+      describe: ''
+    - id: alta-sugar-peak
+      name: sugar_peak.jpg
+      feed: still
+      url: https://alta-webcams.sfo3.cdn.digitaloceanspaces.com/sugar_peak.jpg
+      role: summit
+      describe: ''
+    - id: alta-collins-dtc
+      name: collins_dtc.jpg
+      feed: still
+      url: https://alta-webcams.sfo3.cdn.digitaloceanspaces.com/collins_dtc.jpg
+      role: trail
+      describe: ''
+    - id: alta-prism65
+      name: prism65
+      feed: still
+      url: https://storage.googleapis.com/prism-cam-00065/720.jpg
+      role: trail
+      describe: ''
+    - id: alta-prism88
+      name: prism88
+      feed: still
+      url: https://storage.googleapis.com/prism-cam-00088/720.jpg
+      role: trail
+      describe: ''
+  jackson-hole:
+    name: Jackson Hole
+    state: WY
+    lat: 43.5875
+    lon: -110.8279
+    tz: America/Denver
+    cam_page: https://www.jacksonhole.com/live-mountain-cams
+    publish: false
+    cams:
+    - id: jackson-hole-teewinot
+      name: teewinot.jpg
+      feed: still
+      url: https://cams.jacksonhole.com/webcam/thumbnails/teewinot.jpg
+      role: summit
+      describe: ''
+    - id: jackson-hole-codybowl
+      name: codybowl.jpg
+      feed: still
+      url: https://cams.jacksonhole.com/webcam/thumbnails/codybowl.jpg
+      role: summit
+      describe: ''
+    - id: jackson-hole-gondi-bottom
+      name: gondi_bottom.jpg
+      feed: still
+      url: https://cams.jacksonhole.com/webcam/thumbnails/gondi_bottom.jpg
+      role: base
+      describe: ''
+    - id: jackson-hole-southhoback
+      name: SouthHoback.jpg
+      feed: still
+      url: https://cams.jacksonhole.com/webcam/thumbnails/SouthHoback.jpg
+      role: trail
+      describe: ''
+    - id: jackson-hole-tetonvillagecommons
+      name: tetonvillagecommons.jpg
+      feed: still
+      url: https://cams.jacksonhole.com/webcam/thumbnails/tetonvillagecommons.jpg
+      role: base
+      describe: ''
+  mt-bachelor:
+    name: Mt Bachelor
+    state: OR
+    lat: 43.9792
+    lon: -121.6886
+    tz: America/Los_Angeles
+    cam_page: https://www.mtbachelor.com/the-mountain/webcams/
+    publish: false
+    cams:
+    - id: mt-bachelor-yt-pxhmtxbmo7k
+      name: yt:pXHMtXbmo7k
+      feed: still
+      url: https://i.ytimg.com/vi/pXHMtXbmo7k/maxresdefault_live.jpg
+      role: trail
+      describe: ''
+    - id: mt-bachelor-yt-lyn2jg7zowo
+      name: yt:lyN2JG7zowo
+      feed: still
+      url: https://i.ytimg.com/vi/lyN2JG7zowo/maxresdefault_live.jpg
+      role: trail
+      describe: ''
+    - id: mt-bachelor-yt-gaftcyzigw4
+      name: yt:gAftCYziGW4
+      feed: still
+      url: https://i.ytimg.com/vi/gAftCYziGW4/maxresdefault_live.jpg
+      role: trail
+      describe: ''
+    - id: mt-bachelor-yt-orlxprywwd4
+      name: yt:ORlXPRywWd4
+      feed: still
+      url: https://i.ytimg.com/vi/ORlXPRywWd4/maxresdefault_live.jpg
+      role: trail
+      describe: ''
+  winter-park:
+    name: Winter Park
+    state: CO
+    lat: 39.8868
+    lon: -105.7625
+    tz: America/Denver
+    cam_page: https://www.winterparkresort.com/the-mountain/mountain-cams
+    publish: false
+    cams:
+    - id: winter-park-yt-yj-5q1vbmaa
+      name: yt:yj-5Q1vBMaA
+      feed: still
+      url: https://i.ytimg.com/vi/yj-5Q1vBMaA/maxresdefault_live.jpg
+      role: trail
+      describe: ''
+    - id: winter-park-yt-dt-whmxv0ye
+      name: yt:Dt_WhmxV0yE
+      feed: still
+      url: https://i.ytimg.com/vi/Dt_WhmxV0yE/maxresdefault_live.jpg
+      role: trail
+      describe: ''
+    - id: winter-park-best-western-cam
+      name: best-western-cam.jpg
+      feed: still
+      url: https://cams.winterparkresort.com/best-western-cam.jpg
+      role: trail
+      describe: ''
+  snowbird:
+    name: Snowbird
+    state: UT
+    lat: 40.583
+    lon: -111.6556
+    tz: America/Denver
+    cam_page: https://www.snowbird.com/the-mountain/webcams/view-all-webcams/
+    publish: false
+    cams:
+    - id: snowbird-default
+      name: default
+      feed: still
+      url: https://img.hdrelay.com/frames/8611e276-7ee5-42c0-b8cd-d9e1890e1cd4/default/last.jpg
+      role: stake
+      describe: ''
+    - id: snowbird-544432bd-3910-4888-aa9f-14b6
+      name: 544432bd-3910-4888-aa9f-14b6f51a7eb5
+      feed: still
+      url: https://b15.hdrelay.com/camera/544432bd-3910-4888-aa9f-14b6f51a7eb5/snapshot
+      role: trail
+      describe: ''
+    - id: snowbird-5780754f-8da1-4223-ab8a-6755
+      name: 5780754f-8da1-4223-ab8a-6755d84cbc10
+      feed: still
+      url: https://manage.hdrelay.com/snapshot/5780754f-8da1-4223-ab8a-6755d84cbc10
+      role: trail
+      describe: ''
+    - id: snowbird-db2a69c5-66e9-4c48-a713-919e
+      name: db2a69c5-66e9-4c48-a713-919eaf191fc1
+      feed: still
+      url: https://manage.hdrelay.com/snapshot/db2a69c5-66e9-4c48-a713-919eaf191fc1
+      role: trail
+      describe: ''
+    - id: snowbird-roundshot
+      name: roundshot
+      feed: still
+      url: https://backend.roundshot.com/cams/09123258cc29cd6e86d3af9a3836c150/medium
+      role: trail
+      describe: ''
+    - id: snowbird-roundshot-8
+      name: roundshot
+      feed: still
+      url: https://backend.roundshot.com/cams/44cfff4ff2a218a1178dbb105d95846a/medium
+      role: trail
+      describe: ''
+    - id: snowbird-roundshot-9
+      name: roundshot
+      feed: still
+      url: https://backend.roundshot.com/cams/48fc223c0ed88474ecc2f884bf39de63/medium
+      role: trail
+      describe: ''
+  deer-valley:
+    name: Deer Valley
+    state: UT
+    lat: 40.6374
+    lon: -111.4783
+    tz: America/Denver
+    cam_page: https://www.deervalley.com/explore-the-mountain/webcams
+    publish: false
+    cams:
+    - id: deer-valley-yt-r8qipv9xcom
+      name: yt:r8qiPv9XCOM
+      feed: still
+      url: https://i.ytimg.com/vi/r8qiPv9XCOM/maxresdefault_live.jpg
+      role: trail
+      describe: ''
+    - id: deer-valley-yt-xzjubapbame
+      name: yt:XZjubaPbamE
+      feed: still
+      url: https://i.ytimg.com/vi/XZjubaPbamE/maxresdefault_live.jpg
+      role: trail
+      describe: ''
+  timberline:
+    name: Timberline Lodge
+    state: OR
+    lat: 45.3311
+    lon: -121.711
+    tz: America/Los_Angeles
+    cam_page: https://timberlinelodge.com/webcams/
+    publish: false
+    cams:
+    - id: timberline-lodge
+      name: lodge.jpg
+      feed: still
+      url: https://timberlinelodge.com/snowcameras/lodge.jpg
+      role: base
+      describe: ''
+    - id: timberline-pucci
+      name: pucci.jpg
+      feed: still
+      url: https://timberlinelodge.com/snowcameras/pucci.jpg
+      role: base
+      describe: ''
+    - id: timberline-floodeast
+      name: FloodEast.jpg
+      feed: still
+      url: https://timberlinelodge.com/snowcameras/FloodEast.jpg
+      role: base
+      describe: ''
+    - id: timberline-summit
+      name: summit.jpg
+      feed: still
+      url: https://timberlinelodge.com/snowcameras/summit.jpg
+      role: base
+      describe: ''
+    - id: timberline-floodsouth
+      name: FloodSouth.jpg
+      feed: still
+      url: https://timberlinelodge.com/snowcameras/FloodSouth.jpg
+      role: base
+      describe: ''
+    - id: timberline-snowstake
+      name: snowstake.jpg
+      feed: still
+      url: https://timberlinelodge.com/snowcameras/snowstake.jpg
+      role: stake
+      describe: ''
+    - id: timberline-brunotop
+      name: brunotop.jpg
+      feed: still
+      url: https://timberlinelodge.com/snowcameras/brunotop.jpg
+      role: base
+      describe: ''
+    - id: timberline-palmerbottom
+      name: palmerbottom.jpg
+      feed: still
+      url: https://timberlinelodge.com/snowcameras/palmerbottom.jpg
+      role: base
+      describe: ''
+  heavenly:
+    name: Heavenly
+    state: CA
+    lat: 38.9353
+    lon: -119.94
+    tz: America/Los_Angeles
+    cam_page: https://www.skiheavenly.com/the-mountain/mountain-conditions/mountain-cams.aspx
+    publish: false
+    cams:
+    - id: heavenly-midstation
+      name: heavenlymidstation
+      feed: brownrice
+      stream: heavenlymidstation
+      role: trail
+      describe: ''
+    - id: heavenly-tram
+      name: heavenlytram
+      feed: brownrice
+      stream: heavenlytram
+      role: trail
+      describe: ''
+    - id: heavenly-dipper
+      name: heavenlydipper
+      feed: brownrice
+      stream: heavenlydipper
+      role: trail
+      describe: ''
+    - id: heavenly-eastpeak
+      name: heavenlyeastpeak
+      feed: brownrice
+      stream: heavenlyeastpeak
+      role: summit
+      describe: ''
+  keystone:
+    name: Keystone
+    state: CO
+    lat: 39.6045
+    lon: -105.944
+    tz: America/Denver
+    cam_page: https://www.keystoneresort.com/the-mountain/mountain-conditions/mountain-cams.aspx
+    publish: false
+    cams:
+    - id: keystone-northpeak
+      name: keystonenorthpeak
+      feed: brownrice
+      stream: keystonenorthpeak
+      role: summit
+      describe: ''
+    - id: keystone-dercum
+      name: keystonedercum
+      feed: brownrice
+      stream: keystonedercum
+      role: base
+      describe: ''
+    - id: keystone-lakeside
+      name: keystonelakeside
+      feed: brownrice
+      stream: keystonelakeside
+      role: base
+      describe: ''
+    - id: keystone-bergman
+      name: keystonebergman
+      feed: brownrice
+      stream: keystonebergman
+      role: trail
+      describe: ''
+    - id: keystone-riverrun
+      name: keystoneriverrun
+      feed: brownrice
+      stream: keystoneriverrun
+      role: base
+      describe: ''
+    - id: keystone-keysnowstake
+      name: KeySnowStake.jpg
+      feed: still
+      url: https://cache.snow.com/Mtncams/KeySnowStake.jpg
+      role: stake
+      describe: ''
+  copper:
+    name: Copper Mountain
+    state: CO
+    lat: 39.5022
+    lon: -106.1511
+    tz: America/Denver
+    cam_page: https://www.coppercolorado.com/the-mountain/webcams/
+    publish: false
+    cams:
+    - id: copper-default
+      name: default
+      feed: still
+      url: https://img.hdrelay.com/frames/fb469125-f1f3-459f-aeb4-98cb674e395f/default/last.jpg
+      role: stake
+      describe: ''
+    - id: copper-copper-mountain-union-179087
+      name: cam_copper_mountain___union_179087105719
+      feed: still
+      url: https://watch.hdrelay.io/api/public/poster/cam_copper_mountain___union_1790871057199
+      role: trail
+      describe: ''
+    - id: copper-copper-mountain-super-bee-17
+      name: cam_copper_mountain___super_bee_17919113
+      feed: still
+      url: https://watch.hdrelay.io/api/public/poster/cam_copper_mountain___super_bee_1791911334637
+      role: trail
+      describe: ''
+    - id: copper-copper-mountain-center-villa
+      name: cam_copper_mountain___center_village_179
+      feed: still
+      url: https://watch.hdrelay.io/api/public/poster/cam_copper_mountain___center_village_1791904709663
+      role: base
+      describe: ''
+    - id: copper-copper-mountain-excelerator-
+      name: cam_copper_mountain___excelerator_179191
+      feed: still
+      url: https://watch.hdrelay.io/api/public/poster/cam_copper_mountain___excelerator_1791911614707
+      role: trail
+      describe: ''
+    - id: copper-copper-mountain-terrain-park
+      name: cam_copper_mountain___terrain_park_17919
+      feed: still
+      url: https://watch.hdrelay.io/api/public/poster/cam_copper_mountain___terrain_park_1791911112236
+      role: trail
+      describe: ''
+  bogus-basin:
+    name: Bogus Basin
+    state: ID
+    lat: 43.764
+    lon: -116.1027
+    tz: America/Boise
+    cam_page: https://bogusbasin.org/your-mountain/conditions-webcams/
+    publish: false
+    cams:
+    - id: bogus-basin-yt-g714uvr8rjg
+      name: yt:g714uvR8Rjg
+      feed: still
+      url: https://i.ytimg.com/vi/g714uvR8Rjg/maxresdefault_live.jpg
+      role: trail
+      describe: ''
+    - id: bogus-basin-yt-wkw4iz5x1c
+      name: yt:_wkw4iZ5x1c
+      feed: still
+      url: https://i.ytimg.com/vi/_wkw4iZ5x1c/maxresdefault_live.jpg
+      role: trail
+      describe: ''
+    - id: bogus-basin-1080-watermark
+      name: 1080-watermark.jpg
+      feed: still
+      url: https://storage.googleapis.com/prism-cam-00091/1080-watermark.jpg
+      role: trail
+      describe: ''
+  schweitzer:
+    name: Schweitzer
+    state: ID
+    lat: 48.3678
+    lon: -116.6229
+    tz: America/Los_Angeles
+    cam_page: https://www.schweitzer.com/mountain-info/webcam
+    publish: false
+    cams:
+    - id: schweitzer-yt-7infyvwclc0
+      name: yt:7INfYvwClC0
+      feed: still
+      url: https://i.ytimg.com/vi/7INfYvwClC0/maxresdefault_live.jpg
+      role: trail
+      describe: ''
+    - id: schweitzer-yt-aanmce5kmzi
+      name: yt:aanmce5KMZI
+      feed: still
+      url: https://i.ytimg.com/vi/aanmce5KMZI/maxresdefault_live.jpg
+      role: trail
+      describe: ''
+    - id: schweitzer-yt-y3li7efj6wo
+      name: yt:Y3LI7eFJ6wo
+      feed: still
+      url: https://i.ytimg.com/vi/Y3LI7eFJ6wo/maxresdefault_live.jpg
+      role: trail
+      describe: ''
+    - id: schweitzer-yt-6-8kuvdzjwa
+      name: yt:6-8KuVdZJWA
+      feed: still
+      url: https://i.ytimg.com/vi/6-8KuVdZJWA/maxresdefault_live.jpg
+      role: trail
+      describe: ''
+    - id: schweitzer-yt-b6k3gfxxxlc
+      name: yt:B6k3gfxXxLc
+      feed: still
+      url: https://i.ytimg.com/vi/B6k3gfxXxLc/maxresdefault_live.jpg
+      role: trail
+      describe: ''
+    - id: schweitzer-yt-7vfvvc9ahcq
+      name: yt:7vfVVc9AhcQ
+      feed: still
+      url: https://i.ytimg.com/vi/7vfVVc9AhcQ/maxresdefault_live.jpg
+      role: trail
+      describe: ''
+  kirkwood:
+    name: Kirkwood
+    state: CA
+    lat: 38.685
+    lon: -120.065
+    tz: America/Los_Angeles
+    cam_page: https://www.kirkwood.com/the-mountain/mountain-conditions/mountain-cams.aspx
+    publish: false
+    cams:
+    - id: kirkwood-cornice
+      name: kirkwoodcornice
+      feed: brownrice
+      stream: kirkwoodcornice
+      role: summit
+      describe: ''
+    - id: kirkwood-redcliffs
+      name: kirkwoodredcliffs
+      feed: brownrice
+      stream: kirkwoodredcliffs
+      role: summit
+      describe: ''
+  northstar:
+    name: Northstar
+    state: CA
+    lat: 39.2746
+    lon: -120.121
+    tz: America/Los_Angeles
+    cam_page: https://www.northstarcalifornia.com/the-mountain/mountain-conditions/mountain-cams.aspx
+    publish: false
+    cams:
+    - id: northstar-snowstake
+      name: northstarsnowstake
+      feed: brownrice
+      stream: northstarsnowstake
+      role: stake
+      describe: ''
+    - id: northstar-spluto
+      name: northstarspluto
+      feed: brownrice
+      stream: northstarspluto
+      role: trail
+      describe: ''
+    - id: northstar-midmountain
+      name: northstarmidmountain
+      feed: brownrice
+      stream: northstarmidmountain
+      role: trail
+      describe: ''
+    - id: northstar-village
+      name: northstarvillage
+      feed: brownrice
+      stream: northstarvillage
+      role: base
+      describe: ''
+  wolf-creek:
+    name: Wolf Creek
+    state: CO
+    lat: 37.4722
+    lon: -106.793
+    tz: America/Denver
+    cam_page: https://wolfcreekski.com
+    publish: false
+    cams:
+    - id: wolf-creek-tresurlift
+      name: wolfcreektresurlift
+      feed: brownrice
+      stream: wolfcreektresurlift
+      role: trail
+      describe: ''
+    - id: wolf-creek-treasure
+      name: wolfcreektreasure
+      feed: brownrice
+      stream: wolfcreektreasure
+      role: trail
+      describe: ''
+    - id: wolf-creek-summit
+      name: wolfcreeksummit
+      feed: brownrice
+      stream: wolfcreeksummit
+      role: summit
+      describe: ''
+  crested-butte:
+    name: Crested Butte
+    state: CO
+    lat: 38.8991
+    lon: -106.9658
+    tz: America/Denver
+    cam_page: https://www.skicb.com/the-mountain/mountain-conditions/mountain-cams.aspx
+    publish: false
+    cams:
+    - id: crested-butte-base
+      name: Crestedbuttebase
+      feed: brownrice
+      stream: Crestedbuttebase
+      role: base
+      describe: ''
+    - id: crested-butte-bar
+      name: Crestedbuttebar
+      feed: brownrice
+      stream: Crestedbuttebar
+      role: base
+      describe: ''
+    - id: crested-butte-warm
+      name: Crestedbuttewarm
+      feed: brownrice
+      stream: Crestedbuttewarm
+      role: base
+      describe: ''
+  telluride:
+    name: Telluride
+    state: CO
+    lat: 37.9375
+    lon: -107.8123
+    tz: America/Denver
+    cam_page: https://tellurideskiresort.com/webcams/
+    publish: false
+    cams:
+    - id: telluride-ipcam-plazacam
+      name: ipcam:plazacam
+      feed: still
+      url: https://g1.ipcamlive.com/player/snapshot.php?alias=plazacam
+      role: base
+      describe: ''
+    - id: telluride-ipcam-powcam
+      name: ipcam:powcam
+      feed: still
+      url: https://g1.ipcamlive.com/player/snapshot.php?alias=powcam
+      role: trail
+      describe: ''
+    - id: telluride-ipcam-bonvivant
+      name: ipcam:bonvivant
+      feed: still
+      url: https://g1.ipcamlive.com/player/snapshot.php?alias=bonvivant
+      role: trail
+      describe: ''
+    - id: telluride-ipcam-jointpoint
+      name: ipcam:jointpoint
+      feed: still
+      url: https://g1.ipcamlive.com/player/snapshot.php?alias=jointpoint
+      role: trail
+      describe: ''
