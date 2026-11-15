@@ -268,6 +268,8 @@ def main(argv=None) -> None:
     s.add_argument("cam")
     s.add_argument("frame")
     sub.add_parser("auto-reference")
+    fx = sub.add_parser("export-feed")
+    fx.add_argument("--out", default=str(ROOT / "feed" / "conditions.json"))
     rp = sub.add_parser("report")
     rp.add_argument("--out", default=str(ROOT / "data" / "report.html"))
     a = ap.parse_args(argv)
@@ -293,6 +295,12 @@ def main(argv=None) -> None:
         set_reference(a.cam, a.frame)
     elif a.cmd == "auto-reference":
         auto_reference(reg, con)
+    elif a.cmd == "export-feed":
+        from . import feed
+        out = Path(a.out)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(json.dumps(feed.build(reg, con), indent=1) + "\n")
+        print(out)
     elif a.cmd == "report":
         print(report(reg, con, Path(a.out)))
 

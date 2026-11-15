@@ -28,6 +28,7 @@ resorts:
     lon: -74.2251
     tz: America/New_York
     cam_page: https://www.huntermtn.com/the-mountain/mountain-conditions/mountain-cams.aspx
+    publish: false   # flip after the accuracy check (docs: Family Tripwise D47)
     cams:
       - id: hunter-base
         name: Base Area
@@ -61,6 +62,7 @@ resorts:
     lon: -72.9204
     tz: America/New_York
     cam_page: https://www.mountsnow.com/the-mountain/mountain-conditions/mountain-cams.aspx
+    publish: false   # flip after the accuracy check (docs: Family Tripwise D47)
     cams:
       - id: mountsnow-stake
         name: Snow Stake
@@ -101,6 +103,7 @@ resorts:
     lon: -72.7171
     tz: America/New_York
     cam_page: https://www.okemo.com/the-mountain/mountain-conditions/mountain-cams.aspx
+    publish: false   # flip after the accuracy check (docs: Family Tripwise D47)
     cams:
       - id: okemo-stake
         name: Snow Stake
@@ -136,6 +139,7 @@ resorts:
     lon: -74.2563
     tz: America/New_York
     cam_page: https://www.windhammountainclub.com/mountain-cam/
+    publish: false   # flip after the accuracy check (docs: Family Tripwise D47)
     cams:
       - id: windham-base
         name: Base

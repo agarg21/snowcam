@@ -104,3 +104,28 @@ def test_stake_only_gives_snow_line_but_no_verdict():
                                    "precip_now": {"value": "none", "conf": 0.8}})], [])
     assert st.verdict == "No read"
     assert "fresh snow" in st.line and "snow stake only" in st.line
+
+
+def test_feed_hides_unpublished_resorts_and_never_leaks_paths(tmp_path):
+    import sqlite3, json
+    from datetime import datetime, timezone
+    from snowcam import store, feed
+    from snowcam.config import load_registry
+    reg = load_registry()
+    con = sqlite3.connect(tmp_path / "t.db"); con.row_factory = sqlite3.Row
+    con.executescript(store.SCHEMA)
+    ts = "2026-11-15T15:00:00+00:00"
+    con.execute("insert into frames(cam, ts, path, phash, gate_status, gates) values (?,?,?,?,?,?)",
+                ("okemo-summit", ts, "/secret/frame.jpg", "0", "pass", "{}"))
+    con.execute("insert into readings(frame_id, cam, ts, model, prompt_version, fields, notes, raw) values (1,?,?,?,?,?,?,?)",
+                ("okemo-summit", ts, "m", "v", json.dumps({"fresh_snow": {"value": "heavy", "conf": 0.9}}), "", "{}"))
+    con.execute("insert into resort_state(resort, ts, verdict, line, fused) values (?,?,?,?,?)",
+                ("okemo", ts, "Go", "Okemo: fresh snow.", json.dumps({"fresh_snow": "heavy", "stake_inches": None})))
+    now = datetime(2026, 11, 15, 15, 10, tzinfo=timezone.utc)
+    hidden = feed.build(reg, con, now=now)["resorts"]["okemo"]
+    assert hidden["status"] == "No read" and hidden["fields"] == {}
+    reg.resorts["okemo"]["publish"] = True
+    shown = feed.build(reg, con, now=now)
+    assert shown["resorts"]["okemo"]["label"] == "Looks good"
+    assert shown["resorts"]["okemo"]["fields"] == {"fresh_snow": "heavy"}
+    assert "/secret/" not in json.dumps(shown)
