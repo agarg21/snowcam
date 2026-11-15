@@ -20,7 +20,7 @@ from PIL import Image
 
 from .config import Cam
 
-PROMPT_VERSION = "v0.2"
+PROMPT_VERSION = "v0.3"
 DEFAULT_MODEL = os.environ.get("SNOWCAM_MODEL", "claude-haiku-5-5")
 ESCALATE_MODEL = os.environ.get("SNOWCAM_ESCALATE_MODEL", "claude-sonnet-5-5")
 SEND_W = 1092  # 39 x 22 patches at 16:9, about 860 tokens per image
@@ -102,7 +102,8 @@ def _instructions(cam: Cam, fields: list[str], labels: list[str], burst: int) ->
                      "or null if you cannot read it. The ruler's 0 is at the board surface, so the depth is the "
                      "number where the snow surface meets the ruler; numbers buried in snow are below it.")
         lines.append("- clock_time: the time on any clock in the frame as HH:MM, or null. Some displays alternate "
-                     "between the time and a temperature (e.g. 37F); if it shows a temperature, use null.")
+                     "between the time, a temperature (e.g. 37F) and the year (e.g. 2026): report a time only if "
+                     "the display shows a colon between hours and minutes; otherwise use null.")
     lines.append("Give conf between 0 and 1 for each field. Record your answers with the record_reading tool.")
     return "\n".join(lines)
 
