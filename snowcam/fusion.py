@@ -15,7 +15,7 @@ BUSY_RANK = {"empty": 0, "light": 1, "normal": 2, "busy": 3, "packed": 4}
 
 @dataclass
 class ResortState:
-    verdict: str          # Go | OK | Busy | Closed | No read
+    verdict: str          # Go | OK | Busy | Thin cover | Lifts idle | No read
     line: str
     fused: dict
 
@@ -83,15 +83,18 @@ def fuse(resort_name: str, readings: list[tuple[str, dict]], no_read_reasons: li
     if fused["precip_now"] in ("snow", "rain_or_mix"):
         parts.append("snowing now" if fused["precip_now"] == "snow" else "rain or mix now")
 
-    # A single snapshot rarely shows whether lifts move, so bare slopes with no new snow
-    # also count as closed unless a cam clearly shows lifts running.
-    bare = fused["snow_cover"] == "bare"
-    if snow < 1 and ((fused["lifts_moving"] == "no" and fused["snow_cover"] in ("bare", None))
-                     or (bare and fused["lifts_moving"] != "yes")):
-        verdict = "Closed"
+    # Pages may only say what the cams show (Family Tripwise D47), never an official open/closed
+    # status, so thin cover and idle lifts are reported as exactly that. A snow stake piles up
+    # snow the slopes may not hold, so "Go" needs new snow seen on a slope cam and real cover.
+    slope_snow = SNOW_RANK.get(fused["fresh_snow"] or "", -1)
+    thin = fused["snow_cover"] in ("bare", "patchy")
+    if thin and fused["lifts_moving"] != "yes":
+        verdict = "Thin cover"
+    elif fused["lifts_moving"] == "no" and snow < 1:
+        verdict = "Lifts idle"
     elif busy >= 3 or fused["lift_line"] == "long":
         verdict = "Busy"
-    elif snow >= 2 and fused["visibility"] not in ("fog", "whiteout") and busy <= 2:
+    elif slope_snow >= 2 and not thin and fused["visibility"] not in ("fog", "whiteout") and busy <= 2:
         verdict = "Go"
     elif any(v is not None for v in fused.values()):
         verdict = "OK"

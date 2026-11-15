@@ -76,12 +76,12 @@ def test_stale_gate_in_daylight():
     assert res.checks["stale"].status == "fail"
 
 
-def test_fusion_closed_on_bare_slopes_without_lift_motion():
+def test_fusion_thin_cover_on_bare_slopes_without_lift_motion():
     st = fusion.fuse("Okemo", [
         ("summit", {"snow_cover": {"value": "bare", "conf": 0.95}, "fresh_snow": {"value": "none", "conf": 0.9},
                     "lifts_moving": {"value": "unknown", "conf": 0.2}}),
     ], [])
-    assert st.verdict == "Closed" and "bare cover" in st.line
+    assert st.verdict == "Thin cover" and "bare cover" in st.line
 
 
 def test_view_shift_ignores_scene_change_but_catches_pan():
@@ -129,3 +129,14 @@ def test_feed_hides_unpublished_resorts_and_never_leaks_paths(tmp_path):
     assert shown["resorts"]["okemo"]["label"] == "Looks good"
     assert shown["resorts"]["okemo"]["fields"] == {"fresh_snow": "heavy"}
     assert "/secret/" not in json.dumps(shown)
+
+
+def test_stake_snow_alone_never_gives_go():
+    # Nov 15 morning: stake read "heavy" while slope cams showed a dusting on patchy cover.
+    st = fusion.fuse("Okemo", [
+        ("stake", {"stake_new_snow": {"value": "heavy", "conf": 0.8}}),
+        ("trail", {"fresh_snow": {"value": "dusting", "conf": 0.7}, "snow_cover": {"value": "patchy", "conf": 0.8}}),
+        ("base", {"fresh_snow": {"value": "none", "conf": 0.9}, "snow_cover": {"value": "bare", "conf": 0.9},
+                  "base_busyness": {"value": "empty", "conf": 0.8}}),
+    ], [])
+    assert st.verdict == "Thin cover"

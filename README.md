@@ -28,7 +28,7 @@ We do not work around any of these; ask the resort if you want them.
    fills role-specific categorical fields with confidences; "unknown" always allowed.
    Snow-stake cams also return the clock in the frame, which catches stale feeds.
 5. **Fusion**: rules (not the model) combine cams by role into Go / OK / Busy /
-   Closed / No read and a one-line summary.
+   Thin cover / Lifts idle / No read and a one-line summary.
 
 ## Run
 

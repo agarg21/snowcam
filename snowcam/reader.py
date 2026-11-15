@@ -192,6 +192,8 @@ def call(request: dict) -> Reading:
                 clock = json.loads(clock).get("value")
             except (ValueError, AttributeError):
                 clock = None
+        if isinstance(clock, str):
+            clock = clock.strip().strip('"').strip() or None
         data["clock_time"] = {"value": clock, "conf": 1.0 if clock else 0.0}
     return Reading(fields=data, evidence=evidence, model=request["model"],
                    raw={"stop_reason": msg.stop_reason,

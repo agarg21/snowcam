@@ -10,7 +10,8 @@ from __future__ import annotations
 import json
 from datetime import datetime, timedelta, timezone
 
-LABELS = {"Go": "Looks good", "OK": "Fair", "Busy": "Busy", "Closed": "Closed", "No read": "No read"}
+LABELS = {"Go": "Looks good", "OK": "Fair", "Busy": "Busy", "Thin cover": "Thin cover",
+          "Lifts idle": "Lifts not moving", "No read": "No read"}
 NO_READ = {"offline": "feed offline", "dark": "dark", "stale": "feed frozen",
            "visibility": "fogged in", "moved": "view moved"}
 PUBLIC_FIELDS = ["fresh_snow", "stake_new_snow", "snow_cover", "visibility", "snowmaking",
