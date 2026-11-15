@@ -1,6 +1,6 @@
 # snowcam
 
-Reads public ski-resort webcams every 30 minutes in daylight and turns them into a short conditions
+Reads public ski-resort webcams hourly in daylight and turns them into a short conditions
 line per resort ("fresh snow, base quiet") or an honest "No read" when the view is dark,
 foggy or frozen. Design doc: Snow Cam Reader — Pipeline Design v0.
 
@@ -45,7 +45,7 @@ python -m pytest -q tests
 
 ## Cloud schedule
 
-`.github/workflows/collect.yml` runs every 30 minutes from 7am to 4:30pm Eastern, plus
+`.github/workflows/collect.yml` runs hourly from 7am to 4pm Eastern, plus
 three overnight passes for the lit snow stakes, to stay inside a private repo's 2,000
 free Actions minutes a month.
 The SQLite database and reference frames live on the `data` branch; raw frames are
