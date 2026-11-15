@@ -143,3 +143,28 @@ def test_stake_snow_alone_never_gives_go():
                   "base_busyness": {"value": "empty", "conf": 0.8}}),
     ], [])
     assert st.verdict == "Thin cover"
+
+
+def test_verify_compare_and_publish_gate(tmp_path):
+    import sqlite3, json
+    from snowcam import verify, store
+    first = {"fresh_snow": {"value": "light", "conf": 0.8}, "snow_cover": {"value": "patchy", "conf": 0.9},
+             "base_busyness": {"value": "light", "conf": 0.7}, "visibility": {"value": "fog", "conf": 0.4},
+             "stake_inches": {"value": 4.5, "conf": 0.8}}
+    check = {"fresh_snow": {"value": "none", "conf": 0.7}, "snow_cover": {"value": "patchy", "conf": 0.8},
+             "base_busyness": {"value": "empty", "conf": 0.6}, "stake_inches": {"value": 4.0, "conf": 0.7}}
+    c = verify.compare(first, check)
+    assert c["snow_cover"] is True and c["base_busyness"] is True   # light ~ empty: both "quiet"
+    assert c["fresh_snow"] is False and "visibility" not in c       # low-confidence fields are not judged
+    assert c["stake_inches"] == 0.5 and verify.false_fresh(first, check)
+    con = sqlite3.connect(tmp_path / "v.db"); con.row_factory = sqlite3.Row
+    verify.ensure(con)
+    good = json.dumps({"compare": {"snow_cover": True, "stake_inches": 0.5}, "false_fresh": False})
+    for i in range(100):
+        con.execute("insert into verifications(reading_id, resort, ts, phase, tiebreak) values (?,?,?,?,?)",
+                    (i, "okemo", f"2026-11-{15 + i % 3}T15:00:00", "initial", good))
+    ev = verify.evaluate(con, "okemo")
+    assert ev["ready"] and ev["fields_ok"] == ["snow_cover", "stake_inches"]
+    con.execute("insert into verifications(reading_id, resort, ts, phase, tiebreak) values (?,?,?,?,?)",
+                (999, "okemo", "2026-11-18T15:00:00", "spot", json.dumps({"compare": {}, "false_fresh": True})))
+    assert verify.spot_ok(con, "okemo", ["snow_cover"])[0] is False

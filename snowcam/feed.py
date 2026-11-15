@@ -23,12 +23,24 @@ def _iso(ts: str | None) -> str | None:
     return datetime.fromisoformat(ts).astimezone(timezone.utc).isoformat(timespec="seconds") if ts else None
 
 
+def ps_changed(con, rid):
+    r = con.execute("select changed from publish_state where resort=?", (rid,)).fetchone()
+    return r["changed"] if r else None
+
+
 def build(reg, con, window_min: int = 45, now: datetime | None = None) -> dict:
     now = now or datetime.now(timezone.utc)
     since = (now - timedelta(minutes=window_min)).isoformat()
     out = {"generated_at": now.isoformat(timespec="seconds"), "window_minutes": window_min, "resorts": {}}
     for rid, r in reg.resorts.items():
-        publish = bool(r.get("publish", False))
+        ps = None
+        try:
+            ps = con.execute("select publish, fields, summary from publish_state where resort=?", (rid,)).fetchone()
+        except Exception:
+            pass
+        # Owner D49: the automated check decides; registry `publish: true` is a manual override.
+        publish = bool(r.get("publish", False)) or bool(ps and ps["publish"])
+        allowed = set(json.loads(ps["fields"])) if ps and ps["publish"] and ps["fields"] else None
         st = con.execute("select ts, verdict, line, fused from resort_state where resort=? order by id desc limit 1",
                          (rid,)).fetchone()
         cams, used = [], 0
@@ -56,8 +68,12 @@ def build(reg, con, window_min: int = 45, now: datetime | None = None) -> dict:
         if publish and st:
             entry.update(status=st["verdict"], label=LABELS.get(st["verdict"], "No read"), line=st["line"],
                          read_at=_iso(st["ts"]),
-                         fields={k: fused[k] for k in PUBLIC_FIELDS if fused.get(k) is not None} if used else {},
-                         stake_inches=fused.get("stake_inches") if used else None)
+                         fields={k: fused[k] for k in PUBLIC_FIELDS
+                                 if fused.get(k) is not None and (allowed is None or k in allowed)} if used else {},
+                         stake_inches=fused.get("stake_inches") if used and (allowed is None or "stake_inches" in allowed) else None)
+            if ps and ps["publish"] and ps["summary"]:
+                sm = json.loads(ps["summary"])
+                entry["check"] = {"reads": sm.get("reads"), "agreement": sm.get("agreement"), "at": ps_changed(con, rid)}
         else:
             entry.update(status="No read", label="No read",
                          line=None if publish else VALIDATING,

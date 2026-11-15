@@ -50,7 +50,9 @@ jobs:
           if [ -n "$ANTHROPIC_API_KEY" ]; then
             python -m snowcam.cli describe-new
             python -m snowcam.cli read --since-hours 0.5
+            python -m snowcam.cli verify
           fi
+          python -m snowcam.cli check-publish
           python -m snowcam.cli fuse
           python -m snowcam.cli report
 

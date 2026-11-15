@@ -248,6 +248,79 @@ def describe_new(reg, con) -> None:
         print(f"{cam.id:30s} {prof.get('role'):7s} usable={prof.get('usable')} {prof.get('name')}: {prof.get('describe', '')[:90]}")
 
 
+def verify_run(reg, con) -> None:
+    """Owner D49: independent second reads of a sample of this run's reads."""
+    from . import verify
+    verify.ensure(con)
+    if not os.environ.get("ANTHROPIC_API_KEY"):
+        print("ANTHROPIC_API_KEY not set; skipping verification")
+        return
+    since = (now_utc() - timedelta(hours=0.5)).isoformat()
+    picks = [(row, cam, phase) for row, cam, phase in verify.pick(con, reg, since, random.Random())
+             if row["path"] and Path(row["path"]).exists()]
+    if not picks:
+        print("nothing to verify")
+        return
+
+    def run(item):
+        row, cam, phase = item
+        frame = Image.open(row["path"]).convert("RGB")
+        ref, _ = _ref(cam.id)
+        first = json.loads(row["fields"])
+        model = verify.INITIAL_MODEL if phase == "initial" else verify.SPOT_MODEL
+        try:
+            check = verify.call(verify.build_request(cam, frame, ref, model))
+            cmp_, ff = verify.compare(first, check), verify.false_fresh(first, check)
+            result = {"compare": cmp_, "false_fresh": ff}
+            # Spot checks: a cheap verifier that disagrees gets a Sonnet tie-break before it counts.
+            if phase == "spot" and (ff or any(v is False for v in cmp_.values())):
+                check2 = verify.call(verify.build_request(cam, frame, ref, verify.INITIAL_MODEL))
+                result = {"compare": verify.compare(first, check2), "false_fresh": verify.false_fresh(first, check2),
+                          "spot_fields": check}
+                check, model = check2, verify.INITIAL_MODEL
+            return item, model, check, result, None
+        except Exception as e:
+            return item, model, None, None, e
+
+    from concurrent.futures import ThreadPoolExecutor
+    with ThreadPoolExecutor(8) as ex:
+        results = list(ex.map(run, picks))
+    for (row, cam, phase), model, check, result, err in results:
+        if err is not None:
+            print(f"{cam.id:30s} VERIFY ERROR {type(err).__name__}: {str(err)[:150]}")
+            continue
+        con.execute("insert or ignore into verifications(reading_id, cam, resort, ts, phase, model, fields, tiebreak, created) "
+                    "values (?,?,?,?,?,?,?,?,?)", (row["id"], cam.id, cam.resort_id, row["ts"], phase, model,
+                                                  json.dumps(check), json.dumps(result), verify.now_iso()))
+        bad = [f for f, ok in result["compare"].items() if ok is False or (f == "stake_inches" and ok and ok > 1)]
+        print(f"{cam.id:30s} {phase:7s} {'FALSE FRESH ' if result['false_fresh'] else ''}disagree={bad}")
+    con.commit()
+
+
+def check_publish(reg, con) -> None:
+    """Flip publish on when a resort passes the D49 check; off when spot checks slip."""
+    from . import verify
+    verify.ensure(con)
+    for rid in reg.resorts:
+        st = con.execute("select publish, fields from publish_state where resort=?", (rid,)).fetchone()
+        if st and st["publish"]:
+            ok, why = verify.spot_ok(con, rid, json.loads(st["fields"] or "[]"))
+            if not ok:
+                con.execute("update publish_state set publish=0, summary=?, changed=? where resort=?",
+                            (json.dumps({"unpublished": why}), verify.now_iso(), rid))
+                print(f"{rid:16s} UNPUBLISHED: {why}")
+            continue
+        ev = verify.evaluate(con, rid)
+        if ev["ready"]:
+            con.execute("insert or replace into publish_state(resort, publish, fields, summary, changed) values (?,?,?,?,?)",
+                        (rid, 1, json.dumps(ev["fields_ok"]), json.dumps(ev), verify.now_iso()))
+            print(f"{rid:16s} PUBLISHED fields={ev['fields_ok']} agreement={ev['agreement']}")
+        elif ev["reads"]:
+            print(f"{rid:16s} checking: {ev['reads']}/{verify.SAMPLE_TARGET} reads over {ev['days']} days, "
+                  f"agreement {ev['agreement']}, false fresh {ev['false_fresh']}")
+    con.commit()
+
+
 def reference_missing(reg, con) -> None:
     """Give cams without a clear-day reference this run's frame, if it is a clean daylight pass."""
     since = (now_utc() - timedelta(hours=1)).isoformat()
@@ -329,6 +402,8 @@ def main(argv=None) -> None:
     s.add_argument("frame")
     sub.add_parser("auto-reference")
     sub.add_parser("describe-new")
+    sub.add_parser("verify")
+    sub.add_parser("check-publish")
     sub.add_parser("reference-missing")
     fx = sub.add_parser("export-feed")
     fx.add_argument("--out", default=str(ROOT / "feed" / "conditions.json"))
@@ -359,6 +434,10 @@ def main(argv=None) -> None:
         set_reference(a.cam, a.frame)
     elif a.cmd == "auto-reference":
         auto_reference(reg, con)
+    elif a.cmd == "verify":
+        verify_run(reg, con)
+    elif a.cmd == "check-publish":
+        check_publish(reg, con)
     elif a.cmd == "describe-new":
         describe_new(reg, con)
     elif a.cmd == "reference-missing":
