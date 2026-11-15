@@ -123,9 +123,11 @@ def read_pending(reg, con, dry_run: bool, samples: int, since_hours: float, limi
             continue
         if not cam.usable or not cam.describe:
             continue  # not a ski view, or waiting for its one-time profile
+        prev = store.last_read_frame(con, cam.id)
+        if cam.role == "stake" and prev and prev["ts"] > (now_utc() - timedelta(minutes=110)).isoformat():
+            continue  # stakes change slowly and use the larger model: read them every 2 hours
         cur = [Image.open(p).convert("RGB") for p in _burst_paths(Path(row["path"]))]
         ref_im, _ = _ref(cam.id)
-        prev = store.last_read_frame(con, cam.id)
         prev_t = None
         if prev and prev["path"]:
             # Frames are not kept between cloud runs; fall back to the saved copy of the last read frame.
