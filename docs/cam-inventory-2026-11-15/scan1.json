@@ -1,0 +1,815 @@
+[
+ {
+  "resort": "Killington",
+  "home": "https://www.killington.com",
+  "pages": [
+   "https://killington.com/",
+   "https://killington.com/webcams",
+   "https://killington.com/camping",
+   "https://killington.com/camps-and-seasonal-programs"
+  ],
+  "providers": {
+   "hdrelay": [
+    "//manage.hdrelay.com",
+    "//manage.hdrelay.com/js/hdrelay.js"
+   ],
+   "vimeo": [
+    "player.vimeo.com"
+   ],
+   "roundshot": [
+    "https://killington.roundshot.com/baselodge/"
+   ]
+  },
+  "jpgs": [],
+  "notes": []
+ },
+ {
+  "resort": "Jay Peak",
+  "home": "https://jaypeakresort.com",
+  "pages": [
+   "https://jaypeakresort.com/",
+   "https://jaypeakresort.com/resort/photo-day"
+  ],
+  "providers": {
+   "hdrelay": [
+    "//manage.hdrelay.com/js/hdrelay.js"
+   ],
+   "prismcam": [
+    "https://js.prismcam.com/violet.css",
+    "https://js.prismcam.com/violet.js"
+   ]
+  },
+  "jpgs": [],
+  "notes": []
+ },
+ {
+  "resort": "Stowe",
+  "home": "https://www.stowe.com",
+  "pages": [
+   "https://www.stowe.com/",
+   "https://www.stowe.com/the-mountain/mountain-conditions/mountain-cams.aspx",
+   "https://www.stowe.com/explore-the-resort/about-the-resort/stowe-basecamp.aspx"
+  ],
+  "providers": {
+   "brownrice": [
+    "//player.brownrice.com/embed/stowemidwaybasestation",
+    "//player.brownrice.com/embed/stowevillage",
+    "//player.brownrice.com/embed/stowevillage2"
+   ]
+  },
+  "jpgs": [],
+  "notes": [
+   "https://www.stowe.com/<%= weather.MountainCamLink.Url %> 404"
+  ]
+ },
+ {
+  "resort": "Snowshoe",
+  "home": "https://www.snowshoemtn.com",
+  "pages": [
+   "https://www.snowshoemtn.com/"
+  ],
+  "providers": {},
+  "jpgs": [],
+  "notes": []
+ },
+ {
+  "resort": "Holiday Valley",
+  "home": "https://www.holidayvalley.com",
+  "pages": [
+   "https://www.holidayvalley.com/",
+   "https://www.holidayvalley.com/webcams/",
+   "https://www.holidayvalley.com/webcams/"
+  ],
+  "providers": {
+   "hdrelay": [
+    "//manage.hdrelay.com/js/hdrelay.js"
+   ]
+  },
+  "jpgs": [],
+  "notes": []
+ },
+ {
+  "resort": "Okemo",
+  "home": "https://www.okemo.com",
+  "pages": [
+   "https://www.okemo.com/",
+   "https://www.okemo.com/the-mountain/mountain-conditions/mountain-cams.aspx",
+   "https://www.okemo.com/explore-the-resort/about-the-resort/okemo-basecamp.aspx"
+  ],
+  "providers": {
+   "brownrice": [
+    "//player.brownrice.com/embed/okemoroundhouse",
+    "//player.brownrice.com/embed/okemosnowstake",
+    "//player.brownrice.com/embed/okemosugarhouse",
+    "//player.brownrice.com/embed/okemosummit"
+   ],
+   "hdrelay": [
+    "//manage.hdrelay.com/js/hdrelay.js"
+   ]
+  },
+  "jpgs": [],
+  "notes": [
+   "https://www.okemo.com/<%= weather.MountainCamLink.Url %> 404"
+  ]
+ },
+ {
+  "resort": "Sugarbush",
+  "home": "https://www.sugarbush.com",
+  "pages": [
+   "https://www.sugarbush.com/",
+   "https://www.sugarbush.com/mountain/webcams",
+   "https://www.sugarbush.com/plan-your-trip/lessons-and-camps/day-care-or-school",
+   "https://www.sugarbush.com/plan-your-trip/season-passes?utm_source=Home+Page&amp;utm_medium=Home+Page+Alert&amp;utm_campaign=Season+Passes&amp;utm_id=Season+Passes"
+  ],
+  "providers": {
+   "youtube": [
+    "https://www.youtube.com/embed/ddiewf7WDWs?si=86J38hab674EzkEN",
+    "https://www.youtube.com/embed/e2o2QNHAbiA?si=Jac-Vx84GTVTCunn",
+    "https://www.youtube.com/embed/gWPiruOopeE?si=mkxqHo0tNLXsC3FU",
+    "https://www.youtube.com/embed/jhCh3dsEv-M?si=dGcKKvguVGi_ALTN"
+   ],
+   "camstreamer": [
+    "https://camstreamer.com/embed/5LEkrmqQkQalj530H5HDOtxd6q99Lkyk6e7JKzrq?autoplay=1&rel=0&showinfo=0&VQ=HD720",
+    "https://camstreamer.com/embed/bTcqcQsmHOENtNR6r5bshdLwLcYV2abBDZPN5tYd"
+   ]
+  },
+  "jpgs": [
+   "https://assets2.webcam.io/w/z7DpwM/latest.jpg"
+  ],
+  "notes": []
+ },
+ {
+  "resort": "Mount Snow",
+  "home": "https://www.mountsnow.com",
+  "pages": [
+   "https://www.mountsnow.com/",
+   "https://www.mountsnow.com/the-mountain/mountain-conditions/mountain-cams.aspx",
+   "https://waitingroom.snow.com/?c=vailresorts&e=vailresortsecomm1&ver=v3-aspnet-3.6.2&cver=149&man=Sapphire%20-%20All%20Non%20Reservation%20Pages%20and%20APIs%20-%20PROD&t=https%3A%2F%2Fwww.mountsnow.com%2Fplan-your-trip%2Fski-and-ride-lessons%2Fproducts%2Fwomens-camp"
+  ],
+  "providers": {
+   "youtube": [
+    "https://www.youtube.com/embed/bNDk0R3Vrtk?si=7bNKq4rNdMx48-41&amp"
+   ],
+   "brownrice": [
+    "//player.brownrice.com/embed/mountsnowbase",
+    "//player.brownrice.com/embed/mountsnowcarinthia",
+    "//player.brownrice.com/embed/mountsnowsnowstake",
+    "//player.brownrice.com/embed/mountsnowsummit"
+   ]
+  },
+  "jpgs": [],
+  "notes": [
+   "https://www.mountsnow.com/<%= weather.MountainCamLink.Url %> 404"
+  ]
+ },
+ {
+  "resort": "Stratton",
+  "home": "https://www.stratton.com",
+  "pages": [
+   "https://www.stratton.com/"
+  ],
+  "providers": {},
+  "jpgs": [],
+  "notes": []
+ },
+ {
+  "resort": "Whiteface",
+  "home": "https://whiteface.com",
+  "pages": [],
+  "providers": {},
+  "jpgs": [],
+  "notes": [
+   "home 403"
+  ]
+ },
+ {
+  "resort": "Hunter",
+  "home": "https://www.huntermtn.com",
+  "pages": [
+   "https://www.huntermtn.com/",
+   "https://www.huntermtn.com/the-mountain/mountain-conditions/mountain-cams.aspx",
+   "https://www.huntermtn.com/explore-the-resort/about-the-resort/hunter-basecamp.aspx"
+  ],
+  "providers": {
+   "brownrice": [
+    "//player.brownrice.com/embed/hunter1",
+    "//player.brownrice.com/embed/huntermidstation",
+    "//player.brownrice.com/embed/hunternorthside",
+    "//player.brownrice.com/embed/huntersummit"
+   ]
+  },
+  "jpgs": [],
+  "notes": [
+   "https://www.huntermtn.com/<%= weather.MountainCamLink.Url %> 404"
+  ]
+ },
+ {
+  "resort": "Gore",
+  "home": "https://goremountain.com",
+  "pages": [],
+  "providers": {},
+  "jpgs": [],
+  "notes": [
+   "home 403"
+  ]
+ },
+ {
+  "resort": "Mountain Creek",
+  "home": "https://www.mtncreek.com",
+  "pages": [
+   "https://mtncreek.com/"
+  ],
+  "providers": {},
+  "jpgs": [],
+  "notes": []
+ },
+ {
+  "resort": "Sunday River",
+  "home": "https://www.sundayriver.com",
+  "pages": [
+   "https://www.sundayriver.com/"
+  ],
+  "providers": {
+   "camstreamer": [
+    "camstreamer"
+   ]
+  },
+  "jpgs": [],
+  "notes": []
+ },
+ {
+  "resort": "Seven Springs",
+  "home": "https://www.7springs.com",
+  "pages": [
+   "https://www.7springs.com/",
+   "https://www.7springs.com/the-mountain/mountain-conditions/mountain-cams.aspx",
+   "https://www.7springs.com/explore-the-resort/about-the-resort/seven-springs-basecamp.aspx"
+  ],
+  "providers": {
+   "brownrice": [
+    "//player.brownrice.com/embed/sevensprings",
+    "//player.brownrice.com/embed/sevenspringsnorthface",
+    "//player.brownrice.com/embed/sevenspringstahoe",
+    "//player.brownrice.com/embed/sevenspringstubing"
+   ]
+  },
+  "jpgs": [],
+  "notes": [
+   "https://www.7springs.com/<%= weather.MountainCamLink.Url %> 404"
+  ]
+ },
+ {
+  "resort": "Loon",
+  "home": "https://www.loonmtn.com",
+  "pages": [
+   "https://www.loonmtn.com/"
+  ],
+  "providers": {
+   "camstreamer": [
+    "camstreamer"
+   ]
+  },
+  "jpgs": [],
+  "notes": []
+ },
+ {
+  "resort": "Windham",
+  "home": "https://www.windhammountainclub.com",
+  "pages": [
+   "https://www.windhammountainclub.com/",
+   "https://www.windhammountainclub.com/mountain-cam/"
+  ],
+  "providers": {
+   "prismcam": [
+    "//js.prismcam.com/violet.css",
+    "//js.prismcam.com/violet.js"
+   ],
+   "brownrice": [
+    "https://player.brownrice.com/embed/windhammountainclub"
+   ]
+  },
+  "jpgs": [],
+  "notes": []
+ },
+ {
+  "resort": "Breckenridge",
+  "home": "https://www.breckenridge.com",
+  "pages": [
+   "https://www.breckenridge.com/",
+   "https://www.breckenridge.com/the-mountain/mountain-conditions/mountain-cams.aspx",
+   "https://waitingroom.snow.com/?c=vailresorts&e=vailresortsecomm1&ver=v3-aspnet-3.6.2&cver=149&man=Sapphire%20-%20All%20Non%20Reservation%20Pages%20and%20APIs%20-%20PROD&t=https%3A%2F%2Fwww.breckenridge.com%2Fplan-your-trip%2Fski-and-ride-lessons%2Fproducts%2Fteen-camp"
+  ],
+  "providers": {
+   "brownrice": [
+    "//player.brownrice.com/embed/breckenridge10",
+    "//player.brownrice.com/embed/breckenridge7",
+    "//player.brownrice.com/embed/breckenridge9"
+   ]
+  },
+  "jpgs": [
+   "https://cache.snow.com/Mtncams/BreckSnowStake.jpg"
+  ],
+  "notes": [
+   "https://www.breckenridge.com/<%= weather.MountainCamLink.Url %> 404"
+  ]
+ },
+ {
+  "resort": "Park City",
+  "home": "https://www.parkcitymountain.com",
+  "pages": [
+   "https://www.parkcitymountain.com/",
+   "https://www.parkcitymountain.com/the-mountain/mountain-conditions/mountain-cams.aspx",
+   "https://www.parkcitymountain.com/explore-the-resort/about-the-resort/park-city-basecamp.aspx"
+  ],
+  "providers": {
+   "brownrice": [
+    "//player.brownrice.com/embed/parkcityhighmeadow",
+    "//player.brownrice.com/embed/parkcitylookoutcabin",
+    "//player.brownrice.com/embed/parkcitymtnvillage",
+    "//player.brownrice.com/embed/parkcitytopcrescent"
+   ]
+  },
+  "jpgs": [],
+  "notes": [
+   "https://www.parkcitymountain.com/<%= weather.MountainCamLink.Url %> 404"
+  ]
+ },
+ {
+  "resort": "Vail",
+  "home": "https://www.vail.com",
+  "pages": [
+   "https://www.vail.com/",
+   "https://www.vail.com/the-mountain/mountain-conditions/mountain-cams.aspx",
+   "https://www.vail.com/explore-the-resort/about-the-resort/vail-basecamp.aspx"
+  ],
+  "providers": {
+   "youtube": [
+    "https://www.youtube.com/embed/RFaY9RFVCmM?si=9haoVkhfF5Bt3Qmx&amp"
+   ],
+   "brownrice": [
+    "//player.brownrice.com/embed/vailch2",
+    "//player.brownrice.com/embed/vailch21",
+    "//player.brownrice.com/embed/vaileaglesnest",
+    "//player.brownrice.com/embed/vailsnowsummit"
+   ]
+  },
+  "jpgs": [],
+  "notes": [
+   "https://www.vail.com/<%= weather.MountainCamLink.Url %> 404"
+  ]
+ },
+ {
+  "resort": "Stevens Pass",
+  "home": "https://www.stevenspass.com",
+  "pages": [
+   "https://www.stevenspass.com/",
+   "https://www.stevenspass.com/the-mountain/mountain-conditions/mountain-cams.aspx",
+   "https://www.stevenspass.com/explore-the-resort/about-the-resort/stevens-pass-basecamp.aspx"
+  ],
+  "providers": {
+   "brownrice": [
+    "//player.brownrice.com/embed/stevenspassjupiter",
+    "//player.brownrice.com/embed/stevenspassschool",
+    "//player.brownrice.com/embed/stevenspassskyline",
+    "//player.brownrice.com/embed/stevenspasssnowstake"
+   ]
+  },
+  "jpgs": [
+   "https://cache.snow.com/mtncams/SPBaseArea.jpg"
+  ],
+  "notes": [
+   "https://www.stevenspass.com/<%= weather.MountainCamLink.Url %> 404"
+  ]
+ },
+ {
+  "resort": "Alta",
+  "home": "https://www.alta.com",
+  "pages": [
+   "https://www.alta.com/"
+  ],
+  "providers": {
+   "vimeo": [
+    "/player.vimeo.com"
+   ]
+  },
+  "jpgs": [],
+  "notes": []
+ },
+ {
+  "resort": "Jackson Hole",
+  "home": "https://www.jacksonhole.com",
+  "pages": [
+   "https://www.jacksonhole.com/"
+  ],
+  "providers": {
+   "vimeo": [
+    "https://player.vimeo.com/progressive_redirect/playback/1232865472/rendition/source/file.mp4.mp4?loc=external&signature=4795d92b7ccc85959b2230a9774518337b54c8c2066d6e8515529c6d3d09a7e0"
+   ]
+  },
+  "jpgs": [],
+  "notes": []
+ },
+ {
+  "resort": "Steamboat",
+  "home": "https://www.steamboat.com",
+  "pages": [
+   "https://www.steamboat.com/"
+  ],
+  "providers": {},
+  "jpgs": [],
+  "notes": []
+ },
+ {
+  "resort": "Crystal Mountain",
+  "home": "https://www.crystalmountainresort.com",
+  "pages": [
+   "https://www.crystalmountainresort.com/"
+  ],
+  "providers": {},
+  "jpgs": [],
+  "notes": []
+ },
+ {
+  "resort": "Mt Bachelor",
+  "home": "https://www.mtbachelor.com",
+  "pages": [
+   "https://www.mtbachelor.com/",
+   "https://www.mtbachelor.com/the-mountain/webcams/",
+   "https://www.mtbachelor.com/amenities-groups/overnight-rv-camping/"
+  ],
+  "providers": {
+   "youtube": [
+    "https://www.youtube.com/embed/pXHMtXbmo7k?si=dyrJ5Php4y2pLq9_"
+   ],
+   "camstreamer": [
+    "https://camstreamer.com/embed/7WfyGuaHvti06WYRCx5L1XdgpKWyxHqN0iaDpKR4",
+    "https://camstreamer.com/embed/UrNT6OriCimffScyTuLZhqgCZAtHSsjHZrgotFNU",
+    "https://camstreamer.com/embed/yjcHJseJyObWi2YvoWLlmU8inSaI5aY19Jq6Hcoz"
+   ]
+  },
+  "jpgs": [
+   "https://tripcheck.com/RoadCams/cams/Century%20Dr%20at%20MP%2021.11%20E_pid3545.JPG?rand=1738781202711",
+   "https://tripcheck.com/RoadCams/cams/Century%20Dr%20at%20MP%2021.11%20W_pid3557.JPG?rand=1738781202711",
+   "https://www.mtbachelor.com/_bluedrop/images/sites/default/files/2023-10/RV%20Camping%201920x1080.jpg?u=aHR0cHM6Ly9jbXMubXRiYWNoZWxvci5jb20vc2l0ZXMvZGVmYXVsdC9maWxlcy8yMDIzLTEwL1JWJTIwQ2FtcGluZyUyMDE5MjB4MTA4MC5qcGc%3D&amp;d=9ac5a68fef2d2d80fe1a8fda9ea68083&amp;q=75&amp;w=1920&amp;h=1080"
+  ],
+  "notes": []
+ },
+ {
+  "resort": "Big Sky",
+  "home": "https://www.bigskyresort.com",
+  "pages": [
+   "https://www.bigskyresort.com/"
+  ],
+  "providers": {
+   "camstreamer": [
+    "camstreamer"
+   ]
+  },
+  "jpgs": [],
+  "notes": []
+ },
+ {
+  "resort": "Winter Park",
+  "home": "https://www.winterparkresort.com",
+  "pages": [
+   "https://www.winterparkresort.com/",
+   "https://www.winterparkresort.com/the-mountain/mountain-cams"
+  ],
+  "providers": {
+   "vimeo": [
+    "https://player.vimeo.com/video/1226682513?api=1&player_id=player-fc3c75c2-a59f-4fe7-923e-249f2318b3c7"
+   ],
+   "camstreamer": [
+    "https://camstreamer.com/embed/8v334V7UDYwodQScLzh63Y6BaqoAQNmj5qhEjsjF",
+    "https://camstreamer.com/embed/FkuQtJjEJaLOpalZiTsiVrZUw5IG3fCjMS3Vcc8h",
+    "https://camstreamer.com/embed/c909b9be0f94f0d/S-50783",
+    "https://camstreamer.com/embed/e6H5OSc0NDBQR7KCR0zZnKCV0qqX1YF1b8egwy8x"
+   ]
+  },
+  "jpgs": [
+   "https://cams.winterparkresort.com/best-western-cam.jpg"
+  ],
+  "notes": []
+ },
+ {
+  "resort": "Snowbird",
+  "home": "https://www.snowbird.com",
+  "pages": [
+   "https://www.snowbird.com/",
+   "https://www.snowbird.com/the-mountain/webcams/snowstake-webcam/",
+   "https://www.snowbird.com/the-mountain/webcams/view-all-webcams/",
+   "https://www.snowbird.com/the-mountain/webcams/view-all-webcams/peruvian-gulch-webcam/"
+  ],
+  "providers": {
+   "hdrelay": [
+    "https://b15.hdrelay.com/camera/544432bd-3910-4888-aa9f-14b6f51a7eb5/snapshot",
+    "https://img.hdrelay.com/frames/8611e276-7ee5-42c0-b8cd-d9e1890e1cd4/default/last.jpg",
+    "https://manage.hdrelay.com/snapshot/61b2490be101c00b9c48374f",
+    "https://manage.hdrelay.com/snapshot/8611e276-7ee5-42c0-b8cd-d9e1890e1cd4"
+   ],
+   "roundshot": [
+    "https://backend.roundshot.com/cams/09123258cc29cd6e86d3af9a3836c150/optional",
+    "https://backend.roundshot.com/cams/44cfff4ff2a218a1178dbb105d95846a/medium",
+    "https://backend.roundshot.com/cams/48fc223c0ed88474ecc2f884bf39de63/medium"
+   ]
+  },
+  "jpgs": [
+   "https://www.snowbird.com/_bluedrop/images/sites/default/files/2024-10/IMG_9340_webcams_snowstake-webcam_screenshot_1000x667.jpg?u=aHR0cHM6Ly9jbXMuc25vd2JpcmQuY29tL3NpdGVzL2RlZmF1bHQvZmlsZXMvMjAyNC0xMC9JTUdfOTM0MF93ZWJjYW1zX3Nub3dzdGFrZS13ZWJjYW1fc2NyZWVuc2hvdF8xMDAweDY2Ny5qcGc%3D&amp;d=8fbe0fd1e3907692c84bb9b69c486c85&amp;q=75&amp;w=1000&amp;h=667"
+  ],
+  "notes": []
+ },
+ {
+  "resort": "Deer Valley",
+  "home": "https://www.deervalley.com",
+  "pages": [
+   "https://www.deervalley.com/",
+   "https://www.deervalley.com/explore-the-mountain/webcams"
+  ],
+  "providers": {
+   "youtube": [
+    "youtube-nocookie.com/embed/",
+    "youtube.com/embed/"
+   ],
+   "vimeo": [
+    "//player.vimeo.com/video/1235478115?api=1&amp"
+   ],
+   "camstreamer": [
+    "https://camstreamer.com/embed/",
+    "https://camstreamer.com/embed/5JJMkCuxzOl52j8pMT9Fc6wNrJkeVLlPl75l2nPD?autoplay=1&amp",
+    "https://camstreamer.com/embed/cgVMhgI2Dht1tLyFW28p4r4uoCgka4wGNgL3npJ0?autoplay=1&amp"
+   ]
+  },
+  "jpgs": [],
+  "notes": []
+ },
+ {
+  "resort": "Timberline",
+  "home": "https://www.timberlinelodge.com",
+  "pages": [
+   "https://timberlinelodge.com/"
+  ],
+  "providers": {},
+  "jpgs": [],
+  "notes": []
+ },
+ {
+  "resort": "Mammoth",
+  "home": "https://www.mammothmountain.com",
+  "pages": [
+   "https://www.mammothmountain.com/"
+  ],
+  "providers": {},
+  "jpgs": [],
+  "notes": []
+ },
+ {
+  "resort": "Heavenly",
+  "home": "https://www.skiheavenly.com",
+  "pages": [
+   "https://www.skiheavenly.com/",
+   "https://www.skiheavenly.com/the-mountain/mountain-conditions/mountain-cams.aspx",
+   "https://www.skiheavenly.com/explore-the-resort/about-the-resort/heavenly-basecamp.aspx"
+  ],
+  "providers": {
+   "brownrice": [
+    "//player.brownrice.com/embed/heavenlydipper",
+    "//player.brownrice.com/embed/heavenlyeastpeak",
+    "//player.brownrice.com/embed/heavenlymidstation",
+    "//player.brownrice.com/embed/heavenlytram"
+   ]
+  },
+  "jpgs": [],
+  "notes": [
+   "https://www.skiheavenly.com/<%= weather.MountainCamLink.Url %> 404"
+  ]
+ },
+ {
+  "resort": "Keystone",
+  "home": "https://www.keystoneresort.com",
+  "pages": [
+   "https://www.keystoneresort.com/",
+   "https://www.keystoneresort.com/the-mountain/mountain-conditions/mountain-cams.aspx",
+   "https://www.keystoneresort.com/explore-the-resort/about-the-resort/keystone-basecamp.aspx"
+  ],
+  "providers": {
+   "youtube": [
+    "https://www.youtube.com/embed/kvTakmk7PM4?si=kso2sCc2J3hNfSe4&amp"
+   ],
+   "brownrice": [
+    "//player.brownrice.com/embed/keystonedercum",
+    "//player.brownrice.com/embed/keystonelakeside",
+    "//player.brownrice.com/embed/keystonenorthpeak",
+    "//player.brownrice.com/embed/keystoneriverrun"
+   ],
+   "prismcam": [
+    "//js.prismcam.com/violet.css",
+    "//js.prismcam.com/violet.js"
+   ]
+  },
+  "jpgs": [
+   "https://cache.snow.com/Mtncams/KeySnowStake.jpg"
+  ],
+  "notes": [
+   "https://www.keystoneresort.com/<%= weather.MountainCamLink.Url %> 404"
+  ]
+ },
+ {
+  "resort": "Copper",
+  "home": "https://www.coppercolorado.com",
+  "pages": [
+   "https://www.coppercolorado.com/",
+   "https://www.coppercolorado.com/the-mountain/webcams/",
+   "https://www.coppercolorado.com/lessons-rentals/woodward-summer-camp/camp-overview/"
+  ],
+  "providers": {
+   "hdrelay": [
+    "https://img.hdrelay.com/frames/671bcfb507697ecebbaffc13/default/last.jpg/",
+    "https://img.hdrelay.com/frames/fb469125-f1f3-459f-aeb4-98cb674e395f/default/last.jpg"
+   ]
+  },
+  "jpgs": [],
+  "notes": []
+ },
+ {
+  "resort": "Telluride",
+  "home": "https://tellurideskiresort.com",
+  "pages": [
+   "https://tellurideskiresort.com/",
+   "https://tellurideskiresort.com/webcams/",
+   "https://tellurideskiresort.com/kids-camps/",
+   "https://tellurideskiresort.com/specialty-camps/"
+  ],
+  "providers": {
+   "ipcamlive": [
+    "https://g1.ipcamlive.com/player/player.php?alias=plazacam",
+    "https://g1.ipcamlive.com/player/player.php?alias=powcam",
+    "https://g1.ipcamlive.com/player/snapshot.php?alias=bonvivant",
+    "https://g1.ipcamlive.com/player/snapshot.php?alias=jointpoint"
+   ],
+   "roundshot": [
+    "https://tellurideskiresort.roundshot.com/"
+   ]
+  },
+  "jpgs": [
+   "https://tellurideskiresort.com/wp-content/uploads/2021/03/camp-2-800-150x150.jpg",
+   "https://tellurideskiresort.com/wp-content/uploads/2021/03/camp-2-800-300x300.jpg",
+   "https://tellurideskiresort.com/wp-content/uploads/2021/03/camp-2-800-768x768.jpg",
+   "https://tellurideskiresort.com/wp-content/uploads/2021/03/camp-2-800.jpg",
+   "https://tellurideskiresort.com/wp-content/uploads/beavers-camp-telluride-150x150.jpg",
+   "https://tellurideskiresort.com/wp-content/uploads/beavers-camp-telluride-300x300.jpg"
+  ],
+  "notes": []
+ },
+ {
+  "resort": "Mt Baker",
+  "home": "https://www.mtbaker.us",
+  "pages": [
+   "https://www.mtbaker.us/"
+  ],
+  "providers": {},
+  "jpgs": [],
+  "notes": []
+ },
+ {
+  "resort": "Bogus Basin",
+  "home": "https://bogusbasin.org",
+  "pages": [
+   "https://bogusbasin.org/",
+   "https://bogusbasin.org/your-mountain/conditions-webcams/"
+  ],
+  "providers": {
+   "youtube": [
+    "https://www.youtube.com/embed/_wkw4iZ5x1c?feature=oembed&amp",
+    "https://www.youtube.com/embed/g714uvR8Rjg?feature=oembed&amp"
+   ]
+  },
+  "jpgs": [
+   "https://storage.googleapis.com/prism-cam-00091/1080-watermark.jpg"
+  ],
+  "notes": []
+ },
+ {
+  "resort": "Schweitzer",
+  "home": "https://www.schweitzer.com",
+  "pages": [
+   "https://www.schweitzer.com/",
+   "https://www.schweitzer.com/mountain-info/webcam"
+  ],
+  "providers": {
+   "vimeo": [
+    "//player.vimeo.com/video/1180499768?api=1&amp"
+   ],
+   "roundshot": [
+    "https://schweitzer.roundshot.com/skyhouse/"
+   ],
+   "youtube": [
+    "https://www.youtube.com/embed/6-8KuVdZJWA?autoplay=1&mute=1",
+    "https://www.youtube.com/embed/7INfYvwClC0?autoplay=1&mute=1",
+    "https://www.youtube.com/embed/7vfVVc9AhcQ?autoplay=1&mute=1",
+    "https://www.youtube.com/embed/aanmce5KMZI?autoplay=1&mute=1"
+   ]
+  },
+  "jpgs": [],
+  "notes": []
+ },
+ {
+  "resort": "Kirkwood",
+  "home": "https://www.kirkwood.com",
+  "pages": [
+   "https://www.kirkwood.com/",
+   "https://www.kirkwood.com/the-mountain/mountain-conditions/mountain-cams.aspx",
+   "https://www.kirkwood.com/explore-the-resort/about-the-resort/kirkwood-basecamp.aspx"
+  ],
+  "providers": {
+   "brownrice": [
+    "//player.brownrice.com/embed/kirkwoodcornice",
+    "//player.brownrice.com/embed/kirkwoodredcliffs"
+   ]
+  },
+  "jpgs": [],
+  "notes": [
+   "https://www.kirkwood.com/<%= weather.MountainCamLink.Url %> 404"
+  ]
+ },
+ {
+  "resort": "Northstar",
+  "home": "https://www.northstarcalifornia.com",
+  "pages": [
+   "https://www.northstarcalifornia.com/",
+   "https://www.northstarcalifornia.com/the-mountain/mountain-conditions/mountain-cams.aspx",
+   "https://www.northstarcalifornia.com/explore-the-resort/about-the-resort/northstar-basecamp.aspx"
+  ],
+  "providers": {
+   "brownrice": [
+    "//player.brownrice.com/embed/northstarmidmountain",
+    "//player.brownrice.com/embed/northstarsnowstake",
+    "//player.brownrice.com/embed/northstarspluto",
+    "//player.brownrice.com/embed/northstarvillage"
+   ]
+  },
+  "jpgs": [],
+  "notes": [
+   "https://www.northstarcalifornia.com/<%= weather.MountainCamLink.Url %> 404"
+  ]
+ },
+ {
+  "resort": "Wolf Creek",
+  "home": "https://wolfcreekski.com",
+  "pages": [
+   "https://wolfcreekski.com/"
+  ],
+  "providers": {
+   "brownrice": [
+    "https://live2.brownrice.com/embed/wolfcreeksummit",
+    "https://live2.brownrice.com/embed/wolfcreektreasure&",
+    "https://live2.brownrice.com/embed/wolfcreektreasure&em=1",
+    "https://live2.brownrice.com/embed/wolfcreektresurlift"
+   ]
+  },
+  "jpgs": [],
+  "notes": []
+ },
+ {
+  "resort": "Mt Hood Meadows",
+  "home": "https://www.skihood.com",
+  "pages": [
+   "https://www.skihood.com/"
+  ],
+  "providers": {},
+  "jpgs": [],
+  "notes": []
+ },
+ {
+  "resort": "Crested Butte",
+  "home": "https://www.skicb.com",
+  "pages": [
+   "https://www.skicb.com/",
+   "https://www.skicb.com/the-mountain/mountain-conditions/mountain-cams.aspx",
+   "https://www.skicb.com/explore-the-resort/about-the-resort/crested-butte-basecamp.aspx"
+  ],
+  "providers": {
+   "youtube": [
+    "https://www.youtube.com/embed/LYmXGB_Hlpc?si=paEMiD6TSsiF8s1p&amp"
+   ],
+   "brownrice": [
+    "//player.brownrice.com/embed/Crestedbuttebar",
+    "//player.brownrice.com/embed/Crestedbuttebase",
+    "//player.brownrice.com/embed/Crestedbuttewarm"
+   ]
+  },
+  "jpgs": [],
+  "notes": [
+   "https://www.skicb.com/<%= weather.MountainCamLink.Url %> 404"
+  ]
+ },
+ {
+  "resort": "Boyne Mountain",
+  "home": "https://www.boynemountain.com",
+  "pages": [
+   "https://www.boynemountain.com/"
+  ],
+  "providers": {},
+  "jpgs": [],
+  "notes": []
+ }
+]

@@ -1,0 +1,128 @@
+{
+ "Snowshoe": {
+  "_page": [
+   "https://www.snowshoemtn.com/mountain-info/webcams"
+  ]
+ },
+ "Stratton": {
+  "_page": [
+   "https://www.stratton.com/the-mountain/mountain-report/webcams"
+  ]
+ },
+ "Mountain Creek": {
+  "_status": [
+   "404 https://www.mtncreek.com/mountain/webcams/",
+   "404 https://www.mtncreek.com/webcams/"
+  ]
+ },
+ "Sunday River": {
+  "_status": [
+   "404 https://www.sundayriver.com/mountain-report/webcams",
+   "404 https://www.sundayriver.com/webcams"
+  ]
+ },
+ "Loon": {
+  "_status": [
+   "404 https://www.loonmtn.com/webcams",
+   "404 https://www.loonmtn.com/mountain-report/webcams"
+  ]
+ },
+ "Alta": {
+  "_status": [
+   "404 https://www.alta.com/weather/webcams",
+   "404 https://www.alta.com/conditions/weather-observations/webcams"
+  ]
+ },
+ "Jackson Hole": {
+  "_status": [
+   "404 https://www.jacksonhole.com/webcams",
+   "404 https://www.jacksonhole.com/mountain-cams"
+  ]
+ },
+ "Steamboat": {
+  "_page": [
+   "https://www.steamboat.com/the-mountain/mountain-report/webcams"
+  ]
+ },
+ "Crystal Mountain": {
+  "_page": [
+   "https://www.crystalmountainresort.com/the-mountain/mountain-report-and-webcams/webcams"
+  ]
+ },
+ "Big Sky": {
+  "_page": [
+   "https://www.bigskyresort.com/current-conditions/webcams"
+  ],
+  "camstreamer": [
+   "camstreamer",
+   "https://camstreamer.com/embed/79477d2888e3958/S-53010?enablejsapi=1",
+   "https://camstreamer.com/embed/79477d2888e3958/S-53010?enablejsapi=1&amp",
+   "https://camstreamer.com/embed/bvRmCc5qmXcMEJ02xMlIAL4cg3291Tfj0pzIp9tW?enablejsapi=1",
+   "https://camstreamer.com/embed/bvRmCc5qmXcMEJ02xMlIAL4cg3291Tfj0pzIp9tW?enablejsapi=1&amp",
+   "https://camstreamer.com/embed/d769e9f2b4ef400/S-47977?enablejsapi=1",
+   "https://camstreamer.com/embed/d769e9f2b4ef400/S-47977?enablejsapi=1&amp",
+   "https://camstreamer.com/embed/dmy0fkeL3LXtkQnzlK5Td1QrVGSt08aM8IVVmE08?enablejsapi=1"
+  ]
+ },
+ "Timberline": {
+  "_status": [
+   "404 https://www.timberlinelodge.com/conditions/webcams"
+  ],
+  "_page": [
+   "https://timberlinelodge.com/webcams/"
+  ]
+ },
+ "Mammoth": {
+  "_status": [
+   "404 https://www.mammothmountain.com/on-the-mountain/mountain-cams",
+   "404 https://www.mammothmountain.com/mountain-information/mountain-cams"
+  ]
+ },
+ "Mt Baker": {
+  "_status": [
+   "404 https://www.mtbaker.us/webcams",
+   "404 https://www.mtbaker.us/snow-report/webcams"
+  ]
+ },
+ "Mt Hood Meadows": {
+  "_status": [
+   "404 https://www.skihood.com/the-mountain/conditions/webcams",
+   "404 https://www.skihood.com/conditions/webcams"
+  ]
+ },
+ "Boyne Mountain": {
+  "_status": [
+   "404 https://www.boynemountain.com/webcams",
+   "404 https://www.boynemountain.com/mountain-report/webcams"
+  ]
+ },
+ "Jay Peak": {
+  "_status": [
+   "404 https://jaypeakresort.com/skiing-riding/webcams",
+   "404 https://jaypeakresort.com/webcams"
+  ]
+ },
+ "Holiday Valley": {
+  "_page": [
+   "https://www.holidayvalley.com/webcams/"
+  ],
+  "hdrelay": [
+   "//manage.hdrelay.com/js/hdrelay.js"
+  ]
+ },
+ "Killington": {
+  "_page": [
+   "https://killington.com/webcams"
+  ],
+  "roundshot": [
+   "https://killington.roundshot.com/baselodge/"
+  ],
+  "hdrelay": [
+   "//manage.hdrelay.com",
+   "//manage.hdrelay.com/js/hdrelay.js"
+  ],
+  "vimeo": [
+   "player.vimeo.com"
+  ]
+ }
+}
