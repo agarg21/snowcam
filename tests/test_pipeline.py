@@ -229,3 +229,24 @@ def test_reader_normalizes_fields_missing_conf():
     assert out["fresh_snow"]["conf"] == 0.0 and out["visibility"]["conf"] == 0.9
     assert out["snowmaking"] == {"value": "on", "conf": 0.0}
     assert "snow_cover_note" not in out and "conf" not in out
+
+
+def test_early_release_rules(tmp_path):
+    import sqlite3, json
+    from snowcam import store, verify
+    con = sqlite3.connect(tmp_path / "t.db"); con.row_factory = sqlite3.Row
+    con.executescript(store.SCHEMA); verify.ensure(con)
+    def add(resort, day, cmp):
+        con.execute("insert into verifications(reading_id, cam, resort, ts, phase, model, fields, tiebreak, created) "
+                    "values (null,'c',?,?,'initial','m','{}',?,'t')", (resort, f"2026-11-{day}T15:00:00+00:00",
+                                                                       json.dumps({"compare": cmp, "false_fresh": False})))
+    for i in range(20):  # 20 checks over 2 days, cover agrees 19/20 (95%), precip all agree
+        add("a", 15 + i % 2, {"snow_cover": i != 0, "precip_now": True})
+        add("b", 15 + i % 2, {"precip_now": True})  # weather only: never publishes
+        add("c", 15, {"snow_cover": True})           # one day only
+    assert verify.evaluate(con, "a")["ready"] and verify.evaluate(con, "a")["fields_ok"] == ["precip_now", "snow_cover"]
+    assert not verify.evaluate(con, "b")["ready"]
+    assert not verify.evaluate(con, "c")["ready"]
+    for i in range(3):  # cover slips to 17/23 = 74%: new fields need 90%, published ones 85%
+        add("a", 16, {"snow_cover": False})
+    assert "snow_cover" not in verify.evaluate(con, "a", keep={"snow_cover"})["fields_ok"]

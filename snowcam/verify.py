@@ -24,8 +24,13 @@ from .fusion import BUSY3 as BUSY, COVER, MIN_CONF
 
 INITIAL_MODEL = reader.ESCALATE_MODEL
 SPOT_MODEL = reader.DEFAULT_MODEL
+# Owner, 2026-11-16: release early and keep checking. A resort publishes after 20 checks over
+# 2+ days (fields with 20+ checks at 90%+); checks continue at full rate to 100, a published
+# field drops below 85%, and spot checks take over after 100.
 SAMPLE_TARGET = 100
-MIN_DAYS = 3
+PUBLISH_MIN_READS = 20
+FIELD_MIN = 20
+MIN_DAYS = 2
 PASS_AGREE = 0.90
 DROP_AGREE = 0.85
 DROP_WINDOW = 50
@@ -160,10 +165,10 @@ def pick(con, reg, since_iso: str, rng: random.Random) -> list[tuple]:
     out = []
     for rid, items in by_resort.items():
         rng.shuffle(items)
-        if rid in published:
-            out += [(row, cam, "spot") for row, cam in items if rng.random() < SPOT_SHARE]
-        elif counts.get(rid, 0) < SAMPLE_TARGET:
+        if counts.get(rid, 0) < SAMPLE_TARGET:  # published early or not: full checking to 100
             out += [(row, cam, "initial") for row, cam in items[:PER_RESORT_PER_RUN]]
+        elif rid in published:
+            out += [(row, cam, "spot") for row, cam in items if rng.random() < SPOT_SHARE]
     return out
 
 
@@ -182,8 +187,17 @@ def rescore(con) -> int:
     return n
 
 
-def evaluate(con, resort: str) -> dict:
-    """Pass/fail per field for a resort from its initial checks."""
+SNOW_FIELDS = {"snow_cover", "fresh_snow", "stake_inches"}
+
+
+def has_snow(fields) -> bool:
+    return bool(SNOW_FIELDS & set(fields))
+
+
+def evaluate(con, resort: str, keep: set | None = None) -> dict:
+    """Pass/fail per field for a resort from its initial checks. A field already published
+    (in keep) stays while it holds 85%; a new field needs 90%."""
+    keep = keep or set()
     rows = con.execute("select ts, fields, tiebreak from verifications v where resort=? and phase='initial'",
                        (resort,)).fetchall()
     days = {r["ts"][:10] for r in rows}
@@ -204,14 +218,17 @@ def evaluate(con, resort: str) -> dict:
     for f, xs in agree.items():
         rate = sum(xs) / len(xs)
         detail[f] = {"n": len(xs), "agreement": round(rate, 3)}
-        if len(xs) >= 20 and rate >= PASS_AGREE and not (f == "fresh_snow" and falsefresh):
+        bar = DROP_AGREE if f in keep else PASS_AGREE
+        if len(xs) >= FIELD_MIN and rate >= bar and not (f == "fresh_snow" and falsefresh):
             fields_ok.append(f)
     if stake:
         within1 = sum(d <= 1 for d in stake) / len(stake)
         detail["stake_inches"] = {"n": len(stake), "within_1in": round(within1, 3), "max_off": max(stake)}
-        if len(stake) >= 20 and within1 >= PASS_AGREE and max(stake) <= 2:
+        bar = DROP_AGREE if "stake_inches" in keep else PASS_AGREE
+        if len(stake) >= FIELD_MIN and within1 >= bar and max(stake) <= 2:
             fields_ok.append("stake_inches")
-    ready = len(rows) >= SAMPLE_TARGET and len(days) >= MIN_DAYS and bool(fields_ok)
+    # The page is about snow: a resort needs a checked snow field, not only weather or crowds.
+    ready = len(rows) >= PUBLISH_MIN_READS and len(days) >= MIN_DAYS and has_snow(fields_ok)
     allv = [x for xs in agree.values() for x in xs]
     return {"reads": len(rows), "days": len(days), "false_fresh": falsefresh, "fields_ok": sorted(fields_ok),
             "agreement": round(sum(allv) / len(allv), 3) if allv else None, "detail": detail, "ready": ready}

@@ -308,7 +308,22 @@ def check_publish(reg, con) -> None:
     for rid in reg.resorts:
         st = con.execute("select publish, fields from publish_state where resort=?", (rid,)).fetchone()
         if st and st["publish"]:
-            ok, why = verify.spot_ok(con, rid, json.loads(st["fields"] or "[]"))
+            fields = json.loads(st["fields"] or "[]")
+            ev = verify.evaluate(con, rid, keep=set(fields))
+            if ev["reads"] < verify.SAMPLE_TARGET:  # published early: the full check keeps running
+                if not verify.has_snow(ev["fields_ok"]):
+                    con.execute("update publish_state set publish=0, summary=?, changed=? where resort=?",
+                                (json.dumps(dict(ev, unpublished="no snow field holds 85%")), verify.now_iso(), rid))
+                    print(f"{rid:16s} UNPUBLISHED: no snow field holds 85% ({ev['reads']} checks)")
+                elif ev["fields_ok"] != sorted(fields):
+                    con.execute("update publish_state set fields=?, summary=? where resort=?",
+                                (json.dumps(ev["fields_ok"]), json.dumps(ev), rid))
+                    print(f"{rid:16s} fields {sorted(fields)} -> {ev['fields_ok']}")
+                else:
+                    con.execute("update publish_state set summary=? where resort=?", (json.dumps(ev), rid))
+                    print(f"{rid:16s} live, checking {ev['reads']}/{verify.SAMPLE_TARGET}, agreement {ev['agreement']}")
+                continue
+            ok, why = verify.spot_ok(con, rid, fields)
             if not ok:
                 con.execute("update publish_state set publish=0, summary=?, changed=? where resort=?",
                             (json.dumps({"unpublished": why}), verify.now_iso(), rid))
