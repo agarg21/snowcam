@@ -220,3 +220,12 @@ def test_rescore_updates_stored_checks(tmp_path):
                 (json.dumps({"snow_cover": f("mostly")}), json.dumps({"compare": {"snow_cover": False}, "false_fresh": False})))
     assert verify.rescore(con) == 1 and verify.rescore(con) == 0
     assert verify.evaluate(con, "okemo")["detail"]["snow_cover"]["agreement"] == 1.0
+
+
+def test_reader_normalizes_fields_missing_conf():
+    from snowcam.reader import normalize
+    out = normalize({"fresh_snow": {"value": "light"}, "visibility": {"value": "clear", "conf": "0.9"},
+                     "snowmaking": "on", "snow_cover_note": "x", "conf": 0.7})
+    assert out["fresh_snow"]["conf"] == 0.0 and out["visibility"]["conf"] == 0.9
+    assert out["snowmaking"] == {"value": "on", "conf": 0.0}
+    assert "snow_cover_note" not in out and "conf" not in out

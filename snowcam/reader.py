@@ -195,9 +195,28 @@ def call(request: dict) -> Reading:
         if isinstance(clock, str):
             clock = clock.strip().strip('"').strip() or None
         data["clock_time"] = {"value": clock, "conf": 1.0 if clock else 0.0}
-    return Reading(fields=data, evidence=evidence, model=request["model"],
+    return Reading(fields=normalize(data), evidence=evidence, model=request["model"],
                    raw={"stop_reason": msg.stop_reason,
                         "usage": msg.usage.model_dump() if hasattr(msg.usage, "model_dump") else str(msg.usage)})
+
+
+def normalize(data: dict) -> dict:
+    """Every field as {value, conf} with a numeric conf; a missing or bad conf counts as 0, so the
+    field is never published (seen 2026-11-16: one field came back without its conf)."""
+    out = {}
+    for k, v in data.items():
+        if k not in FIELDS and k not in ("stake_inches", "clock_time"):
+            continue  # stray keys the model sometimes adds (e.g. "snow_cover_note")
+        if isinstance(v, dict):
+            c = v.get("conf")
+            try:
+                c = max(0.0, min(1.0, float(c)))
+            except (TypeError, ValueError):
+                c = 0.0
+            out[k] = dict(v, value=v.get("value"), conf=c)
+        else:
+            out[k] = {"value": v, "conf": 0.0}  # a bare value has no confidence: never published
+    return out
 
 
 def merge_samples(a: dict, b: dict) -> dict:

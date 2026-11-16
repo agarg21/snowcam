@@ -173,7 +173,7 @@ def read_pending(reg, con, dry_run: bool, samples: int, since_hours: float, limi
         last = store.DATA / "last" / f"{cam.id}.jpg"
         last.parent.mkdir(parents=True, exist_ok=True)
         cur[0].save(last, format="JPEG", quality=85)
-        print(f"{cam.id:22s} " + ", ".join(f"{k}={v['value']}({v['conf']})" for k, v in fields.items() if isinstance(v, dict)))
+        print(f"{cam.id:22s} " + ", ".join(f"{k}={v.get('value')}({v.get('conf')})" for k, v in fields.items() if isinstance(v, dict)))
 
 
 def fuse_all(reg, con, window_min: int = 45) -> list[fusion.ResortState]:
@@ -364,7 +364,7 @@ def report(reg, con, out: Path) -> Path:
         reading = ""
         if rd:
             fl = json.loads(rd["fields"])
-            reading = "<br>".join(f"{k}: {v['value']} ({v['conf']})" for k, v in fl.items() if isinstance(v, dict))
+            reading = "<br>".join(f"{k}: {v.get('value')} ({v.get('conf')})" for k, v in fl.items() if isinstance(v, dict))
         cards.append(
             f"<figure class='{html.escape(f['gate_status'] or 'fail')}'>"
             + (f"<img src='{html.escape(rel)}' loading='lazy'>" if rel else "<div class='noimg'>no image</div>")
