@@ -10,12 +10,22 @@ from __future__ import annotations
 import json
 from datetime import datetime, timedelta, timezone
 
+from .fusion import BUSY3, COVER, FUSED_FIELDS, SLOPE_ROLES, judge
+
 LABELS = {"Go": "Looks good", "OK": "Fair", "Busy": "Busy", "Thin cover": "Thin cover",
           "Lifts idle": "Lifts not moving", "No read": "No read"}
 NO_READ = {"offline": "feed offline", "dark": "dark", "stale": "feed frozen",
            "visibility": "fogged in", "moved": "view moved"}
 PUBLIC_FIELDS = ["fresh_snow", "stake_new_snow", "snow_cover", "visibility", "snowmaking",
                  "lifts_moving", "base_busyness", "lift_line", "precip_now"]
+# Public names and values: the page script shows "<label>: <value>" and accepts only these keys.
+PUBLIC_NAME = {"precip_now": "falling_snow"}
+PUBLIC_VALUE = {
+    "snow_cover": COVER,
+    "base_busyness": BUSY3,
+    "lifts_moving": {"yes": "moving", "no": "not moving"},
+    "precip_now": {"none": "no", "snow": "yes", "rain_or_mix": "rain or mix"},
+}
 VALIDATING = "Cam reads for this resort are still being checked before we publish them."
 
 
@@ -66,11 +76,19 @@ def build(reg, con, window_min: int = 45, now: datetime | None = None) -> dict:
                  "cams_used": used, "cams_total": len(cams), "cams": cams}
         fused = json.loads(st["fused"]) if st and st["fused"] else {}
         if publish and st:
-            entry.update(status=st["verdict"], label=LABELS.get(st["verdict"], "No read"), line=st["line"],
-                         read_at=_iso(st["ts"]),
-                         fields={k: fused[k] for k in PUBLIC_FIELDS
-                                 if fused.get(k) is not None and (allowed is None or k in allowed)} if used else {},
-                         stake_inches=fused.get("stake_inches") if used and (allowed is None or "stake_inches" in allowed) else None)
+            conf = fused.get("conf", {})
+            ok = lambda k: allowed is None or k in allowed
+            # Verdict and line come only from fields that passed the check.
+            checked = {k: fused.get(k) if ok(k) else None for k in FUSED_FIELDS + ["stake_inches"]}
+            slope = any(c["read_at"] and c["role"] in SLOPE_ROLES for c in cams)
+            verdict, line = judge(r["name"], checked, slope) if used else (st["verdict"], st["line"])
+            stake = checked["stake_inches"] if used else None
+            entry.update(status=LABELS.get(verdict, "No read"), label=LABELS.get(verdict, "No read"),
+                         verdict=verdict, line=line, read_at=_iso(st["ts"]),
+                         fields={PUBLIC_NAME.get(k, k): {"value": PUBLIC_VALUE.get(k, {}).get(v, v).replace("_", " "),
+                                                         "conf": conf.get(k)}
+                                 for k in PUBLIC_FIELDS if (v := checked.get(k)) is not None} if used else {},
+                         stake_inches=stake, stake_conf=conf.get("stake_inches") if stake is not None else None)
             if ps and ps["publish"] and ps["summary"]:
                 sm = json.loads(ps["summary"])
                 entry["check"] = {"reads": sm.get("reads"), "agreement": sm.get("agreement"), "at": ps_changed(con, rid)}

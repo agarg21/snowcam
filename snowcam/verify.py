@@ -20,7 +20,7 @@ from datetime import datetime, timedelta, timezone
 from PIL import Image
 
 from . import reader
-from .fusion import MIN_CONF
+from .fusion import BUSY3 as BUSY, COVER, MIN_CONF
 
 INITIAL_MODEL = reader.ESCALATE_MODEL
 SPOT_MODEL = reader.DEFAULT_MODEL
@@ -32,10 +32,11 @@ DROP_WINDOW = 50
 SPOT_SHARE = 0.10
 PER_RESORT_PER_RUN = 4
 
-# Fields compared, by role; busyness is compared on a coarser scale (quiet / normal / busy).
+# Fields compared, by role. Busyness (quiet / normal / busy) and snow cover (good / thin / bare)
+# are compared on the same three-grade scales the feed publishes.
 CHECK_FIELDS = ["fresh_snow", "snow_cover", "snowmaking", "lifts_moving", "base_busyness",
                 "visibility", "precip_now", "stake_new_snow"]
-BUSY = {"empty": "quiet", "light": "quiet", "normal": "normal", "busy": "busy", "packed": "busy"}
+SCALES = {"base_busyness": BUSY, "snow_cover": COVER}
 SNOWY = {"dusting", "light", "heavy"}
 
 SCHEMA = """
@@ -114,7 +115,7 @@ def _val(field: str, f: dict | None):
     if not isinstance(f, dict) or f.get("value") in (None, "unknown"):
         return None
     v = f["value"]
-    return BUSY.get(v, v) if field == "base_busyness" else v
+    return SCALES.get(field, {}).get(v, v)
 
 
 def compare(first: dict, check: dict) -> dict:
@@ -164,6 +165,21 @@ def pick(con, reg, since_iso: str, rng: random.Random) -> list[tuple]:
         elif counts.get(rid, 0) < SAMPLE_TARGET:
             out += [(row, cam, "initial") for row, cam in items[:PER_RESORT_PER_RUN]]
     return out
+
+
+def rescore(con) -> int:
+    """Re-score stored checks with the current compare rules (e.g. after a scale change).
+    Both reads are kept, so this costs nothing and changes no reading."""
+    n = 0
+    for r in con.execute("select v.id, v.fields, v.tiebreak, r.fields first from verifications v "
+                         "join readings r on r.id=v.reading_id").fetchall():
+        first, check = json.loads(r["first"] or "{}"), json.loads(r["fields"] or "{}")
+        res = json.loads(r["tiebreak"] or "{}")
+        new = dict(res, compare=compare(first, check), false_fresh=false_fresh(first, check))
+        if new != res:
+            con.execute("update verifications set tiebreak=? where id=?", (json.dumps(new), r["id"]))
+            n += 1
+    return n
 
 
 def evaluate(con, resort: str) -> dict:

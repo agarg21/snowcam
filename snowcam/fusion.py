@@ -11,6 +11,12 @@ MIN_CONF = 0.6  # below this a field is treated as unknown for publishing
 
 SNOW_RANK = {"none": 0, "dusting": 1, "light": 2, "heavy": 3}
 BUSY_RANK = {"empty": 0, "light": 1, "normal": 2, "busy": 3, "packed": 4}
+# Public scales (also what the D49 check compares): cover in three grades, busyness in three.
+COVER = {"full": "good", "mostly": "good", "patchy": "thin", "bare": "bare"}
+BUSY3 = {"empty": "quiet", "light": "quiet", "normal": "normal", "busy": "busy", "packed": "busy"}
+FUSED_FIELDS = ["fresh_snow", "stake_new_snow", "snow_cover", "visibility", "snowmaking",
+                "lifts_moving", "base_busyness", "lift_line", "precip_now"]
+SLOPE_ROLES = ("summit", "trail", "base")
 
 
 @dataclass
@@ -39,11 +45,15 @@ def fuse(resort_name: str, readings: list[tuple[str, dict]], no_read_reasons: li
     for role, fields in readings:
         by_role.setdefault(role, []).append(fields)
 
+    conf: dict[str, float] = {}
+
     def best(field: str, roles: list[str], rank: dict | None = None):
         vals = [v for r in roles for f in by_role.get(r, []) if (v := _val(f, field)) is not None]
         if not vals:
             return None
-        return max(vals, key=lambda v: rank.get(v, -1)) if rank else max(set(vals), key=vals.count)
+        v = max(vals, key=lambda v: rank.get(v, -1)) if rank else max(set(vals), key=vals.count)
+        conf[field] = max(f[field]["conf"] for r in roles for f in by_role.get(r, []) if _val(f, field) == v)
+        return v
 
     fused = {
         "fresh_snow": best("fresh_snow", ["summit", "trail", "base"], SNOW_RANK),
@@ -59,52 +69,66 @@ def fuse(resort_name: str, readings: list[tuple[str, dict]], no_read_reasons: li
     stake = [f.get("stake_inches", {}).get("value") for f in by_role.get("stake", [])
              if isinstance(f.get("stake_inches"), dict) and f["stake_inches"].get("conf", 0) >= MIN_CONF]
     fused["stake_inches"] = next((s for s in stake if s is not None), None)
+    if fused["stake_inches"] is not None:
+        conf["stake_inches"] = max(f["stake_inches"]["conf"] for f in by_role.get("stake", [])
+                                   if isinstance(f.get("stake_inches"), dict)
+                                   and f["stake_inches"].get("value") == fused["stake_inches"])
 
-    snow = max(SNOW_RANK.get(fused["fresh_snow"] or "", -1), SNOW_RANK.get(fused["stake_new_snow"] or "", -1))
-    busy = BUSY_RANK.get(fused["base_busyness"] or "", -1)
+    verdict, line = judge(resort_name, fused, any(by_role.get(r) for r in SLOPE_ROLES))
+    fused["conf"] = conf
+    return ResortState(verdict, line, fused)
+
+
+def judge(resort_name: str, fused: dict, slope_cams: bool) -> tuple[str, str]:
+    """Verdict and one line from fused fields. The feed re-runs this on only the fields that
+    passed the D49 check, so a published line never leans on an unchecked field."""
+    g = lambda k: fused.get(k)
+    snow = max(SNOW_RANK.get(g("fresh_snow") or "", -1), SNOW_RANK.get(g("stake_new_snow") or "", -1))
+    busy = BUSY_RANK.get(g("base_busyness") or "", -1)
+    cover = COVER.get(g("snow_cover") or "")
 
     parts = []
     if snow >= 2:
         parts.append("fresh snow")
     elif snow == 1:
         parts.append("a dusting of new snow")
-    if fused["stake_inches"]:
-        parts.append(f"stake reads about {fused['stake_inches']:g} in.")
-    if fused["snowmaking"] == "on":
+    if g("stake_inches"):
+        parts.append(f"stake reads about {g('stake_inches'):g} in.")
+    if g("snowmaking") == "on":
         parts.append("snowmaking on")
-    if fused["snow_cover"] in ("bare", "patchy"):
-        parts.append(f"{fused['snow_cover']} cover")
-    if fused["visibility"] in ("fog", "whiteout"):
-        parts.append(f"{fused['visibility']} up top")
-    if fused["base_busyness"]:
-        parts.append(f"base {fused['base_busyness']}")
-    if fused["lift_line"] in ("moderate", "long"):
-        parts.append(f"{fused['lift_line']} lift line")
-    if fused["precip_now"] in ("snow", "rain_or_mix"):
-        parts.append("snowing now" if fused["precip_now"] == "snow" else "rain or mix now")
+    if cover in ("thin", "bare"):
+        parts.append(f"{cover} cover")
+    if g("visibility") in ("fog", "whiteout"):
+        parts.append(f"{g('visibility')} up top")
+    if g("base_busyness"):
+        parts.append(f"base {BUSY3[g('base_busyness')]}")
+    if g("lift_line") in ("moderate", "long"):
+        parts.append(f"{g('lift_line')} lift line")
+    if g("precip_now") in ("snow", "rain_or_mix"):
+        parts.append("snowing now" if g("precip_now") == "snow" else "rain or mix now")
 
     # Pages may only say what the cams show (Family Tripwise D47), never an official open/closed
     # status, so thin cover and idle lifts are reported as exactly that. A snow stake piles up
     # snow the slopes may not hold, so "Go" needs new snow seen on a slope cam and real cover.
-    slope_snow = SNOW_RANK.get(fused["fresh_snow"] or "", -1)
-    thin = fused["snow_cover"] in ("bare", "patchy")
-    if thin and fused["lifts_moving"] != "yes":
+    slope_snow = SNOW_RANK.get(g("fresh_snow") or "", -1)
+    thin = cover in ("thin", "bare")
+    if thin and g("lifts_moving") != "yes":
         verdict = "Thin cover"
-    elif fused["lifts_moving"] == "no" and snow < 1:
+    elif g("lifts_moving") == "no" and snow < 1:
         verdict = "Lifts idle"
-    elif busy >= 3 or fused["lift_line"] == "long":
+    elif busy >= 3 or g("lift_line") == "long":
         verdict = "Busy"
-    elif slope_snow >= 2 and not thin and fused["visibility"] not in ("fog", "whiteout") and busy <= 2:
+    elif slope_snow >= 2 and not thin and g("visibility") not in ("fog", "whiteout") and busy <= 2:
         verdict = "Go"
-    elif any(v is not None for v in fused.values()):
+    elif any(g(k) is not None for k in FUSED_FIELDS + ["stake_inches"]):
         verdict = "OK"
     else:
         verdict = "No read"
 
     # A snow stake alone says nothing about the slopes, lifts or crowds: report its snow, no verdict.
-    if not any(by_role.get(r) for r in ("summit", "trail", "base")):
+    if not slope_cams:
         verdict = "No read"
         parts.append("snow stake only, slopes not in view")
 
     line = f"{resort_name}: " + (", ".join(parts) if parts else "nothing notable visible") + "."
-    return ResortState(verdict, line[0].upper() + line[1:], fused)
+    return verdict, line[0].upper() + line[1:]

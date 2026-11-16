@@ -34,7 +34,7 @@ def test_fusion_go_on_fresh_snow_quiet_base():
         ("base", {"base_busyness": {"value": "light", "conf": 0.7}, "lifts_moving": {"value": "yes", "conf": 0.9}}),
     ], [])
     assert st.verdict == "Go"
-    assert "fresh snow" in st.line and "base light" in st.line
+    assert "fresh snow" in st.line and "base quiet" in st.line
 
 
 def test_fusion_ignores_low_confidence_and_flags_busy():
@@ -130,7 +130,8 @@ def test_feed_hides_unpublished_resorts_and_never_leaks_paths(tmp_path):
     reg.resorts["okemo"]["publish"] = True
     shown = feed.build(reg, con, now=now)
     assert shown["resorts"]["okemo"]["label"] == "Looks good"
-    assert shown["resorts"]["okemo"]["fields"] == {"fresh_snow": "heavy"}
+    assert shown["resorts"]["okemo"]["status"] == "Looks good"
+    assert shown["resorts"]["okemo"]["fields"] == {"fresh_snow": {"value": "heavy", "conf": None}}
     assert "/secret/" not in json.dumps(shown)
 
 
@@ -168,3 +169,53 @@ def test_verify_compare_and_publish_gate(tmp_path):
     con.execute("insert into verifications(reading_id, resort, ts, phase, tiebreak) values (?,?,?,?,?)",
                 (999, "okemo", "2026-11-18T15:00:00", "spot", json.dumps({"compare": {}, "false_fresh": True})))
     assert verify.spot_ok(con, "okemo", ["snow_cover"])[0] is False
+
+
+def test_cover_and_busyness_use_three_grades_in_check_and_feed(tmp_path):
+    import sqlite3, json
+    from datetime import datetime, timezone
+    from snowcam import store, feed, verify
+    from snowcam.config import load_registry
+    # Neighbouring raw grades agree on the public scale; different grades still disagree.
+    f = lambda v: {"value": v, "conf": 0.9}
+    assert verify.compare({"snow_cover": f("full")}, {"snow_cover": f("mostly")})["snow_cover"] is True
+    assert verify.compare({"snow_cover": f("mostly")}, {"snow_cover": f("patchy")})["snow_cover"] is False
+    assert verify.compare({"base_busyness": f("empty")}, {"base_busyness": f("light")})["base_busyness"] is True
+
+    reg = load_registry()
+    con = sqlite3.connect(tmp_path / "t.db"); con.row_factory = sqlite3.Row
+    con.executescript(store.SCHEMA)
+    verify.ensure(con)
+    ts = "2026-11-15T15:00:00+00:00"
+    con.execute("insert into frames(cam, ts, path, phash, gate_status, gates) values (?,?,?,?,?,?)",
+                ("okemo-summit", ts, "x", "0", "pass", "{}"))
+    con.execute("insert into readings(frame_id, cam, ts, model, prompt_version, fields, notes, raw) values (1,?,?,?,?,?,?,?)",
+                ("okemo-summit", ts, "m", "v", "{}", "", "{}"))
+    st = fusion.fuse("Okemo", [("summit", {"snow_cover": f("patchy"), "fresh_snow": f("heavy"),
+                                           "precip_now": f("snow"), "lift_line": f("long")})], [])
+    assert st.verdict == "Thin cover" and "thin cover" in st.line
+    con.execute("insert into resort_state(resort, ts, verdict, line, fused) values (?,?,?,?,?)",
+                ("okemo", ts, st.verdict, st.line, json.dumps(st.fused)))
+    # Published with only snow_cover and precip_now passed: lift_line and fresh snow stay out of the line.
+    con.execute("insert into publish_state(resort, publish, fields, summary, changed) values (?,?,?,?,?)",
+                ("okemo", 1, json.dumps(["snow_cover", "precip_now"]), "{}", ts))
+    out = feed.build(reg, con, now=datetime(2026, 11, 15, 15, 10, tzinfo=timezone.utc))["resorts"]["okemo"]
+    assert out["fields"] == {"snow_cover": {"value": "thin", "conf": 0.9},
+                             "falling_snow": {"value": "yes", "conf": 0.9}}
+    assert out["status"] == "Thin cover" and "lift line" not in out["line"] and "fresh" not in out["line"]
+
+
+def test_rescore_updates_stored_checks(tmp_path):
+    import sqlite3, json
+    from snowcam import store, verify
+    con = sqlite3.connect(tmp_path / "t.db"); con.row_factory = sqlite3.Row
+    con.executescript(store.SCHEMA)
+    verify.ensure(con)
+    f = lambda v: {"value": v, "conf": 0.9}
+    con.execute("insert into readings(frame_id, cam, ts, model, prompt_version, fields, notes, raw) values (1,'c','t','m','v',?,'','{}')",
+                (json.dumps({"snow_cover": f("full")}),))
+    con.execute("insert into verifications(reading_id, cam, resort, ts, phase, model, fields, tiebreak, created) "
+                "values (1,'c','okemo','2026-11-15T15:00:00+00:00','initial','m',?,?,'t')",
+                (json.dumps({"snow_cover": f("mostly")}), json.dumps({"compare": {"snow_cover": False}, "false_fresh": False})))
+    assert verify.rescore(con) == 1 and verify.rescore(con) == 0
+    assert verify.evaluate(con, "okemo")["detail"]["snow_cover"]["agreement"] == 1.0

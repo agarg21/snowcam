@@ -303,6 +303,8 @@ def check_publish(reg, con) -> None:
     """Flip publish on when a resort passes the D49 check; off when spot checks slip."""
     from . import verify
     verify.ensure(con)
+    if n := verify.rescore(con):
+        print(f"re-scored {n} stored checks")
     for rid in reg.resorts:
         st = con.execute("select publish, fields from publish_state where resort=?", (rid,)).fetchone()
         if st and st["publish"]:
