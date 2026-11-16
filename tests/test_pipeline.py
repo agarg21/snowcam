@@ -84,7 +84,7 @@ def test_fusion_thin_cover_on_bare_slopes_without_lift_motion():
         ("summit", {"snow_cover": {"value": "bare", "conf": 0.95}, "fresh_snow": {"value": "none", "conf": 0.9},
                     "lifts_moving": {"value": "unknown", "conf": 0.2}}),
     ], [])
-    assert st.verdict == "Thin cover" and "bare cover" in st.line
+    assert st.verdict == "Thin cover" and "thin cover" in st.line
 
 
 def test_view_shift_ignores_scene_change_but_catches_pan():
@@ -171,7 +171,7 @@ def test_verify_compare_and_publish_gate(tmp_path):
     assert verify.spot_ok(con, "okemo", ["snow_cover"])[0] is False
 
 
-def test_cover_and_busyness_use_three_grades_in_check_and_feed(tmp_path):
+def test_cover_and_busyness_use_public_grades_in_check_and_feed(tmp_path):
     import sqlite3, json
     from datetime import datetime, timezone
     from snowcam import store, feed, verify
@@ -180,6 +180,7 @@ def test_cover_and_busyness_use_three_grades_in_check_and_feed(tmp_path):
     f = lambda v: {"value": v, "conf": 0.9}
     assert verify.compare({"snow_cover": f("full")}, {"snow_cover": f("mostly")})["snow_cover"] is True
     assert verify.compare({"snow_cover": f("mostly")}, {"snow_cover": f("patchy")})["snow_cover"] is False
+    assert verify.compare({"snow_cover": f("patchy")}, {"snow_cover": f("bare")})["snow_cover"] is True
     assert verify.compare({"base_busyness": f("empty")}, {"base_busyness": f("light")})["base_busyness"] is True
 
     reg = load_registry()

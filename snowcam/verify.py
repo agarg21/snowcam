@@ -32,7 +32,7 @@ DROP_WINDOW = 50
 SPOT_SHARE = 0.10
 PER_RESORT_PER_RUN = 4
 
-# Fields compared, by role. Busyness (quiet / normal / busy) and snow cover (good / thin / bare)
+# Fields compared, by role. Busyness (quiet / normal / busy) and snow cover (good / thin)
 # are compared on the same three-grade scales the feed publishes.
 CHECK_FIELDS = ["fresh_snow", "snow_cover", "snowmaking", "lifts_moving", "base_busyness",
                 "visibility", "precip_now", "stake_new_snow"]

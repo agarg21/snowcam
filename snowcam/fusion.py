@@ -11,8 +11,9 @@ MIN_CONF = 0.6  # below this a field is treated as unknown for publishing
 
 SNOW_RANK = {"none": 0, "dusting": 1, "light": 2, "heavy": 3}
 BUSY_RANK = {"empty": 0, "light": 1, "normal": 2, "busy": 3, "packed": 4}
-# Public scales (also what the D49 check compares): cover in three grades, busyness in three.
-COVER = {"full": "good", "mostly": "good", "patchy": "thin", "bare": "bare"}
+# Public scales (also what the D49 check compares): cover in two grades, busyness in three.
+# Patchy and bare were split by the two readers too often to publish apart (D49, 2026-11-16).
+COVER = {"full": "good", "mostly": "good", "patchy": "thin", "bare": "thin"}
 BUSY3 = {"empty": "quiet", "light": "quiet", "normal": "normal", "busy": "busy", "packed": "busy"}
 FUSED_FIELDS = ["fresh_snow", "stake_new_snow", "snow_cover", "visibility", "snowmaking",
                 "lifts_moving", "base_busyness", "lift_line", "precip_now"]
@@ -96,8 +97,8 @@ def judge(resort_name: str, fused: dict, slope_cams: bool) -> tuple[str, str]:
         parts.append(f"stake reads about {g('stake_inches'):g} in.")
     if g("snowmaking") == "on":
         parts.append("snowmaking on")
-    if cover in ("thin", "bare"):
-        parts.append(f"{cover} cover")
+    if cover == "thin":
+        parts.append("thin cover")
     if g("visibility") in ("fog", "whiteout"):
         parts.append(f"{g('visibility')} up top")
     if g("base_busyness"):
@@ -111,7 +112,7 @@ def judge(resort_name: str, fused: dict, slope_cams: bool) -> tuple[str, str]:
     # status, so thin cover and idle lifts are reported as exactly that. A snow stake piles up
     # snow the slopes may not hold, so "Go" needs new snow seen on a slope cam and real cover.
     slope_snow = SNOW_RANK.get(g("fresh_snow") or "", -1)
-    thin = cover in ("thin", "bare")
+    thin = cover == "thin"
     if thin and g("lifts_moving") != "yes":
         verdict = "Thin cover"
     elif g("lifts_moving") == "no" and snow < 1:
