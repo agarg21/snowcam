@@ -93,12 +93,14 @@ def judge(resort_name: str, fused: dict, slope_cams: bool) -> tuple[str, str]:
         parts.append("fresh snow")
     elif snow == 1:
         parts.append("a dusting of new snow")
+    elif snow == 0:
+        parts.append("no new snow")
     if g("stake_inches"):
         parts.append(f"stake reads about {g('stake_inches'):g} in.")
     if g("snowmaking") == "on":
         parts.append("snowmaking on")
-    if cover == "thin":
-        parts.append("thin cover")
+    if cover:
+        parts.insert(0, f"{cover} cover")
     if g("visibility") in ("fog", "whiteout"):
         parts.append(f"{g('visibility')} up top")
     if g("base_busyness"):
@@ -107,6 +109,8 @@ def judge(resort_name: str, fused: dict, slope_cams: bool) -> tuple[str, str]:
         parts.append(f"{g('lift_line')} lift line")
     if g("precip_now") in ("snow", "rain_or_mix"):
         parts.append("snowing now" if g("precip_now") == "snow" else "rain or mix now")
+    elif g("precip_now") == "none":
+        parts.append("not snowing")
 
     # Pages may only say what the cams show (Family Tripwise D47), never an official open/closed
     # status, so thin cover and idle lifts are reported as exactly that. A snow stake piles up

@@ -91,7 +91,11 @@ def build(reg, con, window_min: int = 45, now: datetime | None = None) -> dict:
                          stake_inches=stake, stake_conf=conf.get("stake_inches") if stake is not None else None)
             if ps and ps["publish"] and ps["summary"]:
                 sm = json.loads(ps["summary"])
-                entry["check"] = {"reads": sm.get("reads"), "agreement": sm.get("agreement"), "at": ps_changed(con, rid)}
+                # Agreement over the fields shown, not fields still being checked.
+                shown = [sm.get("detail", {}).get(k, {}) for k in (allowed or []) if k != "stake_inches"]
+                n = sum(d.get("n", 0) for d in shown)
+                agree = round(sum(d["agreement"] * d["n"] for d in shown if "n" in d) / n, 3) if n else None
+                entry["check"] = {"reads": sm.get("reads"), "agreement": agree, "at": ps_changed(con, rid)}
         else:
             entry.update(status="No read", label="No read",
                          line=None if publish else VALIDATING,
