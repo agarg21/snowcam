@@ -488,6 +488,10 @@ def main(argv=None) -> None:
     mg.add_argument("out")
     mg.add_argument("parts", nargs="+")
     sub.add_parser("savings", help="model calls skipped per day")
+    hc = sub.add_parser("health", help="daily health check, no model calls")
+    hc.add_argument("--runs", help="gh run list JSON for collect.yml")
+    hc.add_argument("--previous", help="file with the open health issue's body, to mark new findings")
+    hc.add_argument("--out", default=str(ROOT / "data" / "health.md"))
     rp = sub.add_parser("report")
     rp.add_argument("--out", default=str(ROOT / "data" / "report.html"))
     a = ap.parse_args(argv)
@@ -540,6 +544,14 @@ def main(argv=None) -> None:
     elif a.cmd == "savings":
         from . import archive
         print(archive.savings(con))
+    elif a.cmd == "health":
+        from . import health
+        runs = json.loads(Path(a.runs).read_text()) if a.runs and Path(a.runs).exists() else None
+        prev = health.previous_keys(Path(a.previous).read_text()) if a.previous and Path(a.previous).exists() else set()
+        now = now_utc()
+        findings, spend_line = health.check(reg, con, runs, now)
+        Path(a.out).write_text(health.render(findings, spend_line, now, prev))
+        print(Path(a.out).read_text())
     elif a.cmd == "report":
         print(report(reg, con, Path(a.out)))
 
