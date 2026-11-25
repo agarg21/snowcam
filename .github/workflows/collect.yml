@@ -129,6 +129,12 @@ jobs:
           if ! gh api "repos/$LAB" --jq .private >/dev/null 2>&1; then
             echo "token cannot reach $LAB yet; archive kept in the run artifact"; exit 0
           fi
+          # A release needs a commit to tag; seed an empty repo with a README once.
+          if ! gh api "repos/$LAB/commits?per_page=1" >/dev/null 2>&1; then
+            gh api -X PUT "repos/$LAB/contents/README.md" -f message="Start the snow cam frame archive" \
+              -f content="$(printf '# Snow cam frames (private)\n\nDaily zips of daytime frames and label JSON, attached to releases. Working data only; not for redistribution.\n' | base64 -w0)" >/dev/null \
+              && echo "seeded $LAB with a README"
+          fi
           shopt -s nullglob
           for z in data/archive/*.zip; do
             day=$(basename "$z" | sed -E 's/^snowcam-([0-9-]+)-part-.*/\1/')
