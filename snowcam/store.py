@@ -17,6 +17,17 @@ DB_PATH = DATA / "snowcam.db"
 STORE_MAX_W = 1280  # downscale on save; enough for the reader, keeps storage small
 
 SCHEMA = """
+create table if not exists skips (
+  id integer primary key,
+  ts text not null,
+  cam text not null,
+  frame_id integer,
+  reason text not null,
+  model text,
+  est_cost real,
+  detail text
+);
+
 create table if not exists frames (
   id integer primary key,
   cam text not null,
@@ -92,7 +103,7 @@ def recent_hashes(con, cam_id: str, n: int = 5) -> list[str]:
 def last_read_frame(con, cam_id: str):
     return con.execute(
         "select f.* , r.fields, r.ts as read_ts from readings r join frames f on f.id=r.frame_id "
-        "where r.cam=? order by r.ts desc limit 1", (cam_id,)
+        "where r.cam=? order by r.ts desc limit 1", (cam_id,)  # skipped frames add no reading
     ).fetchone()
 
 

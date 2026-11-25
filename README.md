@@ -27,8 +27,16 @@ We do not work around any of these; ask the resort if you want them.
 4. **Reader**: one Claude call per usable frame, images first, forced tool call that
    fills role-specific categorical fields with confidences; "unknown" always allowed.
    Snow-stake cams also return the clock in the frame, which catches stale feeds.
+   Before the call, three cheap skips (logged in the `skips` table; `snowcam savings`):
+   the frame is within hash distance 4 of the cam's last read frame and that read is under
+   3 hours old (fusion reuses it), the frame is too dark, or it is smeared/blurred against
+   the cam's reference.
 5. **Fusion**: rules (not the model) combine cams by role into Go / OK / Busy /
-   Thin cover / Lifts idle / No read and a one-line summary.
+   Thin cover / Lifts idle / No read and a one-line summary. A cam whose two readers
+   keep disagreeing on a field (10+ checks, under 70%) stops counting for that field.
+6. **Dataset** (private): every daytime frame read is archived as a 640 px JPEG plus label
+   JSON (teacher fields with confidences, the second reader's check when there is one), one
+   zip per US Eastern day on a release in the private repo `agarg21/snowcam-lab`.
 
 ## Run
 
@@ -51,11 +59,15 @@ free Actions minutes a month.
 The SQLite database and reference frames live on the `data` branch; raw frames are
 uploaded as private run artifacts kept 30 days and are never published.
 
+The archive upload needs a token with Contents read/write on `agarg21/snowcam-lab`
+(`LAB_TOKEN`, or `FEED_TOKEN` once that token is also given snowcam-lab); without one the
+day's parts stay in the run artifacts.
+
 Set the repository secret `ANTHROPIC_API_KEY` to turn on the reader; without it the
 pipeline still collects and gates frames.
 
 ## Privacy and terms
 
-Frames are private working data. Pages show text plus a link to the resort's own cam
+Frames are private working data; the archive lives only in the private snowcam-lab repo. Pages show text plus a link to the resort's own cam
 page, never rehosted images. No face or plate recognition, no crops of people;
 busyness is a relative level only.

@@ -250,3 +250,78 @@ def test_early_release_rules(tmp_path):
     for i in range(3):  # cover slips to 17/23 = 74%: new fields need 90%, published ones 85%
         add("a", 16, {"snow_cover": False})
     assert "snow_cover" not in verify.evaluate(con, "a", keep={"snow_cover"})["fields_ok"]
+
+
+def _rowdict(**kw):
+    return kw
+
+
+def test_skip_reason_same_dark_blurry():
+    import json
+    from snowcam import cli
+    from snowcam.config import load_registry
+    cam = load_registry().cam("okemo-summit")
+    g = lambda **m: json.dumps({"metrics": m})
+    prev = {"phash": "ffff0000ffff0000", "read_ts": "2026-11-24T15:00:00+00:00"}
+    row = lambda gates, ph="ffff0000ffff0001", ts="2026-11-24T16:00:00+00:00": {"gates": gates, "phash": ph, "ts": ts}
+    ref = {"sharpness": 500.0}
+    assert cli.skip_reason(cam, row(g(brightness=120, sharpness=400)), prev, ref)[0] == "same"
+    # older than 3 hours: read again even if identical
+    assert cli.skip_reason(cam, row(g(brightness=120, sharpness=400), ts="2026-11-24T18:30:00+00:00"), prev, ref)[0] is None
+    # a changed scene is read
+    assert cli.skip_reason(cam, row(g(brightness=120, sharpness=400), ph="0000ffff0000ffff"), prev, ref)[0] is None
+    assert cli.skip_reason(cam, row(g(brightness=20)), None, ref)[0] == "dark"
+    assert cli.skip_reason(cam, row(g(brightness=120, sharpness=30, edge_ratio=0.3)), None, ref)[0] == "blurry"
+    # low sharpness alone (flat light, haze) is still read
+    assert cli.skip_reason(cam, row(g(brightness=120, sharpness=30, edge_ratio=0.7)), None, ref)[0] is None
+
+
+def test_cam_blocks_drop_a_disagreeing_cam_field(tmp_path):
+    import sqlite3, json
+    from snowcam import store, verify
+    con = sqlite3.connect(tmp_path / "t.db"); con.row_factory = sqlite3.Row
+    con.executescript(store.SCHEMA); verify.ensure(con)
+    def add(cam, day, cmp):
+        con.execute("insert into verifications(reading_id, cam, resort, ts, phase, model, fields, tiebreak, created) "
+                    "values (null,?,'h',?,'initial','m','{}',?,'t')", (cam, f"2026-11-{day}T15:00:00+00:00",
+                                                                       json.dumps({"compare": cmp, "false_fresh": False})))
+    for i in range(20):
+        add("h-lake", 15 + i % 2, {"snow_cover": i < 4})   # a lake view: readers split on cover
+        add("h-slope", 15 + i % 2, {"snow_cover": True})
+    assert verify.cam_blocks(con) == {"h-lake": {"snow_cover"}}
+    ev = verify.evaluate(con, "h")
+    assert ev["detail"]["snow_cover"] == {"n": 20, "agreement": 1.0} and ev["ready"]
+
+
+def test_archive_part_and_merge(tmp_path):
+    import sqlite3, json, zipfile
+    from PIL import Image
+    from snowcam import store, verify, archive
+    from snowcam.config import load_registry
+    reg = load_registry()
+    con = sqlite3.connect(tmp_path / "t.db"); con.row_factory = sqlite3.Row
+    con.executescript(store.SCHEMA); verify.ensure(con)
+    img = tmp_path / "f.jpg"; Image.new("RGB", (1920, 1080), (200, 210, 220)).save(img)
+    for i, (ts, sun) in enumerate([("2026-11-24T15:00:00+00:00", 20), ("2026-11-25T03:00:00+00:00", -40)], 1):
+        con.execute("insert into frames(id, cam, ts, path, phash, gate_status, gates) values (?,?,?,?,?,?,?)",
+                    (i, "okemo-summit", ts, str(img), "0", "pass", json.dumps({"status": "pass", "metrics": {"sun_elevation": sun}})))
+        con.execute("insert into readings(id, frame_id, cam, ts, model, prompt_version, fields, notes, raw) values (?,?,?,?,?,?,?,?,?)",
+                    (i, i, "okemo-summit", ts, "claude-haiku-5-5", "v0.3",
+                     json.dumps({"snow_cover": {"value": "patchy", "conf": 0.8}}), "", "{}"))
+    con.execute("insert into verifications(reading_id, cam, resort, ts, phase, model, fields, tiebreak, created) values "
+                "(1,'okemo-summit','okemo','2026-11-24T15:00:00+00:00','initial','claude-sonnet-5-5',?,?,'t')",
+                (json.dumps({"snow_cover": {"value": "bare", "conf": 0.7}}), json.dumps({"compare": {"snow_cover": True}, "false_fresh": False})))
+    parts = archive.build_part(reg, con, "2026-11-24T00:00:00+00:00", tmp_path / "out", "a")
+    assert [p.name for p in parts] == ["snowcam-2026-11-24-part-a.zip"]  # the night frame is left out
+    with zipfile.ZipFile(parts[0]) as z:
+        names = sorted(z.namelist())
+        assert names == ["okemo/okemo-summit/2026-11-24T150000Z.jpg", "okemo/okemo-summit/2026-11-24T150000Z.json"]
+        lab = json.loads(z.read(names[1]))
+        assert lab["teacher"]["fields"]["snow_cover"] == {"value": "patchy", "conf": 0.8}
+        assert lab["check"]["fields"]["snow_cover"]["value"] == "bare" and lab["check"]["agrees"] == {"snow_cover": True}
+        from io import BytesIO
+        assert Image.open(BytesIO(z.read(names[0]))).size == (640, 360)
+    out = tmp_path / "snowcam-2026-11-24.zip"
+    assert archive.merge(parts + parts, out) == 1
+    with zipfile.ZipFile(out) as z:
+        assert "manifest.csv" in z.namelist() and "patchy" in z.read("manifest.csv").decode()

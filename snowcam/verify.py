@@ -189,16 +189,36 @@ def rescore(con) -> int:
 
 SNOW_FIELDS = {"snow_cover", "fresh_snow", "stake_inches"}
 
+# A cam whose two readers keep disagreeing on a field (e.g. a lake view read for snow cover, or a
+# trail that sits on the patchy/mostly line) stops counting for that field: it is not fused, not
+# published and not scored. Computed from the initial checks, for every resort alike (2026-11-25).
+BLOCK_MIN = 10
+BLOCK_BELOW = 0.70
+
+
+def cam_blocks(con) -> dict[str, set]:
+    per: dict[tuple, list] = {}
+    for r in con.execute("select cam, tiebreak from verifications where phase='initial'"):
+        for f, ok in json.loads(r["tiebreak"] or "{}").get("compare", {}).items():
+            if ok is not None and f != "stake_inches":
+                per.setdefault((r["cam"], f), []).append(bool(ok))
+    out: dict[str, set] = {}
+    for (cam, f), xs in per.items():
+        if len(xs) >= BLOCK_MIN and sum(xs) / len(xs) < BLOCK_BELOW:
+            out.setdefault(cam, set()).add(f)
+    return out
+
 
 def has_snow(fields) -> bool:
     return bool(SNOW_FIELDS & set(fields))
 
 
-def evaluate(con, resort: str, keep: set | None = None) -> dict:
+def evaluate(con, resort: str, keep: set | None = None, blocks: dict | None = None) -> dict:
     """Pass/fail per field for a resort from its initial checks. A field already published
     (in keep) stays while it holds 85%; a new field needs 90%."""
     keep = keep or set()
-    rows = con.execute("select ts, fields, tiebreak from verifications v where resort=? and phase='initial'",
+    blocks = cam_blocks(con) if blocks is None else blocks
+    rows = con.execute("select cam, ts, fields, tiebreak from verifications v where resort=? and phase='initial'",
                        (resort,)).fetchall()
     days = {r["ts"][:10] for r in rows}
     agree: dict[str, list] = {}
@@ -206,13 +226,16 @@ def evaluate(con, resort: str, keep: set | None = None) -> dict:
     falsefresh = 0
     for r in rows:
         res = json.loads(r["tiebreak"] or "{}")
+        blocked = blocks.get(r["cam"], set())
         for f, ok in res.get("compare", {}).items():
+            if f in blocked:
+                continue
             if f == "stake_inches":
                 if ok is not None:
                     stake.append(ok)
             elif ok is not None:
                 agree.setdefault(f, []).append(ok)
-        falsefresh += bool(res.get("false_fresh"))
+        falsefresh += bool(res.get("false_fresh")) and "fresh_snow" not in blocked
     fields_ok = []
     detail = {}
     for f, xs in agree.items():
@@ -236,15 +259,17 @@ def evaluate(con, resort: str, keep: set | None = None) -> dict:
 
 def spot_ok(con, resort: str, fields: list[str]) -> tuple[bool, str]:
     """Keep publishing? Last 50 spot checks per published field, after tie-breaks."""
-    rows = con.execute("select tiebreak from verifications where resort=? and phase='spot' order by id desc limit ?",
+    rows = con.execute("select cam, tiebreak from verifications where resort=? and phase='spot' order by id desc limit ?",
                        (resort, DROP_WINDOW)).fetchall()
+    blocks = cam_blocks(con)
     per: dict[str, list] = {}
     for r in rows:
         res = json.loads(r["tiebreak"] or "{}")
-        if res.get("false_fresh"):
+        blocked = blocks.get(r["cam"], set())
+        if res.get("false_fresh") and "fresh_snow" not in blocked:
             return False, "false fresh-snow read in a spot check"
         for f, ok in res.get("compare", {}).items():
-            if f in fields and ok is not None and f != "stake_inches":
+            if f in fields and ok is not None and f != "stake_inches" and f not in blocked:
                 per.setdefault(f, []).append(ok)
     for f, xs in per.items():
         if len(xs) >= 20 and sum(xs) / len(xs) < DROP_AGREE:

@@ -24,7 +24,36 @@ from pathlib import Path
 
 from PIL import Image
 
-from . import fusion, gates, grab, reader, store
+from . import fusion, gates, grab, reader, store, verify
+
+# Cheap skips before a model call (2026-11-25). Measured on Nov 20-24 reads: a frame within
+# perceptual-hash distance 4 of the cam's last read frame got the same answer 91-100% of the time
+# (about 20% of reads); every cam is still read at least every 3 hours.
+SAME_HASH_DIST = 4
+CARRY_MAX_H = 3.0
+DARK_LUMA = 40.0          # mean brightness (0-255) below which a frame is too dark to read
+BLUR_SHARP_RATIO = 0.10   # sharpness vs the cam's clear-day reference ...
+BLUR_EDGE_RATIO = 0.45    # ... with edges also low: smeared or blurred lens, not just flat light
+EST_COST = {reader.DEFAULT_MODEL: 0.0006, reader.ESCALATE_MODEL: 0.01}  # $ per read, measured Nov 16-17
+
+
+def skip_reason(cam, row, prev, ref_metrics) -> tuple[str | None, str]:
+    """Why this frame needs no model call, or (None, "")."""
+    m = (json.loads(row["gates"] or "{}") or {}).get("metrics", {})
+    if m.get("brightness") is not None and m["brightness"] < DARK_LUMA:
+        return "dark", f"brightness {m['brightness']:.0f}"
+    if ref_metrics and m.get("sharpness") is not None and ref_metrics.get("sharpness"):
+        ratio = m["sharpness"] / ref_metrics["sharpness"]
+        if ratio < BLUR_SHARP_RATIO and (m.get("edge_ratio") or 1) < BLUR_EDGE_RATIO:
+            return "blurry", f"sharpness {ratio:.2f} of reference, edges {m.get('edge_ratio')}"
+    if prev is not None and prev["phash"] and row["phash"]:
+        age_h = (datetime.fromisoformat(row["ts"]) - datetime.fromisoformat(prev["read_ts"])).total_seconds() / 3600
+        if age_h <= CARRY_MAX_H:
+            import imagehash
+            d = imagehash.hex_to_hash(row["phash"]) - imagehash.hex_to_hash(prev["phash"])
+            if d <= SAME_HASH_DIST:
+                return "same", f"hash distance {d} to the read {age_h:.1f} h ago"
+    return None, ""
 from .config import ROOT, load_registry
 
 
@@ -116,6 +145,8 @@ def read_pending(reg, con, dry_run: bool, samples: int, since_hours: float, limi
     if not dry_run and not os.environ.get("ANTHROPIC_API_KEY"):
         sys.exit("ANTHROPIC_API_KEY is not set; use --dry-run to write request bundles instead")
     jobs = []
+    skipped: dict[str, int] = {}
+    saved = 0.0
     for row in rows:
         try:
             cam = reg.cam(row["cam"])
@@ -126,8 +157,16 @@ def read_pending(reg, con, dry_run: bool, samples: int, since_hours: float, limi
         prev = store.last_read_frame(con, cam.id)
         if cam.role == "stake" and prev and prev["ts"] > (now_utc() - timedelta(minutes=110)).isoformat():
             continue  # stakes change slowly and use the larger model: read them every 2 hours
+        ref_im, ref_m = _ref(cam.id)
+        model = reader.ESCALATE_MODEL if cam.role == "stake" else reader.DEFAULT_MODEL
+        why, detail = skip_reason(cam, row, prev, ref_m)
+        if why and not dry_run:
+            con.execute("insert into skips(ts, cam, frame_id, reason, model, est_cost, detail) values (?,?,?,?,?,?,?)",
+                        (row["ts"], cam.id, row["id"], why, model, EST_COST.get(model, 0.0006), detail))
+            skipped[why] = skipped.get(why, 0) + 1
+            saved += EST_COST.get(model, 0.0006)
+            continue
         cur = [Image.open(p).convert("RGB") for p in _burst_paths(Path(row["path"]))]
-        ref_im, _ = _ref(cam.id)
         prev_t = None
         if prev and prev["path"]:
             # Frames are not kept between cloud runs; fall back to the saved copy of the last read frame.
@@ -137,7 +176,7 @@ def read_pending(reg, con, dry_run: bool, samples: int, since_hours: float, limi
                     break
         req = reader.build_request(cam, cur, _local_label(row["ts"], cam.tz), ref_im,
                                    (prev_t[0], _local_label(prev_t[1], cam.tz)) if prev_t else None,
-                                   reader.ESCALATE_MODEL if cam.role == "stake" else reader.DEFAULT_MODEL)
+                                   model)
         if dry_run:
             out = store.DATA / "requests" / cam.id / row["ts"].replace(":", "")
             if out.exists():
@@ -146,6 +185,12 @@ def read_pending(reg, con, dry_run: bool, samples: int, since_hours: float, limi
             print(f"{cam.id:22s} bundle -> {out}")
             continue
         jobs.append((row, cam, cur, req))
+
+    gate_held = con.execute("select count(*) from frames where gate_status='fail' and ts>=?", (since,)).fetchone()[0]
+    print(f"skips: {sum(skipped.values())} model calls saved this pass "
+          f"({', '.join(f'{k} {v}' for k, v in sorted(skipped.items())) or 'none'}), about ${saved:.3f}; "
+          f"{len(jobs)} to read; gates already held back {gate_held} frames (dark, fog, frozen, moved)")
+    con.commit()
 
     def run(job):
         row, cam, cur, req = job
@@ -178,14 +223,23 @@ def read_pending(reg, con, dry_run: bool, samples: int, since_hours: float, limi
 
 def fuse_all(reg, con, window_min: int = 45) -> list[fusion.ResortState]:
     since = (now_utc() - timedelta(minutes=window_min)).isoformat()
+    carry_since = (now_utc() - timedelta(hours=CARRY_MAX_H, minutes=window_min)).isoformat()
+    verify.ensure(con)
+    blocks = verify.cam_blocks(con)
     out = []
     for rid, r in reg.resorts.items():
         readings, reasons, awaiting = [], [], 0
         for cam in [c for c in reg.by_resort(rid) if c.usable]:
             rd = con.execute("select fields from readings where cam=? and ts>=? order by ts desc limit 1",
                              (cam.id, since)).fetchone()
+            if not rd and con.execute("select 1 from skips where cam=? and reason='same' and ts>=?",
+                                      (cam.id, since)).fetchone():
+                # This pass's frame matched the last read frame: reuse that read (at most 3 hours old).
+                rd = con.execute("select fields from readings where cam=? and ts>=? order by ts desc limit 1",
+                                 (cam.id, carry_since)).fetchone()
             if rd:
-                readings.append((cam.role, json.loads(rd["fields"])))
+                f = json.loads(rd["fields"])
+                readings.append((cam.role, {k: v for k, v in f.items() if k not in blocks.get(cam.id, set())}))
                 continue
             fr = con.execute("select gate_status, gates from frames where cam=? and ts>=? order by ts desc limit 1",
                              (cam.id, since)).fetchone()
@@ -426,6 +480,14 @@ def main(argv=None) -> None:
     sub.add_parser("reference-missing")
     fx = sub.add_parser("export-feed")
     fx.add_argument("--out", default=str(ROOT / "feed" / "conditions.json"))
+    ar = sub.add_parser("archive", help="this pass's daytime reads as part zips (private dataset)")
+    ar.add_argument("--since-hours", type=float, default=0.5)
+    ar.add_argument("--out", default=str(ROOT / "data" / "archive"))
+    ar.add_argument("--tag", default=datetime.now(timezone.utc).strftime("%H%M%S"))
+    mg = sub.add_parser("archive-merge", help="merge a day's part zips into one zip")
+    mg.add_argument("out")
+    mg.add_argument("parts", nargs="+")
+    sub.add_parser("savings", help="model calls skipped per day")
     rp = sub.add_parser("report")
     rp.add_argument("--out", default=str(ROOT / "data" / "report.html"))
     a = ap.parse_args(argv)
@@ -467,6 +529,17 @@ def main(argv=None) -> None:
         out.parent.mkdir(parents=True, exist_ok=True)
         out.write_text(json.dumps(feed.build(reg, con), indent=1) + "\n")
         print(out)
+    elif a.cmd == "archive":
+        from . import archive
+        since = (now_utc() - timedelta(hours=a.since_hours)).isoformat()
+        for p in archive.build_part(reg, con, since, Path(a.out), a.tag):
+            print(p)
+    elif a.cmd == "archive-merge":
+        from . import archive
+        archive.merge([Path(p) for p in a.parts], Path(a.out))
+    elif a.cmd == "savings":
+        from . import archive
+        print(archive.savings(con))
     elif a.cmd == "report":
         print(report(reg, con, Path(a.out)))
 

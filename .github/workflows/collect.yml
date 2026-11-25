@@ -55,6 +55,14 @@ jobs:
           python -m snowcam.cli check-publish
           python -m snowcam.cli fuse
           python -m snowcam.cli report
+          python -m snowcam.cli savings || true
+
+      # Private dataset (owner, 2026-11-25): this pass's daytime reads as 640 px JPEGs with label
+      # JSON, one part zip per pass. Never part of the public feed.
+      - name: Archive this pass's daytime reads
+        if: always()
+        continue-on-error: true
+        run: python -m snowcam.cli archive --since-hours 0.5 --tag "${{ github.run_id }}"
 
       - name: Upload this pass's frames (private, 30 days)
         if: always()
@@ -64,6 +72,7 @@ jobs:
           path: |
             data/frames
             data/report.html
+            data/archive
           retention-days: 30
 
       # Only the database, reference frames and each cam's last read frame go to the data
@@ -103,3 +112,42 @@ jobs:
           git config user.email "snowcam-bot@users.noreply.github.com"
           git add conditions.json
           git diff --cached --quiet || { git commit -qm "conditions $(date -u +%FT%TZ)"; git push -q origin HEAD; }
+
+      # Part zips go to the day's release in the private repo agarg21/snowcam-lab; the first pass
+      # after midnight Eastern merges each earlier day's parts into snowcam-<day>.zip with a
+      # manifest.csv. Needs a token with Contents read/write on snowcam-lab: LAB_TOKEN, or
+      # FEED_TOKEN when that token is also given snowcam-lab. If neither works the parts stay in
+      # this run's artifact for 30 days.
+      - name: Upload archive to snowcam-lab
+        if: always()
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.LAB_TOKEN || secrets.FEED_TOKEN }}
+          LAB: agarg21/snowcam-lab
+        run: |
+          if [ -z "$GH_TOKEN" ]; then echo "no token for $LAB; archive kept in the run artifact"; exit 0; fi
+          if ! gh api "repos/$LAB" --jq .private >/dev/null 2>&1; then
+            echo "token cannot reach $LAB yet; archive kept in the run artifact"; exit 0
+          fi
+          shopt -s nullglob
+          for z in data/archive/*.zip; do
+            day=$(basename "$z" | sed -E 's/^snowcam-([0-9-]+)-part-.*/\1/')
+            tag="day-$day"
+            gh release view "$tag" -R "$LAB" >/dev/null 2>&1 || \
+              gh release create "$tag" -R "$LAB" --title "Snow cam frames $day (US Eastern day)" \
+                --notes "Daytime frames read by the snowcam reader on $day: 640 px JPEGs with label JSON (teacher fields with confidences, second-reader check when there is one). Parts are merged into snowcam-$day.zip the next morning."
+            gh release upload "$tag" "$z" -R "$LAB" --clobber && echo "uploaded $(basename "$z") to $tag"
+          done
+          today=$(TZ=America/New_York date +%F)
+          for tag in $(gh release list -R "$LAB" --limit 40 --json tagName --jq '.[].tagName'); do
+            day=${tag#day-}
+            [[ "$day" < "$today" ]] || continue
+            parts=$(gh release view "$tag" -R "$LAB" --json assets --jq '.assets[].name | select(contains("-part-"))')
+            [ -n "$parts" ] || continue
+            d=$(mktemp -d)
+            gh release download "$tag" -R "$LAB" -p "snowcam-$day*.zip" -D "$d"
+            python -m snowcam.cli archive-merge "$RUNNER_TEMP/snowcam-$day.zip" "$d"/*.zip
+            gh release upload "$tag" "$RUNNER_TEMP/snowcam-$day.zip" -R "$LAB" --clobber
+            for a in $parts; do gh release delete-asset "$tag" "$a" -R "$LAB" -y; done
+            echo "merged $tag"
+          done
