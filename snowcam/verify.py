@@ -191,14 +191,15 @@ SNOW_FIELDS = {"snow_cover", "fresh_snow", "stake_inches"}
 
 # A cam whose two readers keep disagreeing on a field (e.g. a lake view read for snow cover, or a
 # trail that sits on the patchy/mostly line) stops counting for that field: it is not fused, not
-# published and not scored. Computed from the initial checks, for every resort alike (2026-11-25).
+# published and not scored. Computed from all checks, for every resort alike (2026-11-25).
 BLOCK_MIN = 10
 BLOCK_BELOW = 0.70
 
 
 def cam_blocks(con) -> dict[str, set]:
     per: dict[tuple, list] = {}
-    for r in con.execute("select cam, tiebreak from verifications where phase='initial'"):
+    # Initial and spot checks both count, so a cam that starts slipping after the first 100 is caught.
+    for r in con.execute("select cam, tiebreak from verifications where phase in ('initial', 'spot')"):
         for f, ok in json.loads(r["tiebreak"] or "{}").get("compare", {}).items():
             if ok is not None and f != "stake_inches":
                 per.setdefault((r["cam"], f), []).append(bool(ok))
