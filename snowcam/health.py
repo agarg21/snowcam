@@ -41,7 +41,7 @@ FIX = {
                "see the cam findings for the same resort, then the latest report.html.",
     "done": "Playbook 2b: every check is in. Find the cam and field that fail most in the stored checks and "
             "block that field for that cam; check-publish re-scores the stored checks each run.",
-    "unpublished": "Playbook 3: spot checks slipped. Read the reason; fix the cam or field, never the threshold.",
+    "unpublished": "Playbook 3: taken off the pages (early-release snow fields below 85%, or spot checks slipped). Read the reason; fix the cam or field, never the threshold.",
     "no_read": "Playbook 4: no usable read in 24 h. Check the cam URLs still serve images (feed moved, "
                "player changed) and whether it is night or fog everywhere.",
     "cam": "Playbook 5: this cam is fetched but never read. If the gate reason is the same every time, "
