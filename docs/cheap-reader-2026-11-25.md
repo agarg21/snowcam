@@ -76,6 +76,22 @@ Skipping 25–45% of first reads saves only $0.15–0.25 a day at this size. Big
 
 At 300+ resorts this is the difference between about $20 and about $10 a day. That second figure is a projection, not a measurement.
 
+## Can it point at the teacher's mistakes?
+
+This test uses only frames with a Sonnet second opinion. For each one, the student's answer comes from the leave-resort-out run. The question: when the student disagrees with the teacher, has the teacher often got it wrong?
+
+| Field | Frames | Teacher and Sonnet disagree | Student flags | Disagreements among flagged frames |
+|---|---|---|---|---|
+| Snow cover | 2,403 | 200 (8%) | 7% of frames | 42% of all disagreements (6× better than random) |
+| Visibility | 1,370 | 171 (12%) | 18% | 54% (3×) |
+| New snow | 1,567 | 96 (6%) | 5% | 18% (3.5×) |
+| Snowmaking | 1,612 | 6 | 6% | 4 of 6 |
+| Snowing | 2,404 | 3 | 2% | 3 of 3 |
+
+So the student can't replace the Sonnet check, since it learned from the teacher. But it is a cheap way to find the teacher's mistakes: aim extra Sonnet calls at flagged frames and you find bad cams and fields 3–6× faster per call.
+
+The publish check itself must stay a random sample. Aiming it at flagged frames would make every resort look worse than it is. So this works as a separate error-finding queue for the playbooks in docs/operations.md, not as part of the accuracy estimate.
+
 ## Next steps
 
 1. Label with the stronger reader. Use the Sonnet second opinions, plus Sonnet on a sample of student-uncertain frames, as the teacher. Haiku's own errors cap what a student can learn from it.

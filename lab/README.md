@@ -9,6 +9,7 @@ Can a small, free-to-run image model match the paid reader (the "teacher") on mo
   - coverage at 95% agreement.
 
   It also reports the teacher-vs-Sonnet second-opinion agreement on the same reads. That is the bar the teacher itself meets.
+- `second.py OUT.npz DB registry.yaml`: whether student-vs-teacher disagreement finds the frames where the Sonnet second opinion disagrees with the teacher.
 - `joint.py OUT.npz [0.95]`: the hybrid. Per-field confidence thresholds are picked on validation days. It measures the share of test frames where every field is confident, so the model call could be skipped.
 
 Frames come from the private run artifacts and the snowcam-lab releases. They are working data and are never committed or shared; only metrics leave the lab. Writeups are in `docs/`.
