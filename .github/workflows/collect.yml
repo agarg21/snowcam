@@ -15,6 +15,7 @@ concurrency:
 
 permissions:
   contents: write
+  actions: write   # to start the daily health check after the last daytime pass
 
 jobs:
   collect:
@@ -157,3 +158,12 @@ jobs:
             for a in $parts; do gh release delete-asset "$tag" "$a" -R "$LAB" -y; done
             echo "merged $tag"
           done
+
+      # GitHub's cron skipped health.yml on its first night (11-25), so the last daytime pass
+      # also starts it. Running twice only rewrites the same issue.
+      - name: Start the daily health check after the last daytime pass
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ "$(date -u +%H)" = "21" ]; then gh workflow run health.yml -R "$GITHUB_REPOSITORY" || true; fi
