@@ -26,6 +26,7 @@ jobs:
       - run: npm i playwright@1 && npx playwright install --with-deps chromium
       - name: Render cam pages
         run: |
+          pip install requests >/dev/null
           d=docs/${{ inputs.dir }}
           python3 $d/robots_filter.py $d/targets.json /tmp/allowed.json
           [ "${{ inputs.render }}" = "no" ] || node $d/render.js /tmp/allowed.json /tmp/render.json
