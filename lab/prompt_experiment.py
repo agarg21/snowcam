@@ -81,12 +81,14 @@ def main() -> None:
         k = key_of(p["path"]) if p else None
         return (Image.open(idx[k]).convert("RGB"), _local_label(p["ts"], cam.tz)) if k in idx else None
 
+    prevs = {r["id"]: prev_for(r, cam) for r, cam in sample}  # sqlite stays on this thread
+
     def run(item):
         r, cam = item
         frame = Image.open(idx[key_of(paths[r["id"]])]).convert("RGB")
         ref, _ = _ref(cam.id)
         try:
-            first = reader.call(reader.build_request(cam, [frame], _local_label(r["ts"], cam.tz), ref, prev_for(r, cam),
+            first = reader.call(reader.build_request(cam, [frame], _local_label(r["ts"], cam.tz), ref, prevs[r["id"]],
                                                      reader.DEFAULT_MODEL)).fields
             check = verify.call(verify.build_request(cam, frame, ref, verify.INITIAL_MODEL))
             return r, cam, first, check, None
