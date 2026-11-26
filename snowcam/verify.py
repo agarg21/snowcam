@@ -129,6 +129,31 @@ def _val(field: str, f: dict | None):
     return SCALES.get(field, {}).get(v, v)
 
 
+def spot_triage(first: dict, check: dict, published: set) -> tuple[bool, dict]:
+    """Cheap spot check: does it need a Sonnet tie-break? (2026-11-26)
+
+    Only a confident contradiction of a published field (or a false fresh-snow read, which can
+    unpublish a resort) earns the tie-break. Otherwise disagreements are left unscored (None):
+    an unsure checker or an unpublished field is no evidence either way, and only agreements
+    count. Since 11-20, 55% of tie-breaks touched no published field and most were the cheap
+    checker answering 'unknown' on snowmaking."""
+    cmp_ = compare(first, check)
+    if false_fresh(first, check):
+        return True, cmp_
+    for f, ok in cmp_.items():
+        if f == "stake_inches":
+            if ok is not None and ok > 1 and f in published:
+                return True, cmp_
+            continue
+        b = check.get(f)
+        confident = isinstance(b, dict) and (b.get("conf") or 0) >= MIN_CONF and _val(f, b) is not None
+        if ok is False and confident and f in published:
+            return True, cmp_
+    scored = {f: (None if (ok is False or (f == "stake_inches" and ok is not None and ok > 1)) else ok)
+              for f, ok in cmp_.items()}
+    return False, scored
+
+
 def compare(first: dict, check: dict) -> dict:
     """Per field: True (agree), False (disagree) or None (first read published nothing)."""
     out = {}
@@ -207,7 +232,13 @@ def rescore(con) -> int:
                          "join readings r on r.id=v.reading_id").fetchall():
         first, check = json.loads(r["first"] or "{}"), json.loads(r["fields"] or "{}")
         res = json.loads(r["tiebreak"] or "{}")
-        new = dict(res, compare=compare(first, check), false_fresh=false_fresh(first, check))
+        cmp_ = compare(first, check)
+        if res.get("triaged"):  # no tie-break was run: disagreements stay unscored
+            cmp_ = {f: (None if (ok is False or (f == "stake_inches" and ok is not None and ok > 1)) else ok)
+                    for f, ok in cmp_.items()}
+            new = dict(res, compare=cmp_, false_fresh=False)
+        else:
+            new = dict(res, compare=cmp_, false_fresh=false_fresh(first, check))
         if new != res:
             con.execute("update verifications set tiebreak=? where id=?", (json.dumps(new), r["id"]))
             n += 1

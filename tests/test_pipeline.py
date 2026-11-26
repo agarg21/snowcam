@@ -421,3 +421,22 @@ def test_stake_gate_shadow(tmp_path):
     assert con.execute("select clean from stake_gate_log where ts='t9'").fetchone()[0] == 0
     assert con.execute("select count(*) from stake_refs").fetchone()[0] == 3  # snow frames never become references
     assert stakegate.SKIP is False
+
+
+def test_spot_triage_only_tiebreaks_confident_published_contradictions():
+    from snowcam import verify
+    f = lambda v, c=0.9: {"value": v, "conf": c}
+    first = {"snowmaking": f("on"), "snow_cover": f("full"), "precip_now": f("none"), "fresh_snow": f("none")}
+    # checker unsure on snowmaking: no tie-break, left unscored
+    need, scored = verify.spot_triage(first, {"snowmaking": f("unknown", 0.3), "snow_cover": f("mostly"),
+                                             "precip_now": f("none"), "fresh_snow": f("none")}, {"snowmaking", "snow_cover"})
+    assert not need and scored["snowmaking"] is None and scored["snow_cover"] is True
+    # confident contradiction of an unpublished field: no tie-break, unscored
+    need, scored = verify.spot_triage(first, {"snowmaking": f("off"), "snow_cover": f("full")}, {"snow_cover"})
+    assert not need and scored["snowmaking"] is None
+    # confident contradiction of a published field: tie-break
+    need, _ = verify.spot_triage(first, {"snowmaking": f("off"), "snow_cover": f("full")}, {"snowmaking"})
+    assert need
+    # a false fresh-snow read always gets a tie-break
+    need, _ = verify.spot_triage({"fresh_snow": f("heavy")}, {"fresh_snow": f("none")}, set())
+    assert need

@@ -380,6 +380,9 @@ def verify_run(reg, con) -> None:
         print("nothing to verify")
         return
 
+    published = {r["resort"]: set(json.loads(r["fields"] or "[]"))
+                 for r in con.execute("select resort, fields from publish_state where publish=1")}
+
     def run(item):
         row, cam, phase = item
         frame = Image.open(row["path"]).convert("RGB")
@@ -390,8 +393,14 @@ def verify_run(reg, con) -> None:
             check = verify.call(verify.build_request(cam, frame, ref, model))
             cmp_, ff = verify.compare(first, check), verify.false_fresh(first, check)
             result = {"compare": cmp_, "false_fresh": ff}
-            # Spot checks: a cheap verifier that disagrees gets a Sonnet tie-break before it counts.
-            if phase == "spot" and (ff or any(v is False for v in cmp_.values())):
+            # Spot checks: a cheap verifier that confidently contradicts a published field gets a
+            # Sonnet tie-break before it counts; other disagreements are left unscored.
+            need = False
+            if phase == "spot":
+                need, scored = verify.spot_triage(first, check, published.get(cam.resort_id, set()))
+                if not need:
+                    result = {"compare": scored, "false_fresh": False, "triaged": True}
+            if phase == "spot" and need:
                 check2 = verify.call(verify.build_request(cam, frame, ref, verify.INITIAL_MODEL))
                 result = {"compare": verify.compare(first, check2), "false_fresh": verify.false_fresh(first, check2),
                           "spot_fields": check}
