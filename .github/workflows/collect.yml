@@ -1,12 +1,14 @@
 name: collect
 
-# Hourly from 7am to 4pm Eastern (12:00-21:00 UTC in winter), plus three overnight passes for
-# the lit snow stakes (10pm, 2am, 5am ET): about 13 runs a day, sized for 33 resorts inside the
-# 2,000 free Actions minutes of a private repo. GitHub may delay or drop scheduled runs.
+# Hourly from 7am to 7pm Eastern (12:00-00:00 UTC in winter; 5-7pm ET added 2026-11-26 so
+# western resorts get afternoon reads), plus three overnight passes for the lit snow stakes
+# (10pm, 2am, 5am ET): 16 runs a day of about 2 minutes, inside the 2,000 free Actions minutes
+# of a private repo. The real trigger is cron-job.org (same hours); GitHub's own schedule
+# below is a backup that may delay or drop runs.
 on:
   schedule:
-    - cron: "17 12-21 * * *"
-    - cron: "17 3,7,10 * * *"
+    - cron: "17 12-23 * * *"
+    - cron: "17 0,3,7,10 * * *"
   workflow_dispatch: {}
 
 concurrency:
