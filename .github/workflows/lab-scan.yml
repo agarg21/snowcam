@@ -1,0 +1,30 @@
+name: lab-scan
+
+# One-off cam access inventory: robots.txt check, then a headless render of each resort's cam page
+# with an honest user agent, logging the image/player requests it makes. No player is bypassed.
+on:
+  workflow_dispatch:
+    inputs:
+      dir:
+        description: inventory folder under docs/
+        default: cam-inventory-2026-11-26
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: npm i playwright@1 && npx playwright install --with-deps chromium
+      - name: Render cam pages
+        run: |
+          d=docs/${{ inputs.dir }}
+          python3 $d/robots_filter.py $d/targets.json /tmp/allowed.json
+          node $d/render.js /tmp/allowed.json /tmp/render.json
+      - uses: actions/upload-artifact@v4
+        with: { name: scan, path: /tmp/render.json, retention-days: 7 }
