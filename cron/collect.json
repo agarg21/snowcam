@@ -1,0 +1,13 @@
+{
+  "_note": "Schedule of the cron-job.org timer that dispatches collect.yml. Edit and push; the cron-sync workflow applies it with the CRONJOB_API_KEY secret. Hours are US Eastern.",
+  "jobId": 8873195,
+  "schedule": {
+    "timezone": "America/New_York",
+    "expiresAt": 0,
+    "hours": [2, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 22],
+    "minutes": [17],
+    "mdays": [-1],
+    "months": [-1],
+    "wdays": [-1]
+  }
+}

@@ -1,0 +1,38 @@
+name: cron-sync
+
+# Applies cron/*.json to the matching cron-job.org jobs through its REST API, so the outside
+# timer is changed by a commit instead of in a browser. Needs the repository secret
+# CRONJOB_API_KEY (cron-job.org Console -> Settings -> API). Only schedule fields are printed:
+# the job itself carries the GitHub dispatch token in its headers, so its full details are
+# never echoed.
+on:
+  push:
+    branches: [main]
+    paths: ["cron/*.json"]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply schedules
+        env:
+          KEY: ${{ secrets.CRONJOB_API_KEY }}
+        run: |
+          if [ -z "$KEY" ]; then echo "CRONJOB_API_KEY is not set; nothing applied"; exit 1; fi
+          for f in cron/*.json; do
+            id=$(jq -r .jobId "$f")
+            body=$(jq -c '{job: {schedule: .schedule}}' "$f")
+            code=$(curl -sS -o /tmp/resp -w '%{http_code}' -X PATCH "https://api.cron-job.org/jobs/$id" \
+                     -H "Authorization: Bearer $KEY" -H "Content-Type: application/json" -d "$body")
+            echo "$f -> job $id: HTTP $code"
+            [ "$code" = 200 ] || { echo "update failed"; exit 1; }
+            sleep 1
+            curl -sS "https://api.cron-job.org/jobs/$id" -H "Authorization: Bearer $KEY" \
+              | jq -c '{enabled: .jobDetails.enabled, schedule: .jobDetails.schedule, nextExecution: .jobDetails.nextExecution}'
+          done
