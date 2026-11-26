@@ -483,6 +483,40 @@ def reference_missing(reg, con) -> None:
         m = json.loads(row["gates"] or "{}").get("metrics", {})
         if m.get("sun_elevation", -90) >= 15:
             set_reference(cam.id, row["path"])
+    reference_refresh(reg, con)
+
+
+# A cam that fails only the "moved" gate on nearly every daylight frame for a day has a new fixed
+# view (re-aimed or a new preset): give it a new reference and a new profile instead of fetching it
+# for nothing (2026-11-26; Park City Orange Bubble and Timberline were stuck like this for days).
+MOVED_SHARE = 0.9
+MOVED_MIN_FRAMES = 6
+
+
+def reference_refresh(reg, con) -> None:
+    since = (now_utc() - timedelta(hours=24)).isoformat()
+    for cam in reg.cams:
+        if not store.reference_path(cam.id).exists():
+            continue
+        rows = con.execute("select path, gates, gate_status from frames where cam=? and ts>=? and path is not null "
+                           "order by ts", (cam.id, since)).fetchall()
+        day = []
+        for r in rows:
+            g = json.loads(r["gates"] or "{}")
+            if (g.get("metrics", {}).get("sun_elevation") or -90) >= 10:
+                day.append((r, g.get("checks", {})))
+        if len(day) < MOVED_MIN_FRAMES:
+            continue
+        moved = [ch.get("moved", {}).get("status") == "fail" for _, ch in day]
+        only_moved = all(all(v.get("status") != "fail" for k, v in ch.items() if k != "moved") for _, ch in day[-3:])
+        if sum(moved) / len(day) >= MOVED_SHARE and moved[-1] and only_moved:
+            latest = day[-1][0]
+            if not Path(latest["path"]).exists():
+                continue
+            set_reference(cam.id, latest["path"])
+            con.execute("delete from cam_profiles where cam=?", (cam.id,))  # re-describe the new view
+            con.commit()
+            print(f"{cam.id:22s} new view: reference reset and profile cleared ({sum(moved)}/{len(day)} daylight frames moved)")
 
 
 def set_reference(cam_id: str, frame_path: str) -> None:

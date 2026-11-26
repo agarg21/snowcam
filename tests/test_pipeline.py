@@ -440,3 +440,35 @@ def test_spot_triage_only_tiebreaks_confident_published_contradictions():
     # a false fresh-snow read always gets a tie-break
     need, _ = verify.spot_triage({"fresh_snow": f("heavy")}, {"fresh_snow": f("none")}, set())
     assert need
+
+
+def test_reference_refresh_for_a_cam_with_a_new_fixed_view(tmp_path, monkeypatch):
+    import sqlite3, json
+    from datetime import timedelta
+    from snowcam import store, cli
+    from snowcam.config import load_registry
+    reg = load_registry()
+    con = sqlite3.connect(tmp_path / "t.db"); con.row_factory = sqlite3.Row
+    con.executescript(store.SCHEMA)
+    ref = tmp_path / "ref.jpg"; ref.write_bytes(b"x")
+    monkeypatch.setattr(store, "reference_path", lambda cam_id: ref)
+    done = []
+    monkeypatch.setattr(cli, "set_reference", lambda cam_id, p: done.append((cam_id, p)))
+    cam = reg.cams[0].id
+    con.execute("insert into cam_profiles(cam, profile, model, created) values (?,?,?,?)", (cam, "{}", "m", "t"))
+    def frame(i, moved):
+        p = tmp_path / f"f{i}.jpg"; p.write_bytes(b"x")
+        g = {"metrics": {"sun_elevation": 30}, "checks": {"dark": {"status": "pass"},
+                                                          "moved": {"status": "fail" if moved else "pass"}}}
+        ts = (cli.now_utc() - timedelta(hours=10 - i)).isoformat()
+        con.execute("insert into frames(cam, ts, path, phash, gate_status, gates) values (?,?,?,?,?,?)",
+                    (cam, ts, str(p), "0", "fail" if moved else "pass", json.dumps(g)))
+        return str(p)
+    for i in range(5):
+        frame(i, True)
+    cli.reference_refresh(reg, con)
+    assert done == []                    # too few frames yet
+    last = frame(5, True)
+    cli.reference_refresh(reg, con)
+    assert done == [(cam, last)]
+    assert con.execute("select count(*) from cam_profiles where cam=?", (cam,)).fetchone()[0] == 0
