@@ -1213,3 +1213,86 @@ resorts:
       url: https://g1.ipcamlive.com/player/snapshot.php?alias=jointpoint
       role: trail
       describe: ''
+
+  # Added 2026-11-26 from the 14-resort shortlist (lab-scan inventory, docs/cam-inventory-2026-11-26).
+  boyne-mountain:
+    name: Boyne Mountain
+    state: MI
+    lat: 45.1647
+    lon: -84.9300
+    tz: America/Detroit
+    cam_page: https://www.boynemountain.com/mountain-report#mountain-webcams
+    publish: false
+    cams:
+    - id: boyne-mountain-yt-3vuxrszxfuu
+      name: yt:3vuXRsZXFUU
+      feed: still
+      url: https://i.ytimg.com/vi/3vuXRsZXFUU/maxresdefault_live.jpg
+      role: trail
+      describe: ''
+    - id: boyne-mountain-yt-4kzvkq8ylko
+      name: yt:4kzVkq8YLko
+      feed: still
+      url: https://i.ytimg.com/vi/4kzVkq8YLko/maxresdefault_live.jpg
+      role: trail
+      describe: ''
+    - id: boyne-mountain-yt-54n-p5fqdoc
+      name: yt:54N_P5FqdOc
+      feed: still
+      url: https://i.ytimg.com/vi/54N_P5FqdOc/maxresdefault_live.jpg
+      role: trail
+      describe: ''
+    - id: boyne-mountain-yt-7zjyx7iml1m
+      name: yt:7ZJyX7imL1M
+      feed: still
+      url: https://i.ytimg.com/vi/7ZJyX7imL1M/maxresdefault_live.jpg
+      role: trail
+      describe: ''
+    - id: boyne-mountain-yt-rodebipgspq
+      name: yt:RODEbIPGspQ
+      feed: still
+      url: https://i.ytimg.com/vi/RODEbIPGspQ/maxresdefault_live.jpg
+      role: trail
+      describe: ''
+    - id: boyne-mountain-yt-xwydmtpbn6g
+      name: yt:XWyDmTPBN6g
+      feed: still
+      url: https://i.ytimg.com/vi/XWyDmTPBN6g/maxresdefault_live.jpg
+      role: trail
+      describe: ''
+    - id: boyne-mountain-yt-hqutcpjqvpe
+      name: yt:hqUTCpjQVPE
+      feed: still
+      url: https://i.ytimg.com/vi/hqUTCpjQVPE/maxresdefault_live.jpg
+      role: trail
+      describe: ''
+  crystal-mountain:
+    name: Crystal Mountain
+    state: WA
+    lat: 46.9282
+    lon: -121.5045
+    tz: America/Los_Angeles
+    cam_page: https://www.crystalmountainresort.com/the-mountain/webcams
+    publish: false
+    cams:
+    - id: crystal-mountain-roundshot-summit
+      name: roundshot:summit
+      feed: still
+      url: https://backend.roundshot.com/cams/c2f78ac81cb0409e225110379c74582f/medium
+      role: summit
+      describe: ''
+  mt-hood-meadows:
+    name: Mt Hood Meadows
+    state: OR
+    lat: 45.3311
+    lon: -121.6650
+    tz: America/Los_Angeles
+    cam_page: https://www.skihood.com/mountain-report/mountain-cams
+    publish: false
+    cams:
+    - id: mt-hood-meadows-hdrelay-stake
+      name: hdrelay:63cadf1f
+      feed: still
+      url: https://b15.hdrelay.com/camera/63cadf1f426d0a9136dc81da/snapshot
+      role: stake
+      describe: ''
