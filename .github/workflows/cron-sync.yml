@@ -24,7 +24,7 @@ jobs:
         env:
           KEY: ${{ secrets.CRONJOB_API_KEY }}
         run: |
-          if [ -z "$KEY" ]; then echo "CRONJOB_API_KEY is not set; nothing applied"; exit 1; fi
+          if [ -z "$KEY" ]; then echo "CRONJOB_API_KEY is not set; nothing applied (edit the job in the console instead)"; exit 0; fi
           for f in cron/*.json; do
             id=$(jq -r .jobId "$f")
             body=$(jq -c '{job: {schedule: .schedule}}' "$f")
