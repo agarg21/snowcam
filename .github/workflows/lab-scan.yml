@@ -8,6 +8,9 @@ on:
       dir:
         description: inventory folder under docs/
         default: cam-inventory-2026-11-26
+      render:
+        description: render the cam pages too (yes/no)
+        default: "yes"
 
 permissions:
   contents: read
@@ -25,7 +28,7 @@ jobs:
         run: |
           d=docs/${{ inputs.dir }}
           python3 $d/robots_filter.py $d/targets.json /tmp/allowed.json
-          node $d/render.js /tmp/allowed.json /tmp/render.json
+          [ "${{ inputs.render }}" = "no" ] || node $d/render.js /tmp/allowed.json /tmp/render.json
       - name: Probe still images and cam pages
         if: hashFiles(format('docs/{0}/probe_targets.json', inputs.dir)) != ''
         run: |
@@ -37,4 +40,5 @@ jobs:
           path: |
             /tmp/render.json
             /tmp/probe
+          if-no-files-found: ignore
           retention-days: 7

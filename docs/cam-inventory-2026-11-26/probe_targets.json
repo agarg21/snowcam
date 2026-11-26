@@ -1,30 +1,14 @@
 {
  "images": {
-  "boyne-qfHSDPMyWt4": "https://i.ytimg.com/vi/qfHSDPMyWt4/maxresdefault_live.jpg",
-  "boyne-XWyDmTPBN6g": "https://i.ytimg.com/vi/XWyDmTPBN6g/maxresdefault_live.jpg",
-  "boyne-4kzVkq8YLko": "https://i.ytimg.com/vi/4kzVkq8YLko/maxresdefault_live.jpg",
-  "boyne-ioTfHBawdw4": "https://i.ytimg.com/vi/ioTfHBawdw4/maxresdefault_live.jpg",
-  "boyne-3vuXRsZXFUU": "https://i.ytimg.com/vi/3vuXRsZXFUU/maxresdefault_live.jpg",
-  "boyne-7ZJyX7imL1M": "https://i.ytimg.com/vi/7ZJyX7imL1M/maxresdefault_live.jpg",
-  "boyne-RODEbIPGspQ": "https://i.ytimg.com/vi/RODEbIPGspQ/maxresdefault_live.jpg",
-  "boyne-VyGR7BQvoUY": "https://i.ytimg.com/vi/VyGR7BQvoUY/maxresdefault_live.jpg",
-  "boyne-54N_P5FqdOc": "https://i.ytimg.com/vi/54N_P5FqdOc/maxresdefault_live.jpg",
-  "boyne-hqUTCpjQVPE": "https://i.ytimg.com/vi/hqUTCpjQVPE/maxresdefault_live.jpg",
-  "loon-2CvA9SJAEYM": "https://i.ytimg.com/vi/2CvA9SJAEYM/maxresdefault_live.jpg",
-  "loon-1ulgeNTlFJc": "https://i.ytimg.com/vi/1ulgeNTlFJc/maxresdefault_live.jpg",
-  "loon-Hlu86D572fM": "https://i.ytimg.com/vi/Hlu86D572fM/maxresdefault_live.jpg",
-  "loon-qaKsuZF9ZT8": "https://i.ytimg.com/vi/qaKsuZF9ZT8/maxresdefault_live.jpg",
-  "loon-gtBg54SfrWQ": "https://i.ytimg.com/vi/gtBg54SfrWQ/maxresdefault_live.jpg",
-  "bigsky-mux": "https://image.mux.com/rP00y2rE5FuCTFcajU7Lr2YVdkcMi101Ozjb38AsKtNFU/thumbnail.jpg",
-  "hood-hdrelay": "https://img.hdrelay.com/frames/63d44d707803e58fc2e6d8cc/default/last.jpg"
+  "sundayriver-Hstis9bupws": "https://i.ytimg.com/vi/Hstis9bupws/maxresdefault_live.jpg",
+  "hood-63cadf1f": "https://b15.hdrelay.com/camera/63cadf1f426d0a9136dc81da/snapshot"
  },
  "pages": {
-  "crystal": "https://www.crystalmountainresort.com/the-mountain/mountain-report-and-webcams",
-  "steamboat": "https://www.steamboat.com/the-mountain/live-cams",
-  "snowshoe": "https://www.snowshoemtn.com/media-room/village-camera",
-  "sundayriver": "https://www.sundayriver.com/mountain-report",
-  "bigsky": "https://www.bigskyresort.com/mountain-report",
-  "hood-api": "https://www.skihood.com/api/weather/webcam",
-  "schweitzer": "https://www.schweitzer.com/mountain-info/webcam"
+  "schweitzer-roundshot": "https://schweitzer.roundshot.com/skyhouse/",
+  "snowshoe-basin": "https://resortcams.com/webcams/snowshoe-basin",
+  "snowshoe-boathouse": "https://resortcams.com/webcams/snowshoe-boathouse",
+  "snowshoe-main": "https://www.resortcams.com/webcams/snowshoe",
+  "crystal-old": "https://www.crystalmountainresort.com/the-mountain/webcams",
+  "sundayriver-cams": "https://www.sundayriver.com/mountain-report/webcams"
  }
 }
