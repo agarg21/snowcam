@@ -1,0 +1,16 @@
+# Clean-board gate regions (x0, y0, x1, y1 as fractions of the frame): the lower ruler and the
+# snow board around its foot. Set by looking at each cam on 2026-11-26; re-check after a cam moves.
+alta-collins-snow-stake: [0.44, 0.55, 0.60, 0.92]
+bogus-basin-yt-g714uvr8rjg: [0.42, 0.30, 0.58, 0.55]
+breckenridge-brecksnowstake: [0.42, 0.55, 0.56, 0.90]
+keystone-keysnowstake: [0.42, 0.55, 0.56, 0.92]
+mountsnow-stake: [0.18, 0.55, 0.58, 0.90]
+mt-bachelor-yt-orlxprywwd4: [0.44, 0.55, 0.53, 0.88]
+northstar-snowstake: [0.30, 0.20, 0.66, 0.60]
+okemo-stake: [0.54, 0.50, 0.66, 0.88]
+stevens-pass-snowstake: [0.44, 0.45, 0.60, 0.85]
+stowe-snowstake: [0.42, 0.50, 0.56, 0.88]
+sugarbush-yt-2kjx9cnxrxa: [0.36, 0.50, 0.47, 0.85]
+sugarbush-yt-gwpiruoopee: [0.46, 0.45, 0.60, 0.80]
+vail-snowsummit: [0.52, 0.55, 0.69, 0.90]
+winter-park-yt-yj-5q1vbmaa: [0.48, 0.60, 0.58, 0.97]

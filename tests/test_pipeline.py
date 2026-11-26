@@ -376,3 +376,48 @@ def test_stake_due_twice_a_day_plus_snowfall(tmp_path):
                 (at(18, 30).isoformat(), "m", "v", json.dumps({"precip_now": {"value": "snow", "conf": 0.9}}), "", "{}"))
     assert cli.stake_due(con, cam, prev(13), at(19)) == (True, "snow falling")
     assert cli.stake_due(con, cam, prev(18), at(19))[0] is False        # read under 2 h ago
+
+
+def test_flat_stake_answer_and_legacy_text():
+    from snowcam.reader import normalize
+    out = normalize({"stake_inches": 3, "stake_inches_conf": 0.8, "precip_now": {"value": "none", "conf": 0.9}})
+    assert out["stake_inches"] == {"value": 3.0, "conf": 0.8}
+    out = normalize({"stake_inches": '<parameter name="value">2', "stake_inches_conf": 0.7})
+    assert out["stake_inches"] == {"value": 2.0, "conf": 0.7}
+    out = normalize({"stake_inches": None, "stake_inches_conf": 0.9})
+    assert out["stake_inches"] == {"value": None, "conf": 0.9}
+    out = normalize({"stake_inches": "lots", "stake_inches_conf": 0.9})
+    assert out["stake_inches"]["conf"] == 0.0   # unreadable text never counts
+    assert normalize({"stake_inches": "0"})["stake_inches"]["conf"] == 0.0  # old shape: no confidence
+
+
+def test_stake_gate_shadow(tmp_path):
+    import sqlite3
+    import numpy as np
+    from PIL import Image, ImageDraw
+    from snowcam import stakegate
+    con = sqlite3.connect(tmp_path / "t.db")
+    stakegate.ensure(con)
+    def board(snow: int, seed: int):
+        rng = np.random.default_rng(seed)
+        im = Image.new("L", (640, 360), 90)
+        d = ImageDraw.Draw(im)
+        d.rectangle([340, 40, 380, 320], fill=235)          # ruler
+        for y in range(60, 320, 20):
+            d.rectangle([350, y, 370, y + 6], fill=20)       # marks
+        if snow:
+            d.rectangle([300, 320 - snow, 430, 340], fill=250)  # snow over the lower ruler
+        a = np.clip(np.asarray(im, dtype=np.float32) + rng.normal(0, 4, (360, 640)), 0, 255).astype("uint8")
+        p = tmp_path / f"b{snow}_{seed}.jpg"
+        Image.fromarray(a).convert("RGB").save(p)
+        return str(p)
+    cam = "okemo-stake"
+    for i in range(3):  # Sonnet reads 0 in. confidently -> references
+        stakegate.record(con, cam, f"t{i}", i, i, board(0, i), False, {"stake_inches": {"value": 0, "conf": 0.9}})
+    s_clean, tau = stakegate.score(con, cam, board(0, 9), False)
+    s_snow, _ = stakegate.score(con, cam, board(120, 9), False)
+    assert s_clean >= tau > s_snow
+    stakegate.record(con, cam, "t9", 9, 9, board(120, 9), False, {"stake_inches": {"value": 5, "conf": 0.8}})
+    assert con.execute("select clean from stake_gate_log where ts='t9'").fetchone()[0] == 0
+    assert con.execute("select count(*) from stake_refs").fetchone()[0] == 3  # snow frames never become references
+    assert stakegate.SKIP is False

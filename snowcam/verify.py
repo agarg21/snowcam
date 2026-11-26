@@ -88,9 +88,7 @@ def _schema(fields: list[str], stake: bool) -> dict:
         "value": {"type": "string", "enum": reader.FIELDS[f]["enum"]},
         "conf": {"type": "number", "minimum": 0, "maximum": 1}}, "required": ["value", "conf"]} for f in fields}
     if stake:
-        props["stake_inches"] = {"type": "object", "properties": {
-            "value": {"type": ["number", "null"]}, "conf": {"type": "number", "minimum": 0, "maximum": 1}},
-            "required": ["value", "conf"]}
+        props.update(reader.STAKE_PROPS)  # flat, as in the first read (v0.5)
     return {"type": "object", "properties": props, "required": list(props)}
 
 

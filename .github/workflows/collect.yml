@@ -60,6 +60,7 @@ jobs:
           python -m snowcam.cli report
           python -m snowcam.cli savings || true
           python -m snowcam.cli cost --days 2 || true
+          python -m snowcam.cli stake-gate || true
 
       # Private dataset (owner, 2026-11-25): this pass's daytime reads as 640 px JPEGs with label
       # JSON, one part zip per pass. Never part of the public feed.

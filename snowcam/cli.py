@@ -266,7 +266,17 @@ def read_pending(reg, con, dry_run: bool, samples: int, since_hours: float, limi
         if lag is not None and lag > 20:  # frame clock disagrees with fetch time: feed is stale
             fields = {k: ({**v, "conf": 0.0} if isinstance(v, dict) else v) for k, v in fields.items()}
             fields["stale_clock_lag_min"] = {"value": lag, "conf": 1.0}
-        store.insert_reading(con, row["id"], cam.id, row["ts"], r1.model, reader.PROMPT_VERSION, fields, r1.evidence, r1.raw)
+        rid = store.insert_reading(con, row["id"], cam.id, row["ts"], r1.model, reader.PROMPT_VERSION, fields, r1.evidence, r1.raw)
+        if cam.role == "stake":
+            try:  # clean-board gate in shadow mode: log it beside the Sonnet read
+                from . import stakegate
+                stakegate.ensure(con)
+                m = (json.loads(row["gates"] or "{}") or {}).get("metrics", {})
+                night = (m.get("sun_elevation") if m.get("sun_elevation") is not None else -90) < -6
+                stakegate.record(con, cam.id, row["ts"], row["id"], rid, row["path"], night, fields)
+                con.commit()
+            except Exception as e:  # never let the shadow gate break a read
+                print(f"{cam.id}: stake gate skipped ({e})")
         last = store.DATA / "last" / f"{cam.id}.jpg"
         last.parent.mkdir(parents=True, exist_ok=True)
         cur[0].save(last, format="JPEG", quality=85)
@@ -545,6 +555,7 @@ def main(argv=None) -> None:
     mg.add_argument("out")
     mg.add_argument("parts", nargs="+")
     sub.add_parser("savings", help="model calls skipped per day")
+    sub.add_parser("stake-gate", help="clean-board gate (shadow) against Sonnet stake reads")
     cp = sub.add_parser("cost", help="actual model spend per day, from recorded token usage")
     cp.add_argument("--days", type=int, default=7)
     hc = sub.add_parser("health", help="daily health check, no model calls")
@@ -611,6 +622,9 @@ def main(argv=None) -> None:
         findings, spend_line = health.check(reg, con, runs, now)
         Path(a.out).write_text(health.render(findings, spend_line, now, prev))
         print(Path(a.out).read_text())
+    elif a.cmd == "stake-gate":
+        from . import stakegate
+        print(stakegate.report(con))
     elif a.cmd == "cost":
         print(cost_table(con, a.days))
     elif a.cmd == "report":

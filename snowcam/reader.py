@@ -21,7 +21,7 @@ from PIL import Image
 
 from .config import Cam
 
-PROMPT_VERSION = "v0.4"  # v0.4 (2026-11-26): same prompt, 768 px images for regular reads, prompt cache
+PROMPT_VERSION = "v0.5"  # v0.4 (2026-11-26): 768 px regular reads, prompt cache; v0.5: flat stake_inches + stake_inches_conf
 DEFAULT_MODEL = os.environ.get("SNOWCAM_MODEL", "claude-haiku-5-5")
 ESCALATE_MODEL = os.environ.get("SNOWCAM_ESCALATE_MODEL", "claude-sonnet-5-5")
 # Image width sent to the model. Regular reads use 768 px (2026-11-26: same answers as 1092 px in
@@ -70,6 +70,28 @@ SYSTEM = (
 )
 
 
+STAKE_PROPS = {
+    "stake_inches": {"type": ["number", "null"],
+                     "description": "Snow depth read off the stake ruler in inches; 0 if the board is bare, null if unreadable."},
+    "stake_inches_conf": {"type": "number", "minimum": 0, "maximum": 1,
+                          "description": "Confidence in stake_inches, 0 to 1."},
+}
+
+
+def _num(v):
+    if isinstance(v, bool):
+        return None
+    if isinstance(v, (int, float)):
+        return float(v)
+    if isinstance(v, str):
+        t = v.strip().split(">")[-1].strip()  # tolerate '<parameter name="value">3'
+        try:
+            return float(t)
+        except ValueError:
+            return None
+    return None
+
+
 def _schema(fields: list[str], stake: bool) -> dict:
     props: dict = {}
     for f in fields:
@@ -80,11 +102,9 @@ def _schema(fields: list[str], stake: bool) -> dict:
             "required": ["value", "conf"],
         }
     if stake:
-        props["stake_inches"] = {
-            "type": "object",
-            "properties": {"value": {"type": ["number", "null"]}, "conf": {"type": "number", "minimum": 0, "maximum": 1}},
-            "required": ["value", "conf"],
-        }
+        # Flat on purpose (v0.5, 2026-11-26): as a nested {value, conf} object Sonnet returned the
+        # value as text in 30% of stake reads ("0", '<parameter name="value">0'), which were lost.
+        props.update(STAKE_PROPS)
         props["clock_time"] = {
             "type": ["string", "null"],
             "description": "Time shown on any clock in the frame as HH:MM, or null if none is readable.",
@@ -106,7 +126,8 @@ def _instructions(cam: Cam, fields: list[str], labels: list[str], burst: int) ->
     if cam.role == "stake":
         lines.append("- stake_inches: the snow depth read off the stake ruler in inches (0 if the board is bare), "
                      "or null if you cannot read it. The ruler's 0 is at the board surface, so the depth is the "
-                     "number where the snow surface meets the ruler; numbers buried in snow are below it.")
+                     "number where the snow surface meets the ruler; numbers buried in snow are below it. "
+                     "Give stake_inches as a plain number and its confidence separately in stake_inches_conf.")
         lines.append("- clock_time: the time on any clock in the frame as HH:MM, or null. Some displays alternate "
                      "between the time, a temperature (e.g. 37F) and the year (e.g. 2026): report a time only if "
                      "the display shows a colon between hours and minutes; otherwise use null.")
@@ -242,6 +263,14 @@ def normalize(data: dict) -> dict:
     """Every field as {value, conf} with a numeric conf; a missing or bad conf counts as 0, so the
     field is never published (seen 2026-11-16: one field came back without its conf)."""
     out = {}
+    data = dict(data)
+    if "stake_inches_conf" in data:  # flat stake answer (v0.5) -> {value, conf}
+        c = data.pop("stake_inches_conf")
+        raw = data.get("stake_inches")
+        if isinstance(raw, dict):
+            raw = raw.get("value")
+        val = _num(raw)
+        data["stake_inches"] = {"value": val, "conf": c if (val is not None or raw is None) else 0.0}
     for k, v in data.items():
         if k not in FIELDS and k not in ("stake_inches", "clock_time"):
             continue  # stray keys the model sometimes adds (e.g. "snow_cover_note")
