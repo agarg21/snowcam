@@ -21,7 +21,7 @@ from PIL import Image
 
 from .config import Cam
 
-PROMPT_VERSION = "v0.5"  # v0.4 (2026-11-26): 768 px regular reads, prompt cache; v0.5: flat stake_inches + stake_inches_conf
+PROMPT_VERSION = "v0.6"  # v0.4 (2026-11-26): 768 px regular reads, prompt cache; v0.5: flat stake_inches + stake_inches_conf; v0.6: shared field definitions with the check
 DEFAULT_MODEL = os.environ.get("SNOWCAM_MODEL", "claude-haiku-5-5")
 ESCALATE_MODEL = os.environ.get("SNOWCAM_ESCALATE_MODEL", "claude-sonnet-5-5")
 # Image width sent to the model. Regular reads use 768 px (2026-11-26: same answers as 1092 px in
@@ -32,15 +32,33 @@ SEND_W = 768
 FULL_W = 1092
 
 FIELDS: dict[str, dict] = {
+    # v0.6 (2026-11-26): one written definition per field, shared word for word with the second-
+    # opinion check, so both readers judge the same thing. Before, the check judged fresh snow
+    # against a clear-day reference from mid-November and the first read against the previous
+    # frame, and no read said where "mostly" ends and "patchy" begins.
     "fresh_snow": {"enum": ["none", "dusting", "light", "heavy", "unknown"],
-                   "help": "New snow since the reference/previous frame on trees, roofs, railings, decks. light = about 1-3 in., heavy = 3+ in."},
+                   "help": ("Snow that fell in about the last 24 hours, judged from the current image itself: clean "
+                            "white snow still sitting on tree branches, roof edges, railings, lift chairs or posts, "
+                            "or a smooth untracked layer. Snow that has been there for days (gone from branches, grey, "
+                            "tracked, crusted) is not fresh. Do not call snow fresh only because the clear-day "
+                            "reference shows less. dusting = a thin coat under 1 in.; light = about 1-3 in.; "
+                            "heavy = more than 3 in.")},
     "snow_cover": {"enum": ["full", "mostly", "patchy", "bare", "unknown"],
-                   "help": "How much of the visible slope surface is covered by snow (natural or man-made)."},
+                   "help": ("Share of the visible ski slope or trail surface covered by snow (natural or man-made); "
+                            "ignore trees, sky, buildings and parking. full = 90% or more; mostly = 70-90%; "
+                            "patchy = 20-70% with grass, dirt or rock showing; bare = under 20%. "
+                            "unknown if no ski slope is in view.")},
     "surface_look": {"enum": ["corduroy", "packed", "icy_sheen", "slushy", "unknown"],
                      "help": "Groomed lines, packed snow, glare suggesting ice, or wet slush. Use unknown unless clear."},
-    "snowmaking": {"enum": ["on", "off", "unknown"], "help": "Visible snow-gun plumes."},
-    "precip_now": {"enum": ["none", "snow", "rain_or_mix", "unknown"], "help": "Falling precipitation visible in the frame."},
-    "visibility": {"enum": ["clear", "hazy", "fog", "whiteout", "unknown"], "help": "Compared with the clear-day reference."},
+    "snowmaking": {"enum": ["on", "off", "unknown"],
+                   "help": ("on = white plumes of spray or mist blowing from snow guns somewhere in view; off = no "
+                            "plumes anywhere in view; unknown = you cannot see the slopes well enough to tell.")},
+    "precip_now": {"enum": ["none", "snow", "rain_or_mix", "unknown"],
+                   "help": "Snow or rain falling right now: flakes, streaks or drops in the air or on the lens; none if the air is clear."},
+    "visibility": {"enum": ["clear", "hazy", "fog", "whiteout", "unknown"],
+                   "help": ("How far you can see. clear = the far features of the view are sharp; hazy = far features "
+                            "soft but visible; fog = mid-distance features hidden; whiteout = almost nothing beyond "
+                            "the near foreground. The clear-day reference shows what the full view contains.")},
     "lifts_moving": {"enum": ["yes", "no", "unknown"],
                      "help": "Chairs visibly spaced along the line or moving between burst frames. With a single frame, use unknown unless obvious."},
     "base_busyness": {"enum": ["empty", "light", "normal", "busy", "packed", "unknown"],
