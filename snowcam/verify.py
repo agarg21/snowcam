@@ -193,10 +193,110 @@ def checks_in_window(con, resort: str) -> int:
                        (resort, since, since)).fetchone()[0]
 
 
+# Early finish (2026-11-27): a published resort leaves the first-100 checks once every published
+# field is clearly above the bar: one-sided 95% Wilson lower bound >= 85% on 40+ checks
+# (about at most 2 misses in 40). Spot checks then take over, as after 100.
+EARLY_MIN = 40
+EARLY_LB = 0.85
+
+
+def wilson_lb(k: int, n: int, z: float = 1.645) -> float:
+    if n == 0:
+        return 0.0
+    p = k / n
+    return (p + z * z / (2 * n) - z * ((p * (1 - p) / n + z * z / (4 * n * n)) ** 0.5)) / (1 + z * z / n)
+
+
+def early_done(con, resort: str, fields: list | set) -> bool:
+    fields = set(fields or [])
+    if not fields or "stake_inches" in fields:
+        return False
+    ev = evaluate(con, resort, keep=fields)
+    if ev["reads"] < EARLY_MIN:
+        return False
+    for f in fields:
+        d = ev["detail"].get(f) or {}
+        n, a = d.get("n", 0), d.get("agreement", 0)
+        if n < EARLY_MIN or wilson_lb(round(a * n), n) < EARLY_LB:
+            return False
+    return True
+
+
+# Second-opinion checks that nobody waits for go through the Message Batches API at half price
+# (2026-11-27); results are collected by the next pass. Spot checks stay direct, because a
+# disagreement there needs a tie-break on the same frame, which is gone after the pass.
+PENDING = """
+create table if not exists pending_checks (
+  custom_id text primary key, batch_id text not null, reading_id integer not null, cam text not null,
+  resort text not null, ts text not null, phase text not null, model text not null, created text not null
+);
+"""
+BATCH_EXPIRE_H = 26
+
+
+def pending_count(con, resort: str) -> int:
+    con.executescript(PENDING)
+    return con.execute("select count(*) from pending_checks where resort=?", (resort,)).fetchone()[0]
+
+
+def submit_batch(con, items: list[tuple]) -> str | None:
+    """items: (row, cam, phase, request). One batch per pass; returns its id."""
+    if not items:
+        return None
+    import anthropic
+    con.executescript(PENDING)
+    reqs = []
+    for row, cam, phase, req in items:
+        req = {**req, "tool_choice": {"type": "auto"}, "max_tokens": max(req.get("max_tokens", 600), 6000)} \
+            if req["model"] == INITIAL_MODEL else req  # Sonnet refuses a forced tool call
+        reqs.append({"custom_id": f"r{row['id']}-{phase}", "params": req})
+    batch = anthropic.Anthropic().messages.batches.create(requests=reqs)
+    for (row, cam, phase, req), r in zip(items, reqs):
+        con.execute("insert or replace into pending_checks values (?,?,?,?,?,?,?,?,?)",
+                    (r["custom_id"], batch.id, row["id"], cam.id, cam.resort_id, row["ts"], phase,
+                     req["model"], now_iso()))
+    con.commit()
+    return batch.id
+
+
+def collect_batches(con) -> list[tuple]:
+    """Finished batch results: (pending row, check fields or None, error or None)."""
+    import anthropic
+    con.executescript(PENDING)
+    client = anthropic.Anthropic()
+    out = []
+    for (bid,) in con.execute("select distinct batch_id from pending_checks").fetchall():
+        b = client.messages.batches.retrieve(bid)
+        rows = {r["custom_id"]: r for r in con.execute("select * from pending_checks where batch_id=?", (bid,))}
+        if b.processing_status != "ended":
+            oldest = min(r["created"] for r in rows.values())
+            if datetime.fromisoformat(oldest) < datetime.now(timezone.utc) - timedelta(hours=BATCH_EXPIRE_H):
+                con.execute("delete from pending_checks where batch_id=?", (bid,))
+                out += [(r, None, "batch expired") for r in rows.values()]
+            continue
+        for res in client.messages.batches.results(bid):
+            r = rows.pop(res.custom_id, None)
+            if r is None:
+                continue
+            if res.result.type == "succeeded":
+                try:
+                    out.append((r, reader.parse(res.result.message, r["model"], "check-batch", discount=0.5).fields, None))
+                except Exception as e:
+                    out.append((r, None, f"{type(e).__name__}: {str(e)[:120]}"))
+            else:
+                out.append((r, None, res.result.type))
+        out += [(r, None, "missing from results") for r in rows.values()]
+        con.execute("delete from pending_checks where batch_id=?", (bid,))
+    con.commit()
+    return out
+
+
 def pick(con, reg, since_iso: str, rng: random.Random) -> list[tuple]:
     """This run's reads to check: up to 4 per unpublished resort, about 10% for published ones,
     and 2 re-checks for a resort that was taken off or used all its checks without passing."""
-    published = {r["resort"] for r in con.execute("select resort from publish_state where publish=1")}
+    published_fields = {r["resort"]: json.loads(r["fields"] or "[]")
+                        for r in con.execute("select resort, fields from publish_state where publish=1")}
+    published = set(published_fields)
     rows = con.execute(
         "select r.id, r.cam, r.ts, r.fields, f.path from readings r join frames f on f.id=r.frame_id "
         "left join verifications v on v.reading_id=r.id where v.id is null and r.ts>=?", (since_iso,)).fetchall()
@@ -210,9 +310,10 @@ def pick(con, reg, since_iso: str, rng: random.Random) -> list[tuple]:
     out = []
     for rid, items in by_resort.items():
         rng.shuffle(items)
-        n = checks_in_window(con, rid)
+        n = checks_in_window(con, rid) + pending_count(con, rid)
         if rid in published:
-            if n < SAMPLE_TARGET:  # published early (or back early): full checking to 100
+            done = n < SAMPLE_TARGET and early_done(con, rid, published_fields.get(rid, []))
+            if n < SAMPLE_TARGET and not done:  # published early (or back early): full checking to 100
                 out += [(row, cam, "initial") for row, cam in items[:PER_RESORT_PER_RUN]]
             else:
                 out += [(row, cam, "spot") for row, cam in items if rng.random() < SPOT_SHARE]

@@ -472,3 +472,60 @@ def test_reference_refresh_for_a_cam_with_a_new_fixed_view(tmp_path, monkeypatch
     cli.reference_refresh(reg, con)
     assert done == [(cam, last)]
     assert con.execute("select count(*) from cam_profiles where cam=?", (cam,)).fetchone()[0] == 0
+
+
+def test_wilson_and_early_finish(tmp_path):
+    import sqlite3, json
+    from snowcam import store, verify
+    assert round(verify.wilson_lb(40, 40), 3) == 0.937
+    assert verify.wilson_lb(38, 40) >= verify.EARLY_LB > verify.wilson_lb(36, 40)
+    con = sqlite3.connect(tmp_path / "t.db"); con.row_factory = sqlite3.Row
+    con.executescript(store.SCHEMA); verify.ensure(con)
+    def add(i, ok):
+        con.execute("insert into verifications(reading_id, cam, resort, ts, phase, model, fields, tiebreak, created) "
+                    "values (null,'c','r',?,'initial','m','{}',?,'t')",
+                    (f"2026-11-{15 + i % 3}T15:00:00+00:00", json.dumps({"compare": {"snow_cover": ok}, "false_fresh": False})))
+    for i in range(39):
+        add(i, True)
+    assert not verify.early_done(con, "r", ["snow_cover"])       # 39 checks: not yet
+    add(39, False)
+    assert verify.early_done(con, "r", ["snow_cover"])           # 39/40
+    for i in range(3):
+        add(40 + i, False)
+    assert not verify.early_done(con, "r", ["snow_cover"])       # 39/43: lower bound below 85%
+    assert not verify.early_done(con, "r", ["stake_inches"])     # stakes always run the full check
+
+
+def test_batch_submit_and_collect(tmp_path, monkeypatch):
+    import sqlite3, sys, types
+    from types import SimpleNamespace as NS
+    from snowcam import store, verify, reader
+    from snowcam.config import load_registry
+    cam = load_registry().cam("okemo-summit")
+    con = sqlite3.connect(tmp_path / "t.db"); con.row_factory = sqlite3.Row
+    con.executescript(store.SCHEMA)
+    sent = {}
+    msg = NS(stop_reason="tool_use", usage=NS(model_dump=lambda: {"input_tokens": 2000, "output_tokens": 300}),
+             content=[NS(type="tool_use", input={"snow_cover": {"value": "full", "conf": 0.9}, "evidence": "x"})])
+    class Batches:
+        def create(self, requests):
+            sent["reqs"] = requests
+            return NS(id="b1")
+        def retrieve(self, bid):
+            return NS(processing_status="ended")
+        def results(self, bid):
+            return [NS(custom_id=r["custom_id"], result=NS(type="succeeded", message=msg)) for r in sent["reqs"]]
+    fake = types.ModuleType("anthropic")
+    fake.Anthropic = lambda: NS(messages=NS(batches=Batches()))
+    monkeypatch.setitem(sys.modules, "anthropic", fake)
+    row = {"id": 7, "ts": "2026-11-27T15:00:00+00:00"}
+    req = {"model": verify.INITIAL_MODEL, "max_tokens": 600, "messages": []}
+    assert verify.submit_batch(con, [(row, cam, "initial", req)]) == "b1"
+    assert sent["reqs"][0]["custom_id"] == "r7-initial" and sent["reqs"][0]["params"]["tool_choice"] == {"type": "auto"}
+    assert verify.pending_count(con, "okemo") == 1
+    reader.CALLS.clear()
+    out = verify.collect_batches(con)
+    assert len(out) == 1 and out[0][1]["snow_cover"]["value"] == "full" and out[0][2] is None
+    assert verify.pending_count(con, "okemo") == 0
+    assert reader.CALLS[0][1] == "check-batch" and abs(reader.CALLS[0][-1] - 0.5 * reader.price(verify.INITIAL_MODEL, {"input_tokens": 2000, "output_tokens": 300})) < 1e-9
+    reader.CALLS.clear()

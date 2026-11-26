@@ -373,11 +373,55 @@ def verify_run(reg, con) -> None:
     if not os.environ.get("ANTHROPIC_API_KEY"):
         print("ANTHROPIC_API_KEY not set; skipping verification")
         return
+    def record(row_id, cam, ts, phase, model, check, result):
+        con.execute("insert or ignore into verifications(reading_id, cam, resort, ts, phase, model, fields, tiebreak, created) "
+                    "values (?,?,?,?,?,?,?,?,?)", (row_id, cam.id, cam.resort_id, ts, phase, model,
+                                                  json.dumps(check), json.dumps(result), verify.now_iso()))
+        bad = [f for f, ok in result["compare"].items() if ok is False or (f == "stake_inches" and ok and ok > 1)]
+        print(f"{cam.id:30s} {phase:7s} {'FALSE FRESH ' if result['false_fresh'] else ''}disagree={bad}")
+
+    # 1. Results of last pass's batched checks (half price, same model and questions).
+    use_batch = os.environ.get("SNOWCAM_BATCH", "1") != "0"
+    try:
+        done = verify.collect_batches(con)
+    except Exception as e:
+        print(f"batch collect failed ({type(e).__name__}: {str(e)[:120]}); will retry next pass")
+        done = []
+    for p, check, err in done:
+        try:
+            cam = reg.cam(p["cam"])
+        except KeyError:
+            continue
+        if err:
+            print(f"{cam.id:30s} batched check lost: {err}")
+            continue
+        r = con.execute("select fields from readings where id=?", (p["reading_id"],)).fetchone()
+        if r is None:
+            continue
+        first = json.loads(r["fields"])
+        record(p["reading_id"], cam, p["ts"], p["phase"], p["model"], check,
+               {"compare": verify.compare(first, check), "false_fresh": verify.false_fresh(first, check), "batched": True})
+    if done:
+        print(f"collected {sum(1 for _, c, e in done if not e)} batched checks ({sum(1 for *_, e in done if e)} lost)")
+    con.commit()
+
+    # 2. This pass's picks: spot checks now, first-100 and re-checks into a batch.
     since = (now_utc() - timedelta(hours=0.5)).isoformat()
     picks = [(row, cam, phase) for row, cam, phase in verify.pick(con, reg, since, random.Random())
              if row["path"] and Path(row["path"]).exists()]
+    if use_batch:
+        to_batch = [(row, cam, phase, verify.build_request(cam, Image.open(row["path"]).convert("RGB"), _ref(cam.id)[0],
+                                                           verify.INITIAL_MODEL))
+                    for row, cam, phase in picks if phase == "initial"]
+        picks = [x for x in picks if x[2] != "initial"]
+        try:
+            bid = verify.submit_batch(con, to_batch)
+            if bid:
+                print(f"batched {len(to_batch)} checks ({bid}); results next pass")
+        except Exception as e:
+            print(f"batch submit failed ({type(e).__name__}: {str(e)[:120]}); these frames go unchecked")
     if not picks:
-        print("nothing to verify")
+        print("nothing to verify now")
         return
 
     published = {r["resort"]: set(json.loads(r["fields"] or "[]"))
@@ -416,11 +460,7 @@ def verify_run(reg, con) -> None:
         if err is not None:
             print(f"{cam.id:30s} VERIFY ERROR {type(err).__name__}: {str(err)[:150]}")
             continue
-        con.execute("insert or ignore into verifications(reading_id, cam, resort, ts, phase, model, fields, tiebreak, created) "
-                    "values (?,?,?,?,?,?,?,?,?)", (row["id"], cam.id, cam.resort_id, row["ts"], phase, model,
-                                                  json.dumps(check), json.dumps(result), verify.now_iso()))
-        bad = [f for f, ok in result["compare"].items() if ok is False or (f == "stake_inches" and ok and ok > 1)]
-        print(f"{cam.id:30s} {phase:7s} {'FALSE FRESH ' if result['false_fresh'] else ''}disagree={bad}")
+        record(row["id"], cam, row["ts"], phase, model, check, result)
     con.commit()
 
 
@@ -435,7 +475,8 @@ def check_publish(reg, con) -> None:
         if st and st["publish"]:
             fields = json.loads(st["fields"] or "[]")
             ev = verify.evaluate(con, rid, keep=set(fields))
-            if ev["reads"] < verify.SAMPLE_TARGET:  # published early: the full check keeps running
+            if ev["reads"] < verify.SAMPLE_TARGET and not verify.early_done(con, rid, fields):
+                # published early: the full check keeps running until 100 or a clear early finish
                 if not verify.has_snow(ev["fields_ok"]):
                     when = verify.now_iso()
                     con.execute("update publish_state set publish=0, summary=?, changed=? where resort=?",

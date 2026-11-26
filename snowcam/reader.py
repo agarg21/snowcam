@@ -228,7 +228,7 @@ def build_request(cam: Cam, current: list[Image.Image], ts_label: str,
 CALLS: list[tuple] = []
 PRICE = {  # $ per million tokens: input, output, cache read, cache write (5 min)
     "claude-haiku-5-5": (0.10, 0.50, 0.01, 0.125),
-    "claude-sonnet-5-5": (2.0, 10.0, 0.20, 2.5),
+    "claude-sonnet-5-5": (2.0, 10.0, 0.10, 2.5),  # cache read is 5% of input on Sonnet 5.5
 }
 
 
@@ -251,13 +251,18 @@ def call(request: dict, kind: str = "read") -> Reading:
         # Such models may think first, so give them room to finish the tool call.
         request = {**request, "tool_choice": {"type": "auto"}, "max_tokens": 6000}
         msg = client.messages.create(**request)
+    return parse(msg, request["model"], kind)
+
+
+def parse(msg, model: str, kind: str = "read", discount: float = 1.0) -> Reading:
+    """Turn a Messages API reply (direct or from a batch) into a Reading and log its usage."""
     u = msg.usage.model_dump() if hasattr(msg.usage, "model_dump") else {}
-    CALLS.append((datetime.now(timezone.utc).isoformat(timespec="seconds"), kind, request["model"],
+    CALLS.append((datetime.now(timezone.utc).isoformat(timespec="seconds"), kind, model,
                   u.get("input_tokens", 0), u.get("output_tokens", 0), u.get("cache_read_input_tokens") or 0,
-                  u.get("cache_creation_input_tokens") or 0, price(request["model"], u)))
+                  u.get("cache_creation_input_tokens") or 0, price(model, u) * discount))
     block = next((b for b in msg.content if b.type == "tool_use"), None)
     if block is None or not block.input or msg.stop_reason == "max_tokens":
-        raise RuntimeError(f"{request['model']} gave no complete reading (stop_reason={msg.stop_reason})")
+        raise RuntimeError(f"{model} gave no complete reading (stop_reason={msg.stop_reason})")
     data = dict(block.input)
     evidence = data.pop("evidence", "")
     if "clock_time" in data:
@@ -272,7 +277,7 @@ def call(request: dict, kind: str = "read") -> Reading:
         if isinstance(clock, str):
             clock = clock.strip().strip('"').strip() or None
         data["clock_time"] = {"value": clock, "conf": 1.0 if clock else 0.0}
-    return Reading(fields=normalize(data), evidence=evidence, model=request["model"],
+    return Reading(fields=normalize(data), evidence=evidence, model=model,
                    raw={"stop_reason": msg.stop_reason,
                         "usage": msg.usage.model_dump() if hasattr(msg.usage, "model_dump") else str(msg.usage)})
 
