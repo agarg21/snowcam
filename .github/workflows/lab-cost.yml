@@ -1,0 +1,58 @@
+name: lab-cost
+
+# One-off cost experiment (owner, 2026-11-26): re-read a sample of recent frames with cheaper request
+# variants and compare against production reads. Manual only; about $1 a run. Results stay in this
+# private repo's run artifact (fields and token counts, no images).
+on:
+  workflow_dispatch:
+    inputs:
+      n:
+        description: "Non-stake reads to sample"
+        default: "80"
+      stakes:
+        description: "Stake reads to sample"
+        default: "15"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      GH_TOKEN: ${{ github.token }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Restore database, references and last frames
+        run: |
+          git fetch origin data:data
+          mkdir -p data
+          git show data:snowcam.db > data/snowcam.db
+          git archive data refs | tar -x -C data || true
+          git archive data last | tar -x -C data || true
+      - name: Download recent daytime frame artifacts
+        run: |
+          mkdir -p frames
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts?per_page=100" \
+            --jq '.artifacts[] | select(.expired==false and (.name|startswith("frames-"))) | [.id, .created_at] | @tsv' |
+          awk -F'\t' '{h=substr($2,12,2)+0; if (h>=14 && h<=21) print $1}' | head -6 |
+          while read id; do
+            gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$id/zip" > "frames/$id.zip"
+            mkdir -p "frames/$id" && unzip -q "frames/$id.zip" -d "frames/$id" && rm "frames/$id.zip"
+          done
+          find frames -name '*.jpg' | wc -l
+      - name: Run the experiment
+        run: python -m lab.cost_experiment frames --n "${{ inputs.n }}" --stakes "${{ inputs.stakes }}" --out lab-out
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lab-cost-${{ github.run_id }}
+          path: lab-out
+          retention-days: 30
