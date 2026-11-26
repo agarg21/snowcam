@@ -366,8 +366,10 @@ def check_publish(reg, con) -> None:
             ev = verify.evaluate(con, rid, keep=set(fields))
             if ev["reads"] < verify.SAMPLE_TARGET:  # published early: the full check keeps running
                 if not verify.has_snow(ev["fields_ok"]):
+                    when = verify.now_iso()
                     con.execute("update publish_state set publish=0, summary=?, changed=? where resort=?",
-                                (json.dumps(dict(ev, unpublished="no snow field holds 85%")), verify.now_iso(), rid))
+                                (json.dumps(dict(ev, unpublished="no snow field holds 85%")), when, rid))
+                    verify.mark_unpublished(con, rid, when)
                     print(f"{rid:16s} UNPUBLISHED: no snow field holds 85% ({ev['reads']} checks)")
                 elif ev["fields_ok"] != sorted(fields):
                     con.execute("update publish_state set fields=?, summary=? where resort=?",
@@ -379,8 +381,10 @@ def check_publish(reg, con) -> None:
                 continue
             ok, why = verify.spot_ok(con, rid, fields)
             if not ok:
+                when = verify.now_iso()
                 con.execute("update publish_state set publish=0, summary=?, changed=? where resort=?",
-                            (json.dumps({"unpublished": why}), verify.now_iso(), rid))
+                            (json.dumps({"unpublished": why}), when, rid))
+                verify.mark_unpublished(con, rid, when)
                 print(f"{rid:16s} UNPUBLISHED: {why}")
             continue
         ev = verify.evaluate(con, rid)
@@ -389,7 +393,8 @@ def check_publish(reg, con) -> None:
                         (rid, 1, json.dumps(ev["fields_ok"]), json.dumps(ev), verify.now_iso()))
             print(f"{rid:16s} PUBLISHED fields={ev['fields_ok']} agreement={ev['agreement']}")
         elif ev["reads"]:
-            print(f"{rid:16s} checking: {ev['reads']}/{verify.SAMPLE_TARGET} reads over {ev['days']} days, "
+            again = " since taken off" if verify.window_start(con, rid) else ""
+            print(f"{rid:16s} checking{again}: {ev['reads']}/{verify.SAMPLE_TARGET} reads over {ev['days']} days, "
                   f"agreement {ev['agreement']}, false fresh {ev['false_fresh']}")
     con.commit()
 

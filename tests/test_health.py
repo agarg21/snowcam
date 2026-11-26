@@ -44,15 +44,19 @@ def test_stuck_resort_and_no_read_and_dead_cam():
     assert "Estimated model spend" in spend_line
 
 
-def test_done_resort_is_named_not_stalled():
+def test_taken_off_resort_shows_recheck_progress():
     con, reg = _con(), _reg()
     con.execute("insert into readings(cam, ts, model) values ('beta-1', ?, 'claude-haiku-5-5')", (_t(200),))
     con.execute("insert into readings(cam, ts, model) values ('beta-1', ?, 'claude-haiku-5-5')", (_t(1),))
-    for i in range(verify.SAMPLE_TARGET):
+    con.execute("insert into publish_state values ('beta', 0, '[]', '{\"unpublished\": \"x\"}', ?)", (_t(150),))
+    verify.ensure(con)
+    for i in range(verify.SAMPLE_TARGET):  # old checks, before it was taken off
         con.execute("insert into verifications(reading_id, resort, ts, phase, model) values (?, 'beta', ?, 'initial', 'm')",
-                    (i, _t(100)))
-    keys = {f.key for f in health.check(reg, con, runs=None, now=NOW)[0]}
-    assert "done:beta" in keys and "stalled:beta" not in keys
+                    (i, _t(170)))
+    con.execute("insert into verifications(reading_id, resort, ts, phase, model) values (999, 'beta', ?, 'initial', 'm')",
+                (_t(5),))
+    found = {f.key: f for f in health.check(reg, con, runs=None, now=NOW)[0]}
+    assert "1/100 fresh checks" in found["recheck:beta"].line
 
 
 def test_runs_failed_and_missing():
@@ -81,3 +85,34 @@ def test_render_marks_new_and_keeps_keys():
     assert "Y stuck **(new)**" in body and "X never read `cam:x`" in body
     assert health.previous_keys(body) == {"cam:x", "stuck:y"}
     assert "All clear." in health.render([], "spend", NOW)
+
+
+def _check(con, rid, ts_h, ok, reading_id, cam=1):
+    tb = json.dumps({"compare": {"snow_cover": ok}})
+    con.execute("insert into verifications(reading_id, cam, resort, ts, phase, model, tiebreak) "
+                "values (?, ?, ?, ?, 'initial', 'm', ?)", (reading_id, f"{rid}-{cam}", rid, _t(ts_h), tb))
+
+
+def test_recheck_window_ignores_checks_before_it_was_taken_off():
+    con = _con(); verify.ensure(con)
+    for i in range(100):  # a passing record from before
+        _check(con, "beta", 200 - i, True, i)
+    con.execute("insert into publish_state values ('beta', 0, '[]', '{}', ?)", (_t(90),))
+    verify.ensure(con)  # backfills the re-check window from `changed`
+    assert verify.window_start(con, "beta") == _t(90)
+    ev = verify.evaluate(con, "beta")
+    assert ev["reads"] == 0 and not ev["ready"]  # old passing checks don't put it back
+    for i in range(30):  # fresh checks over two days, mostly agreeing
+        _check(con, "beta", 60 - i * 2, i % 15 != 0, 500 + i)
+    ev = verify.evaluate(con, "beta")
+    assert ev["reads"] == 30 and ev["detail"]["snow_cover"]["agreement"] == round(28 / 30, 3)
+    assert verify.checks_in_window(con, "beta") == 30
+
+
+def test_evaluate_uses_latest_100_checks():
+    con = _con(); verify.ensure(con)
+    for i in range(100):  # 100 old failures, then 100 newer agreements
+        _check(con, "alpha", 300 - i, False, i)
+    for i in range(100):  # on another cam: per-cam blocks count every check ever made
+        _check(con, "alpha", 150 - i, True, 1000 + i, cam=2)
+    assert verify.evaluate(con, "alpha")["detail"]["snow_cover"]["agreement"] == 1.0

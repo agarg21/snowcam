@@ -15,7 +15,7 @@ The reader runs about 13 passes a day (`collect.yml`). Once a day, `health.yml` 
 |---|---|---|
 | `stuck:<resort>` (1) | Not published 3+ days after its first read | Look at the weakest fields in the line. Block that field for the weak cam (`block:` in registry.yaml) rather than for the resort. |
 | `stalled:<resort>` (2) | No new checks in 48 h before reaching 100 | Usually every cam is gated out or not read. See that resort's `cam:` findings and the latest `report.html` in the run artifact. |
-| `done:<resort>` (2b) | All checks are in and it didn't pass | No more checks will run. Find the cam and field that fail most in the stored checks and block it; `check-publish` re-scores stored checks every pass. **Known gap:** a resort that fails, or is taken off by spot checks, never gets new checks, so a fixed cam can't prove itself on fresh frames. Re-opening checks for it is a code change (see below). |
+| `recheck:<resort>` (2b) | Taken off the pages, or used all 100 checks without passing; re-checks run at 2 a pass | Only checks since it was taken off count (the latest 100), at the same bar. If it is still under the bar after 100, find the cam and field that fail most and fix or block them. Per-cam blocks still count every check ever made, so a fixed cam recovers slowly. |
 | `unpublished:<resort>` (3) | Taken off the pages: early-release snow fields fell below 85%, or spot checks slipped | Read the reason. Fix the cam or field. |
 | `no_read:<resort>` (4) | No usable read in 24 h | Check that the cam URLs still serve images (feed moved, player changed). Otherwise it's night, fog or closed lifts everywhere: nothing to fix. |
 | `cam:<cam>` (5) | Fetched 8+ times in 48 h, never read | If the gate reason repeats (`moved`, `stale`, `dark`), fix the gate input (new reference frame, crop, `night_ok`) or mark the cam unusable. Don't keep paying to fetch it. |
@@ -25,6 +25,6 @@ The reader runs about 13 passes a day (`collect.yml`). Once a day, `health.yml` 
 
 Spend is estimated from calls × the measured per-call cost (`EST_COST` in cli.py), not from the bill.
 
-## Open code change (proposed, not done)
+## Re-checks (owner, 2026-11-26)
 
-When a resort is `done` or `unpublished`, `verify.pick` gives it no more checks. A rolling re-check, judged on the last 100 checks only, would let a fixed resort publish again on fresh evidence without lowering the bar. It costs about 4 Sonnet checks per pass per resort while it runs.
+A resort taken off the pages, or one that used all 100 checks without passing, keeps getting 2 Sonnet checks a pass, about $0.03 a pass per resort. It is judged only on checks made since it was taken off (the latest 100), at the unchanged bar. Old passing checks never put it back. It can come back early at 20 fresh checks over 2 days, like a new resort, and then checking continues to 100.

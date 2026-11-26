@@ -14,6 +14,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 
 from .cli import EST_COST
+from . import verify
 from .verify import SAMPLE_TARGET
 
 STUCK_DAYS = 3          # a resort still unpublished this long after its first read
@@ -39,8 +40,8 @@ FIX = {
              "block that field for the weak cam (registry `block:`) rather than lowering the bar.",
     "stalled": "Playbook 2: the resort gets no new checks. Usually every cam is gated out or not read; "
                "see the cam findings for the same resort, then the latest report.html.",
-    "done": "Playbook 2b: every check is in. Find the cam and field that fail most in the stored checks and "
-            "block that field for that cam; check-publish re-scores the stored checks each run.",
+    "recheck": "Playbook 2b: re-checks run at 2 a pass and only checks since it was taken off count. "
+               "If it is still under the bar after 100, find the cam and field that fail most and fix or block them.",
     "unpublished": "Playbook 3: taken off the pages (early-release snow fields below 85%, or spot checks slipped). Read the reason; fix the cam or field, never the threshold.",
     "no_read": "Playbook 4: no usable read in 24 h. Check the cam URLs still serve images (feed moved, "
                "player changed) and whether it is night or fog everywhere.",
@@ -97,13 +98,14 @@ def resort_findings(reg, con, now: datetime) -> list[Finding]:
                                f"{name}: not published {age.days} days after its first read "
                                f"({reads} checks, agreement {agr}{'; weakest ' + weak_s if weak_s else ''}).",
                                FIX["stuck"]))
-        done = con.execute("select count(*) from verifications where resort=? and phase='initial'", (rid,)).fetchone()[0]
-        if done >= SAMPLE_TARGET:
-            # All checks are in and it still failed: new checks will not come, so only a fix that
-            # changes how the stored checks score (blocking a weak cam's field) can publish it.
-            out.append(Finding(f"done:{rid}", "done",
-                               f"{name}: all {done} checks are in and it did not pass; no more checks will run.",
-                               FIX["done"]))
+        since = verify.window_start(con, rid)
+        if since:
+            n = verify.checks_in_window(con, rid)
+            ev = verify.evaluate(con, rid)
+            out.append(Finding(f"recheck:{rid}", "recheck",
+                               f"{name}: re-checking since taken off {since[:10]}: {n}/{SAMPLE_TARGET} fresh checks, "
+                               f"agreement {ev['agreement']}, snow fields passing: {', '.join(ev['fields_ok']) or 'none'}.",
+                               FIX["recheck"]))
         elif recent == 0 and age > timedelta(hours=STALL_HOURS):
             out.append(Finding(f"stalled:{rid}", "stalled",
                                f"{name}: no new accuracy checks in {STALL_HOURS} h, so it can't publish.",
@@ -188,7 +190,7 @@ def render(findings: list[Finding], spend_line: str, now: datetime, previous: se
     previous = previous or set()
     lines = [f"Health check {now.strftime('%Y-%m-%d %H:%MZ')}: {len(findings)} finding(s). No model calls were made.", "",
              spend_line, ""]
-    order = ["runs_failed", "no_read", "unpublished", "done", "stalled", "stuck", "cam", "spend", "runs_missing"]
+    order = ["runs_failed", "no_read", "unpublished", "recheck", "stalled", "stuck", "cam", "spend", "runs_missing"]
     for kind in order:
         group = [f for f in findings if f.kind == kind]
         if not group:

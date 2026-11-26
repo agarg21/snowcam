@@ -36,6 +36,11 @@ DROP_AGREE = 0.85
 DROP_WINDOW = 50
 SPOT_SHARE = 0.10
 PER_RESORT_PER_RUN = 4
+# Re-checks (owner, 2026-11-26): a resort taken off the pages, or one that used all 100 checks
+# without passing, keeps getting 2 checks a pass. It is judged only on checks made after it was
+# taken off (the latest 100), at the same bar, so a fixed cam can earn its way back on fresh
+# frames and old passing checks never re-publish it. About $0.03 a pass per resort.
+RECHECK_PER_RUN = 2
 
 # Fields compared, by role. Busyness (quiet / normal / busy) and snow cover (good / thin)
 # are compared on the same three-grade scales the feed publishes.
@@ -52,6 +57,7 @@ create table if not exists verifications (
 create table if not exists publish_state (
   resort text primary key, publish integer, fields json, summary json, changed text
 );
+create table if not exists recheck (resort text primary key, since text);
 """
 
 VERIFY_SYSTEM = (
@@ -73,6 +79,8 @@ HELP = {
 
 def ensure(con) -> None:
     con.executescript(SCHEMA)
+    # Resorts taken off before re-checks existed (2026-11-26) start their window when they were taken off.
+    con.execute("insert or ignore into recheck select resort, changed from publish_state where publish=0 and changed is not null")
 
 
 def _schema(fields: list[str], stake: bool) -> dict:
@@ -147,11 +155,26 @@ def false_fresh(first: dict, check: dict) -> bool:
     return False
 
 
+def window_start(con, resort: str) -> str | None:
+    """When a resort was last taken off the pages: only checks after this count toward its record."""
+    row = con.execute("select since from recheck where resort=?", (resort,)).fetchone()
+    return row["since"] if row else None
+
+
+def mark_unpublished(con, resort: str, when: str) -> None:
+    con.execute("insert or replace into recheck(resort, since) values (?, ?)", (resort, when))
+
+
+def checks_in_window(con, resort: str) -> int:
+    since = window_start(con, resort)
+    return con.execute("select count(*) from verifications where resort=? and phase='initial' and (? is null or ts > ?)",
+                       (resort, since, since)).fetchone()[0]
+
+
 def pick(con, reg, since_iso: str, rng: random.Random) -> list[tuple]:
-    """This run's reads to check: up to 4 per unpublished resort, about 10% for published ones."""
+    """This run's reads to check: up to 4 per unpublished resort, about 10% for published ones,
+    and 2 re-checks for a resort that was taken off or used all its checks without passing."""
     published = {r["resort"] for r in con.execute("select resort from publish_state where publish=1")}
-    counts = {r["resort"]: r["n"] for r in con.execute(
-        "select resort, count(*) n from verifications where phase='initial' group by resort")}
     rows = con.execute(
         "select r.id, r.cam, r.ts, r.fields, f.path from readings r join frames f on f.id=r.frame_id "
         "left join verifications v on v.reading_id=r.id where v.id is null and r.ts>=?", (since_iso,)).fetchall()
@@ -165,10 +188,16 @@ def pick(con, reg, since_iso: str, rng: random.Random) -> list[tuple]:
     out = []
     for rid, items in by_resort.items():
         rng.shuffle(items)
-        if counts.get(rid, 0) < SAMPLE_TARGET:  # published early or not: full checking to 100
+        n = checks_in_window(con, rid)
+        if rid in published:
+            if n < SAMPLE_TARGET:  # published early (or back early): full checking to 100
+                out += [(row, cam, "initial") for row, cam in items[:PER_RESORT_PER_RUN]]
+            else:
+                out += [(row, cam, "spot") for row, cam in items if rng.random() < SPOT_SHARE]
+        elif window_start(con, rid) is None and n < SAMPLE_TARGET:
             out += [(row, cam, "initial") for row, cam in items[:PER_RESORT_PER_RUN]]
-        elif rid in published:
-            out += [(row, cam, "spot") for row, cam in items if rng.random() < SPOT_SHARE]
+        else:  # taken off, or all 100 used without passing: keep re-checking on fresh frames
+            out += [(row, cam, "initial") for row, cam in items[:RECHECK_PER_RUN]]
     return out
 
 
@@ -215,12 +244,15 @@ def has_snow(fields) -> bool:
 
 
 def evaluate(con, resort: str, keep: set | None = None, blocks: dict | None = None) -> dict:
-    """Pass/fail per field for a resort from its initial checks. A field already published
+    """Pass/fail per field for a resort from its latest initial checks. A field already published
     (in keep) stays while it holds 85%; a new field needs 90%."""
     keep = keep or set()
     blocks = cam_blocks(con) if blocks is None else blocks
-    rows = con.execute("select cam, ts, fields, tiebreak from verifications v where resort=? and phase='initial'",
-                       (resort,)).fetchall()
+    # The latest 100 initial checks; for a resort taken off the pages, only those made since.
+    since = window_start(con, resort)
+    rows = con.execute("select cam, ts, fields, tiebreak from verifications v where resort=? and phase='initial' "
+                       "and (? is null or ts > ?) order by id desc limit ?",
+                       (resort, since, since, SAMPLE_TARGET)).fetchall()
     days = {r["ts"][:10] for r in rows}
     agree: dict[str, list] = {}
     stake: list[float] = []
