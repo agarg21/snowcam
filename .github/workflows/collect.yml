@@ -69,8 +69,11 @@ jobs:
         continue-on-error: true
         run: python -m snowcam.cli archive --since-hours 0.5 --tag "${{ github.run_id }}"
 
-      - name: Upload this pass's frames (private, 30 days)
+      - name: Upload this pass's frames (private, 3 days)
         if: always()
+        # Full-size frames are only a short-term debugging copy; the labelled dataset lives in
+        # snowcam-lab releases. Never fail the pass over artifact storage (quota hit 2026-11-27).
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
           name: frames-${{ github.run_id }}
@@ -78,7 +81,7 @@ jobs:
             data/frames
             data/report.html
             data/archive
-          retention-days: 30
+          retention-days: 3
 
       # Only the database, reference frames and each cam's last read frame go to the data
       # branch (one commit, replaced every run). Raw frames stay in the run artifact above.

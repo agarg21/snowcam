@@ -1,6 +1,6 @@
 """Daytime frame archive for the cheaper-reader dataset (owner, 2026-11-25).
 
-Every daytime frame the reader read is saved as a ~640 px JPEG next to a label JSON: resort, cam,
+Every daytime frame the reader read is saved as a ~640 px JPEG (snow stakes at full size) next to a label JSON: resort, cam,
 time, every field with its confidence, and the second reader's check when there is one. Each pass
 writes one part zip; the workflow attaches it to that day's release in the private repo
 agarg21/snowcam-lab and, the next morning, merges a day's parts into one zip. Nothing here goes to
@@ -33,9 +33,9 @@ def day_of(ts_iso: str) -> str:
     return datetime.fromisoformat(ts_iso).astimezone(DAY_TZ).date().isoformat()
 
 
-def _small(path: Path) -> bytes:
+def _small(path: Path, full: bool = False) -> bytes:
     im = Image.open(path).convert("RGB")
-    if im.width > WIDTH:
+    if im.width > WIDTH and not full:
         im = im.resize((WIDTH, round(im.height * WIDTH / im.width)), Image.LANCZOS)
     buf = io.BytesIO()
     im.save(buf, format="JPEG", quality=QUALITY, optimize=True)
@@ -108,7 +108,7 @@ def build_part(reg, con, since_iso: str, out_dir: Path, tag: str) -> list[Path]:
             paths[day] = out_dir / f"snowcam-{day}-part-{tag}.zip"
             zips[day] = zipfile.ZipFile(paths[day], "w", zipfile.ZIP_STORED)  # JPEGs do not compress
         stem = f"{lab['resort']}/{lab['cam']}/{lab['time_utc'].replace(':', '').replace('+0000', 'Z')}"
-        zips[day].writestr(f"{stem}.jpg", _small(src))
+        zips[day].writestr(f"{stem}.jpg", _small(src, full=lab["role"] == "stake"))  # rulers need full size
         zips[day].writestr(f"{stem}.json", json.dumps(lab, indent=1))
         n += 1
     for z in zips.values():
