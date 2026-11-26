@@ -76,6 +76,7 @@ def load_registry(path: Path | str | None = None) -> Registry:
                     night_ok=bool(c.get("night_ok", False)),
                     cam_page=r.get("cam_page"),
                     crop=tuple(c["crop"]) if c.get("crop") else None,
+                    usable=bool(c.get("usable", True)),
                 )
             )
     return Registry(cams=cams, resorts=raw["resorts"], defaults=raw.get("defaults", {}))

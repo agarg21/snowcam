@@ -84,6 +84,6 @@ def apply(reg, con) -> None:
         cam.name = p.get("name") or cam.name
         cam.describe = p.get("describe", "")
         cam.role = p["role"] if p.get("role") in ("summit", "trail", "base", "stake") else cam.role
-        cam.usable = bool(p.get("usable", True)) and p.get("role") != "other"
+        cam.usable = cam.usable and bool(p.get("usable", True)) and p.get("role") != "other"
         if cam.role == "stake":
             cam.night_ok = bool(p.get("lit_at_night", False))

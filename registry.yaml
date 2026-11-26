@@ -1553,6 +1553,7 @@ resorts:
       feed: still
       url: https://i.ytimg.com/vi/5paOwJfXRJU/maxresdefault_live.jpg
       role: trail
+      usable: false   # village playground lawn, no ski terrain in view
       describe: ''
     - id: smugglers-notch-yt-ktgqkde1sx8
       name: yt:kTgqKDE1Sx8
@@ -1591,12 +1592,6 @@ resorts:
       name: yt:Yx3QmuKfwjY
       feed: still
       url: https://i.ytimg.com/vi/Yx3QmuKfwjY/maxresdefault_live.jpg
-      role: trail
-      describe: ''
-    - id: solitude-yt-j65wbm5rr-0
-      name: yt:j65wBm5rr_0
-      feed: still
-      url: https://i.ytimg.com/vi/j65wBm5rr_0/maxresdefault_live.jpg
       role: trail
       describe: ''
     - id: solitude-yt-l2x9dlrzx54
