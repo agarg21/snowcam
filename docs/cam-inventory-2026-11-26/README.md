@@ -16,8 +16,8 @@ stills twice 5 minutes apart to tell live cams from fixed covers (probe.py). Run
 | Sunday River | no | Camstreamer video; the one YouTube still shows the golf course |
 | Big Sky | no | Mux video; its still is a marketing clip, not a cam |
 | Snowshoe | no | no still-image cam on the resort or partner pages |
-| Mountain Creek | no | robots.txt disallows automated access |
-| Mt Baker | no | robots.txt disallows automated access |
+| Mountain Creek | not yet | robots.txt allows us (the first check fetched robots.txt with Python's default agent, which got a 403 and read as "disallow"; corrected in batch b); cam page not found by the render, needs a direct link |
+| Mt Baker | not yet | same as Mountain Creek |
 | Whiteface, Gore | no | refused automated requests on 11-15 (403); not retried |
 | Mammoth | no | cams behind a bot challenge; not retried |
 

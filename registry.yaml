@@ -1296,3 +1296,312 @@ resorts:
       url: https://b15.hdrelay.com/camera/63cadf1f426d0a9136dc81da/snapshot
       role: stake
       describe: ''
+
+  # Added 2026-11-26 (batch b): next resorts by search demand with readable still cams
+  # (lab-scan inventory, docs/cam-inventory-2026-11-26b).
+  arapahoe-basin:
+    name: Arapahoe Basin
+    state: CO
+    lat: 39.6425
+    lon: -105.8719
+    tz: America/Denver
+    cam_page: https://www.arapahoebasin.com/mountain-cams/
+    publish: false
+    cams:
+    - id: arapahoe-basin-base
+      name: base
+      feed: still
+      url: https://dirigo-resorts-f4e2bde5azc2cne6.z02.azurefd.net/arapahoe/images/medium/webcams/abasincam1001m.jpg
+      role: base
+      describe: ''
+    - id: arapahoe-basin-summit
+      name: summit
+      feed: still
+      url: https://dirigo-resorts-f4e2bde5azc2cne6.z02.azurefd.net/arapahoe/images/medium/webcams/abasincam5.jpg
+      role: summit
+      describe: ''
+  alyeska:
+    name: Alyeska
+    state: AK
+    lat: 60.9706
+    lon: -149.0981
+    tz: America/Anchorage
+    cam_page: https://www.alyeskaresort.com/mountain-report/
+    publish: false
+    cams:
+    - id: alyeska-roundshot
+      name: roundshot:602
+      feed: still
+      url: https://backend.roundshot.com/cams/602/medium
+      role: summit
+      describe: ''
+  aspen-snowmass:
+    name: Aspen Snowmass
+    state: CO
+    lat: 39.2084
+    lon: -106.949
+    tz: America/Denver
+    cam_page: https://www.aspensnowmass.com/four-mountains/mountain-cams
+    publish: false
+    cams:
+    - id: aspen-snowmass-rs87
+      name: roundshot:87
+      feed: still
+      url: https://backend.roundshot.com/cams/87/medium
+      role: summit
+      describe: ''
+    - id: aspen-snowmass-rs88
+      name: roundshot:88
+      feed: still
+      url: https://backend.roundshot.com/cams/88/medium
+      role: summit
+      describe: ''
+    - id: aspen-snowmass-rs90
+      name: roundshot:90
+      feed: still
+      url: https://backend.roundshot.com/cams/90/medium
+      role: summit
+      describe: ''
+    - id: aspen-snowmass-rsd06c
+      name: roundshot:d06c
+      feed: still
+      url: https://backend.roundshot.com/cams/d06c2257c923777ee36fee23722ea2c2/medium
+      role: summit
+      describe: ''
+  beaver-creek:
+    name: Beaver Creek
+    state: CO
+    lat: 39.6042
+    lon: -106.5165
+    tz: America/Denver
+    cam_page: https://www.beavercreek.com/the-mountain/mountain-conditions/mountain-cams.aspx
+    publish: false
+    cams:
+    - id: beaver-creek-redbuffalo
+      name: Red Buffalo
+      feed: brownrice
+      stream: bcredbuffalo
+      role: trail
+      describe: ''
+    - id: beaver-creek-village
+      name: Village
+      feed: brownrice
+      stream: bcvillage
+      role: base
+      describe: ''
+  cannon:
+    name: Cannon Mountain
+    state: NH
+    lat: 44.1563
+    lon: -71.6987
+    tz: America/New_York
+    cam_page: https://www.cannonmt.com/webcam
+    publish: false
+    cams:
+    - id: cannon-summit
+      name: ipcam:summit
+      feed: still
+      url: https://g1.ipcamlive.com/player/snapshot.php?alias=6894a26492e8d
+      role: summit
+      describe: ''
+  sierra-at-tahoe:
+    name: Sierra-at-Tahoe
+    state: CA
+    lat: 38.799
+    lon: -120.08
+    tz: America/Los_Angeles
+    cam_page: https://sierraattahoe.com/live-cams/
+    publish: false
+    cams:
+    - id: sierra-at-tahoe-summit
+      name: hdrelay:sugar
+      feed: still
+      url: https://img.hdrelay.com/frames/f5145304-44dc-475f-a654-8a7bacee1e81/sugar/last.jpg
+      role: summit
+      describe: ''
+    - id: sierra-at-tahoe-yt-1-ffkhkayje
+      name: yt:1-FFKHkaYJE
+      feed: still
+      url: https://i.ytimg.com/vi/1-FFKHkaYJE/maxresdefault_live.jpg
+      role: trail
+      describe: ''
+    - id: sierra-at-tahoe-yt-adxds4z-y34
+      name: yt:adxDs4z-y34
+      feed: still
+      url: https://i.ytimg.com/vi/adxDs4z-y34/maxresdefault_live.jpg
+      role: trail
+      describe: ''
+    - id: sierra-at-tahoe-yt-qtzyshi6ix0
+      name: yt:qTZYSHi6ix0
+      feed: still
+      url: https://i.ytimg.com/vi/qTZYSHi6ix0/maxresdefault_live.jpg
+      role: trail
+      describe: ''
+  taos:
+    name: Taos Ski Valley
+    state: NM
+    lat: 36.596
+    lon: -105.4545
+    tz: America/Denver
+    cam_page: https://www.skitaos.com/weather
+    publish: false
+    cams:
+    - id: taos-base
+      name: base
+      feed: brownrice
+      stream: tsv
+      role: base
+      describe: ''
+    - id: taos-bavarian
+      name: Bavarian
+      feed: brownrice
+      stream: tsvbav
+      role: trail
+      describe: ''
+    - id: taos-ridge
+      name: Ridge
+      feed: brownrice
+      stream: tsvridge
+      role: trail
+      describe: ''
+  grand-targhee:
+    name: Grand Targhee
+    state: WY
+    lat: 43.7889
+    lon: -110.9578
+    tz: America/Denver
+    cam_page: https://www.grandtarghee.com/mountain/reports-hours/webcams
+    publish: false
+    cams:
+    - id: grand-targhee-yt-fqia
+      name: yt:fQiA_DZT0cE
+      feed: still
+      url: https://i.ytimg.com/vi/fQiA_DZT0cE/maxresdefault_live.jpg
+      role: base
+      describe: ''
+  whitefish:
+    name: Whitefish Mountain
+    state: MT
+    lat: 48.4846
+    lon: -114.3539
+    tz: America/Denver
+    cam_page: https://skiwhitefish.com/webcams
+    publish: false
+    cams:
+    - id: whitefish-stumpy
+      name: Summit snow cam
+      feed: still
+      url: https://skiwhitefish.com/inbound/cams/2425_StumpyCam.jpg
+      role: stake
+      describe: ''
+    - id: whitefish-baselodge
+      name: Base lodge
+      feed: still
+      url: https://skiwhitefish.com/inbound/cams/newbaselodge.jpg
+      role: trail
+      describe: ''
+    - id: whitefish-hellroaring
+      name: Hellroaring
+      feed: still
+      url: https://skiwhitefish.com/inbound/cams/hellroaring_chalet.jpg
+      role: base
+      describe: ''
+    - id: whitefish-roundshot
+      name: roundshot:summit
+      feed: still
+      url: https://backend.roundshot.com/cams/19bbc62d60b23cf8e9fbdbddb275e7e8/medium
+      role: summit
+      describe: ''
+  eldora:
+    name: Eldora
+    state: CO
+    lat: 39.9372
+    lon: -105.5827
+    tz: America/Denver
+    cam_page: https://www.eldora.com/the-mountain/current-conditions/webcams/
+    publish: false
+    cams:
+    - id: eldora-stake
+      name: hdrelay:snow stake
+      feed: still
+      url: https://watch.hdrelay.io/api/public/poster/cam_eldora___snow_stake_1792456287972
+      role: stake
+      describe: ''
+    - id: eldora-alpenglow
+      name: hdrelay:alpenglow
+      feed: still
+      url: https://watch.hdrelay.io/api/public/poster/cam_eldora___alpenglow_1792456287847
+      role: trail
+      describe: ''
+    - id: eldora-ipela
+      name: hdrelay:ipela
+      feed: still
+      url: https://watch.hdrelay.io/api/public/poster/cam_ipela_snc_wr630_1792456288119
+      role: trail
+      describe: ''
+  smugglers-notch:
+    name: Smugglers' Notch
+    state: VT
+    lat: 44.5886
+    lon: -72.7901
+    tz: America/New_York
+    cam_page: https://www.smuggs.com/conditions-stats/web-cams/
+    publish: false
+    cams:
+    - id: smugglers-notch-yt-5paowjfxrju
+      name: yt:5paOwJfXRJU
+      feed: still
+      url: https://i.ytimg.com/vi/5paOwJfXRJU/maxresdefault_live.jpg
+      role: trail
+      describe: ''
+    - id: smugglers-notch-yt-ktgqkde1sx8
+      name: yt:kTgqKDE1Sx8
+      feed: still
+      url: https://i.ytimg.com/vi/kTgqKDE1Sx8/maxresdefault_live.jpg
+      role: trail
+      describe: ''
+  solitude:
+    name: Solitude
+    state: UT
+    lat: 40.6199
+    lon: -111.5919
+    tz: America/Denver
+    cam_page: https://www.solitudemountain.com/mountain-and-village/webcams
+    publish: false
+    cams:
+    - id: solitude-yt-lnznapxh2xm
+      name: yt:Lnznapxh2xM
+      feed: still
+      url: https://i.ytimg.com/vi/Lnznapxh2xM/maxresdefault_live.jpg
+      role: trail
+      describe: ''
+    - id: solitude-yt-nsiitcgabfo
+      name: yt:NSiItCGabfo
+      feed: still
+      url: https://i.ytimg.com/vi/NSiItCGabfo/maxresdefault_live.jpg
+      role: trail
+      describe: ''
+    - id: solitude-yt-yblyfl97mhc
+      name: yt:Yblyfl97Mhc
+      feed: still
+      url: https://i.ytimg.com/vi/Yblyfl97Mhc/maxresdefault_live.jpg
+      role: trail
+      describe: ''
+    - id: solitude-yt-yx3qmukfwjy
+      name: yt:Yx3QmuKfwjY
+      feed: still
+      url: https://i.ytimg.com/vi/Yx3QmuKfwjY/maxresdefault_live.jpg
+      role: trail
+      describe: ''
+    - id: solitude-yt-j65wbm5rr-0
+      name: yt:j65wBm5rr_0
+      feed: still
+      url: https://i.ytimg.com/vi/j65wBm5rr_0/maxresdefault_live.jpg
+      role: trail
+      describe: ''
+    - id: solitude-yt-l2x9dlrzx54
+      name: yt:l2X9DlRzX54
+      feed: still
+      url: https://i.ytimg.com/vi/l2X9DlRzX54/maxresdefault_live.jpg
+      role: trail
+      describe: ''
