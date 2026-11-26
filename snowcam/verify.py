@@ -65,14 +65,13 @@ VERIFY_SYSTEM = (
     "see yourself. Do not identify or count people. If the image does not let you tell, answer "
     "'unknown'. Being wrong with confidence is worse than saying unknown."
 )
+# v0.6 (2026-11-26): the same written definitions as the first read (reader.FIELDS), asked
+# independently: a different model, the image order reversed and no sight of the first read.
+SHARED = ["fresh_snow", "snow_cover", "snowmaking", "visibility", "precip_now"]
 HELP = {
-    "fresh_snow": "Is there snow that fell recently (since the comparison image) on trees, roofs, rails or decks?",
-    "snow_cover": "How much of the visible slope surface is snow-covered?",
-    "snowmaking": "Are snow guns visibly blowing snow?",
+    **{f: reader.FIELDS[f]["help"] for f in SHARED},
     "lifts_moving": "Are the lift chairs evidently running? Unknown unless obvious.",
     "base_busyness": "How busy does the base area look compared with an empty base? Never count people.",
-    "visibility": "How far can you see compared with the clear-day comparison image?",
-    "precip_now": "Is precipitation falling in the image right now?",
     "stake_new_snow": "How much snow sits on the snow board or at the foot of the stake?",
 }
 
