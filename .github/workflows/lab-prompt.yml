@@ -17,7 +17,7 @@ permissions:
 jobs:
   run:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     env:
       GH_TOKEN: ${{ github.token }}
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -40,11 +40,8 @@ jobs:
           mkdir -p frames
           gh api "repos/$GITHUB_REPOSITORY/actions/artifacts?per_page=100" \
             --jq '.artifacts[] | select(.expired==false and (.name|startswith("frames-"))) | [.id, .created_at] | @tsv' |
-          awk -F'\t' '{h=substr($2,12,2)+0; if (h>=14 && h<=21) print $1}' | head -40 |
-          while read id; do
-            gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$id/zip" > "frames/$id.zip"
-            mkdir -p "frames/$id" && unzip -q "frames/$id.zip" -d "frames/$id" && rm "frames/$id.zip"
-          done
+          awk -F'\t' '{h=substr($2,12,2)+0; if (h>=14 && h<=21) print $1}' | head -24 |
+            xargs -P 6 -I{} sh -c 'gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/{}/zip" > frames/{}.zip && mkdir -p frames/{} && unzip -q frames/{}.zip -d frames/{} && rm frames/{}.zip'
           find frames -name '*.jpg' | wc -l
       - name: Run the experiment
         run: python -m lab.prompt_experiment frames --n "${{ inputs.n }}" --out lab-out
