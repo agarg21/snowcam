@@ -64,6 +64,8 @@ def cost(model: str, usage: dict) -> float:
 
 
 def with_cache(req: dict) -> dict:
+    if not isinstance(req["system"], str):
+        return req  # production requests are cached since 2026-11-26
     tools = [dict(t) for t in req["tools"]]
     tools[-1]["cache_control"] = {"type": "ephemeral"}
     return {**req, "tools": tools, "system": [{"type": "text", "text": req["system"], "cache_control": {"type": "ephemeral"}}]}

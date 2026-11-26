@@ -57,6 +57,11 @@ def call(request: dict) -> dict:
         if "tool_choice" not in str(e):
             raise
         msg = client.messages.create(**{**request, "tool_choice": {"type": "auto"}})
+    u = msg.usage.model_dump() if hasattr(msg.usage, "model_dump") else {}
+    from datetime import datetime, timezone
+    reader.CALLS.append((datetime.now(timezone.utc).isoformat(timespec="seconds"), "profile", request["model"],
+                         u.get("input_tokens", 0), u.get("output_tokens", 0), u.get("cache_read_input_tokens") or 0,
+                         u.get("cache_creation_input_tokens") or 0, reader.price(request["model"], u)))
     block = next((b for b in msg.content if b.type == "tool_use"), None)
     if block is None or not block.input:
         raise RuntimeError(f"no profile (stop_reason={msg.stop_reason})")

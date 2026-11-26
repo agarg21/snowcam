@@ -10,6 +10,7 @@ can be reviewed or labeled by hand.
 from __future__ import annotations
 
 import base64
+from datetime import datetime, timezone
 import io
 import json
 import os
@@ -20,10 +21,15 @@ from PIL import Image
 
 from .config import Cam
 
-PROMPT_VERSION = "v0.3"
+PROMPT_VERSION = "v0.4"  # v0.4 (2026-11-26): same prompt, 768 px images for regular reads, prompt cache
 DEFAULT_MODEL = os.environ.get("SNOWCAM_MODEL", "claude-haiku-5-5")
 ESCALATE_MODEL = os.environ.get("SNOWCAM_ESCALATE_MODEL", "claude-sonnet-5-5")
-SEND_W = 1092  # 39 x 22 patches at 16:9, about 860 tokens per image
+# Image width sent to the model. Regular reads use 768 px (2026-11-26: same answers as 1092 px in
+# the lab cost test, about 17% cheaper); snow stakes, second-opinion checks and one-time profiles
+# keep 1092 px (39 x 22 patches at 16:9, about 860 tokens an image) because they need the detail
+# or set the accuracy standard.
+SEND_W = 768
+FULL_W = 1092
 
 FIELDS: dict[str, dict] = {
     "fresh_snow": {"enum": ["none", "dusting", "light", "heavy", "unknown"],
@@ -108,12 +114,25 @@ def _instructions(cam: Cam, fields: list[str], labels: list[str], burst: int) ->
     return "\n".join(lines)
 
 
-def _b64(im: Image.Image) -> str:
-    if im.width > SEND_W:
-        im = im.resize((SEND_W, int(im.height * SEND_W / im.width)))
+def _b64(im: Image.Image, width: int = FULL_W) -> str:
+    if im.width > width:
+        im = im.resize((width, int(im.height * width / im.width)), Image.LANCZOS)
     buf = io.BytesIO()
     im.save(buf, format="JPEG", quality=85)
     return base64.b64encode(buf.getvalue()).decode()
+
+
+def cached_prefix(system: str, tools: list[dict]) -> dict:
+    """Tools and system prompt with a cache breakpoint: they are identical for every call with the
+    same role and model, so later calls in a pass read them from the prompt cache (2026-11-26)."""
+    tools = [dict(t) for t in tools]
+    tools[-1]["cache_control"] = {"type": "ephemeral"}
+    return {"tools": tools, "system": [{"type": "text", "text": system, "cache_control": {"type": "ephemeral"}}]}
+
+
+def system_text(request: dict) -> str:
+    s = request["system"]
+    return s if isinstance(s, str) else "\n".join(b.get("text", "") for b in s)
 
 
 @dataclass
@@ -128,12 +147,14 @@ def build_request(cam: Cam, current: list[Image.Image], ts_label: str,
                   reference: Image.Image | None, previous: tuple[Image.Image, str] | None,
                   model: str) -> dict:
     fields = ROLE_FIELDS[cam.role]
+    w = FULL_W if cam.role == "stake" else SEND_W
+    _b64w = lambda im: _b64(im, w)
     content: list[dict] = []
     labels: list[str] = []
     n = 1
     for i, im in enumerate(current):
         content += [{"type": "text", "text": f"Image {n}:"},
-                    {"type": "image", "source": {"type": "base64", "media_type": "image/jpeg", "data": _b64(im)}}]
+                    {"type": "image", "source": {"type": "base64", "media_type": "image/jpeg", "data": _b64w(im)}}]
         labels.append(f"Image {n} = current frame{'' if len(current) == 1 else f' {i + 1}/{len(current)}'} at {ts_label}")
         n += 1
     if cam.crop:
@@ -146,26 +167,39 @@ def build_request(cam: Cam, current: list[Image.Image], ts_label: str,
         n += 1
     if reference is not None:
         content += [{"type": "text", "text": f"Image {n}:"},
-                    {"type": "image", "source": {"type": "base64", "media_type": "image/jpeg", "data": _b64(reference)}}]
+                    {"type": "image", "source": {"type": "base64", "media_type": "image/jpeg", "data": _b64w(reference)}}]
         labels.append(f"Image {n} = clear-day reference for this cam")
         n += 1
     if previous is not None:
         content += [{"type": "text", "text": f"Image {n}:"},
-                    {"type": "image", "source": {"type": "base64", "media_type": "image/jpeg", "data": _b64(previous[0])}}]
+                    {"type": "image", "source": {"type": "base64", "media_type": "image/jpeg", "data": _b64w(previous[0])}}]
         labels.append(f"Image {n} = previous read frame at {previous[1]}")
     content.append({"type": "text", "text": _instructions(cam, fields, labels, len(current))})
     return {
         "model": model,
         "max_tokens": 600,
-        "system": SYSTEM,
-        "tools": [{"name": "record_reading", "description": "Record the cam reading.",
-                   "input_schema": _schema(fields, cam.role == "stake")}],
+        **cached_prefix(SYSTEM, [{"name": "record_reading", "description": "Record the cam reading.",
+                                  "input_schema": _schema(fields, cam.role == "stake")}]),
         "tool_choice": {"type": "tool", "name": "record_reading"},
         "messages": [{"role": "user", "content": content}],
     }
 
 
-def call(request: dict) -> Reading:
+# Usage of every model call in this process, flushed to the calls table by the CLI (2026-11-26).
+CALLS: list[tuple] = []
+PRICE = {  # $ per million tokens: input, output, cache read, cache write (5 min)
+    "claude-haiku-5-5": (0.10, 0.50, 0.01, 0.125),
+    "claude-sonnet-5-5": (2.0, 10.0, 0.20, 2.5),
+}
+
+
+def price(model: str, u: dict) -> float:
+    i, o, cr, cw = PRICE.get(model, (0, 0, 0, 0))
+    return (u.get("input_tokens", 0) * i + u.get("output_tokens", 0) * o
+            + (u.get("cache_read_input_tokens") or 0) * cr + (u.get("cache_creation_input_tokens") or 0) * cw) / 1e6
+
+
+def call(request: dict, kind: str = "read") -> Reading:
     import anthropic  # imported lazily so collection works without the SDK
 
     client = anthropic.Anthropic()
@@ -178,6 +212,10 @@ def call(request: dict) -> Reading:
         # Such models may think first, so give them room to finish the tool call.
         request = {**request, "tool_choice": {"type": "auto"}, "max_tokens": 6000}
         msg = client.messages.create(**request)
+    u = msg.usage.model_dump() if hasattr(msg.usage, "model_dump") else {}
+    CALLS.append((datetime.now(timezone.utc).isoformat(timespec="seconds"), kind, request["model"],
+                  u.get("input_tokens", 0), u.get("output_tokens", 0), u.get("cache_read_input_tokens") or 0,
+                  u.get("cache_creation_input_tokens") or 0, price(request["model"], u)))
     block = next((b for b in msg.content if b.type == "tool_use"), None)
     if block is None or not block.input or msg.stop_reason == "max_tokens":
         raise RuntimeError(f"{request['model']} gave no complete reading (stop_reason={msg.stop_reason})")
@@ -243,6 +281,6 @@ def write_bundle(request: dict, out_dir: Path) -> Path:
             (out_dir / f"image{img_i}.jpg").write_bytes(base64.b64decode(block["source"]["data"]))
         else:
             texts.append(block["text"])
-    (out_dir / "prompt.txt").write_text(request["system"] + "\n\n" + "\n".join(texts))
+    (out_dir / "prompt.txt").write_text(system_text(request) + "\n\n" + "\n".join(texts))
     (out_dir / "schema.json").write_text(json.dumps(request["tools"][0]["input_schema"], indent=2))
     return out_dir

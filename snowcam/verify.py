@@ -112,15 +112,15 @@ def build_request(cam, frame: Image.Image, ref: Image.Image | None, model: str) 
                      "The ruler's 0 is at the board; read the number at the snow surface.")
     lines.append("Give a confidence from 0 to 1 for each. Use the record_check tool.")
     content.append({"type": "text", "text": "\n".join(lines)})
-    return {"model": model, "max_tokens": 6000 if model == INITIAL_MODEL else 600, "system": VERIFY_SYSTEM,
-            "tools": [{"name": "record_check", "description": "Record the second-opinion check.",
-                       "input_schema": _schema(fields, cam.role == "stake")}],
+    return {"model": model, "max_tokens": 6000 if model == INITIAL_MODEL else 600,
+            **reader.cached_prefix(VERIFY_SYSTEM, [{"name": "record_check", "description": "Record the second-opinion check.",
+                                                    "input_schema": _schema(fields, cam.role == "stake")}]),
             "tool_choice": {"type": "tool", "name": "record_check"},
             "messages": [{"role": "user", "content": content}]}
 
 
 def call(request: dict) -> dict:
-    r = reader.call(request)  # same transport: forced tool, auto fallback, empty-answer check
+    r = reader.call(request, kind="check")  # same transport: forced tool, auto fallback, empty-answer check
     return r.fields
 
 

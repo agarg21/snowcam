@@ -17,6 +17,18 @@ DB_PATH = DATA / "snowcam.db"
 STORE_MAX_W = 1280  # downscale on save; enough for the reader, keeps storage small
 
 SCHEMA = """
+create table if not exists calls (
+  id integer primary key,
+  ts text not null,
+  kind text not null,
+  model text not null,
+  input_tokens integer,
+  output_tokens integer,
+  cache_read integer,
+  cache_write integer,
+  cost real
+);
+
 create table if not exists skips (
   id integer primary key,
   ts text not null,
@@ -123,3 +135,12 @@ def reference_path(cam_id: str) -> Path:
 def offline_hashes() -> list[str]:
     p = DATA / "offline_hashes.txt"
     return [l.strip() for l in p.read_text().splitlines() if l.strip()] if p.exists() else []
+
+
+def flush_calls(con) -> int:
+    from . import reader
+    rows, reader.CALLS[:] = list(reader.CALLS), []
+    con.executemany("insert into calls(ts, kind, model, input_tokens, output_tokens, cache_read, cache_write, cost) "
+                    "values (?,?,?,?,?,?,?,?)", rows)
+    con.commit()
+    return len(rows)

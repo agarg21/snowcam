@@ -37,6 +37,56 @@ BLUR_EDGE_RATIO = 0.45    # ... with edges also low: smeared or blurred lens, no
 EST_COST = {reader.DEFAULT_MODEL: 0.0006, reader.ESCALATE_MODEL: 0.01}  # $ per read, measured Nov 16-17
 
 
+# Snow stakes (2026-11-26): the larger model reads each stake once in the morning and once in the
+# afternoon (resort time), plus every 2 hours while another cam at the resort sees snow falling.
+STAKE_SLOTS = [(5, 12, "morning"), (12, 18, "afternoon")]
+STAKE_SNOW_EVERY_MIN = 110
+STAKE_SNOW_LOOKBACK_H = 2.0
+
+
+def stake_due(con, cam, prev, at: datetime) -> tuple[bool, str]:
+    from zoneinfo import ZoneInfo
+    tz = ZoneInfo(cam.tz)
+    local = at.astimezone(tz)
+    last = datetime.fromisoformat(prev["read_ts"]).astimezone(tz) if prev else None
+    since = (at - timedelta(hours=STAKE_SNOW_LOOKBACK_H)).isoformat()
+    others = [c.id for c in reg_cams(cam.resort_id) if c.id != cam.id and c.role != "stake"]
+    snowing = False
+    if others:
+        marks = ",".join("?" * len(others))
+        for r in con.execute(f"select fields from readings where cam in ({marks}) and ts>=?", (*others, since)):
+            p = json.loads(r["fields"] or "{}").get("precip_now") or {}
+            if p.get("value") == "snow" and (p.get("conf") or 0) >= fusion.MIN_CONF:
+                snowing = True
+                break
+    if snowing and (last is None or (at - last).total_seconds() >= STAKE_SNOW_EVERY_MIN * 60):
+        return True, "snow falling"
+    for lo, hi, name in STAKE_SLOTS:
+        if lo <= local.hour < hi:
+            done = last is not None and last.date() == local.date() and lo <= last.hour < hi
+            return (not done), name
+    return False, "outside stake slots"
+
+
+_REG = None
+
+
+def reg_cams(resort_id: str):
+    return _REG.by_resort(resort_id) if _REG else []
+
+
+def cost_table(con, days: int = 7) -> str:
+    since = (now_utc() - timedelta(days=days)).isoformat()
+    lines = ["day         kind    model              calls  in/call  cached/call  out/call    cost"]
+    for r in con.execute("select substr(ts,1,10) d, kind, model, count(*) n, avg(input_tokens) i, avg(cache_read) c, "
+                         "avg(output_tokens) o, sum(cost) usd from calls where ts>=? group by d, kind, model order by d, kind",
+                         (since,)):
+        lines.append(f"{r['d']}  {r['kind']:7s} {r['model']:18s} {r['n']:5d}  {r['i']:7.0f}  {r['c']:11.0f}  {r['o']:8.0f}  ${r['usd']:.2f}")
+    for d, usd in con.execute("select substr(ts,1,10), sum(cost) from calls where ts>=? group by 1 order by 1", (since,)):
+        lines.append(f"{d}  total  ${usd:.2f}")
+    return "\n".join(lines)
+
+
 def skip_reason(cam, row, prev, ref_metrics) -> tuple[str | None, str]:
     """Why this frame needs no model call, or (None, "")."""
     m = (json.loads(row["gates"] or "{}") or {}).get("metrics", {})
@@ -132,6 +182,8 @@ def _burst_paths(path: Path) -> list[Path]:
 
 
 def read_pending(reg, con, dry_run: bool, samples: int, since_hours: float, limit: int | None) -> None:
+    global _REG
+    _REG = reg
     since = (now_utc() - timedelta(hours=since_hours)).isoformat()
     rows = con.execute(
         "select f.* from frames f left join readings r on r.frame_id=f.id "
@@ -155,8 +207,8 @@ def read_pending(reg, con, dry_run: bool, samples: int, since_hours: float, limi
         if not cam.usable or not cam.describe:
             continue  # not a ski view, or waiting for its one-time profile
         prev = store.last_read_frame(con, cam.id)
-        if cam.role == "stake" and prev and prev["ts"] > (now_utc() - timedelta(minutes=110)).isoformat():
-            continue  # stakes change slowly and use the larger model: read them every 2 hours
+        if cam.role == "stake" and not stake_due(con, cam, prev, datetime.fromisoformat(row["ts"]))[0]:
+            continue
         ref_im, ref_m = _ref(cam.id)
         model = reader.ESCALATE_MODEL if cam.role == "stake" else reader.DEFAULT_MODEL
         why, detail = skip_reason(cam, row, prev, ref_m)
@@ -493,6 +545,8 @@ def main(argv=None) -> None:
     mg.add_argument("out")
     mg.add_argument("parts", nargs="+")
     sub.add_parser("savings", help="model calls skipped per day")
+    cp = sub.add_parser("cost", help="actual model spend per day, from recorded token usage")
+    cp.add_argument("--days", type=int, default=7)
     hc = sub.add_parser("health", help="daily health check, no model calls")
     hc.add_argument("--runs", help="gh run list JSON for collect.yml")
     hc.add_argument("--previous", help="file with the open health issue's body, to mark new findings")
@@ -557,8 +611,12 @@ def main(argv=None) -> None:
         findings, spend_line = health.check(reg, con, runs, now)
         Path(a.out).write_text(health.render(findings, spend_line, now, prev))
         print(Path(a.out).read_text())
+    elif a.cmd == "cost":
+        print(cost_table(con, a.days))
     elif a.cmd == "report":
         print(report(reg, con, Path(a.out)))
+    if reader.CALLS:
+        store.flush_calls(con)
 
 
 if __name__ == "__main__":

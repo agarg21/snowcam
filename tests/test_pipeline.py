@@ -325,3 +325,54 @@ def test_archive_part_and_merge(tmp_path):
     assert archive.merge(parts + parts, out) == 1
     with zipfile.ZipFile(out) as z:
         assert "manifest.csv" in z.namelist() and "patchy" in z.read("manifest.csv").decode()
+
+
+def test_requests_use_768_px_and_prompt_cache():
+    import base64, io
+    from PIL import Image
+    from snowcam import reader, verify
+    from snowcam.config import load_registry
+    reg = load_registry()
+    im = Image.new("RGB", (1920, 1080), (180, 190, 200))
+    def widths(req):
+        out = []
+        for b in req["messages"][0]["content"]:
+            if b["type"] == "image":
+                out.append(Image.open(io.BytesIO(base64.b64decode(b["source"]["data"]))).width)
+        return out
+    summit = reg.cam("okemo-summit")
+    req = reader.build_request(summit, [im], "10:00", im, (im, "09:00"), reader.DEFAULT_MODEL)
+    assert widths(req) == [768, 768, 768]
+    assert req["system"][0]["cache_control"] == {"type": "ephemeral"}
+    assert req["tools"][-1]["cache_control"] == {"type": "ephemeral"}
+    stake = reg.cam("okemo-stake")
+    sreq = reader.build_request(stake, [im], "10:00", im, None, reader.ESCALATE_MODEL)
+    w = widths(sreq)
+    assert w[0] == 1092 and w[-1] == 1092  # stakes keep full detail; the close-up stays native
+    vreq = verify.build_request(summit, im, im, verify.INITIAL_MODEL)
+    assert widths(vreq) == [1092, 1092] and vreq["system"][0]["cache_control"]
+
+
+def test_stake_due_twice_a_day_plus_snowfall(tmp_path):
+    import sqlite3, json
+    from datetime import datetime, timezone
+    from snowcam import store, cli
+    from snowcam.config import load_registry
+    reg = load_registry()
+    cli._REG = reg
+    con = sqlite3.connect(tmp_path / "t.db"); con.row_factory = sqlite3.Row
+    con.executescript(store.SCHEMA)
+    cam = reg.cam("okemo-stake")  # America/New_York
+    from datetime import timedelta
+    at = lambda h, m=17: datetime(2026, 11, 27, 5, m, tzinfo=timezone.utc) + timedelta(hours=h)  # h is Eastern
+    prev = lambda h: {"read_ts": at(h).isoformat()}
+    assert cli.stake_due(con, cam, None, at(7)) == (True, "morning")
+    assert cli.stake_due(con, cam, prev(7), at(9))[0] is False          # morning done
+    assert cli.stake_due(con, cam, prev(7), at(13)) == (True, "afternoon")
+    assert cli.stake_due(con, cam, prev(13), at(15))[0] is False
+    assert cli.stake_due(con, cam, prev(13), at(19))[0] is False        # evening: only if snowing
+    # another Okemo cam saw snow falling within 2 hours -> every 2 hours, any time of day
+    con.execute("insert into readings(frame_id, cam, ts, model, prompt_version, fields, notes, raw) values (1,'okemo-summit',?,?,?,?,?,?)",
+                (at(18, 30).isoformat(), "m", "v", json.dumps({"precip_now": {"value": "snow", "conf": 0.9}}), "", "{}"))
+    assert cli.stake_due(con, cam, prev(13), at(19)) == (True, "snow falling")
+    assert cli.stake_due(con, cam, prev(18), at(19))[0] is False        # read under 2 h ago
