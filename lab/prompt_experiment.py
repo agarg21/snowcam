@@ -91,7 +91,7 @@ def main() -> None:
             check = verify.call(verify.build_request(cam, frame, ref, verify.INITIAL_MODEL))
             return r, cam, first, check, None
         except Exception as e:
-            return r, cam, None, None, str(e)[:200]
+            return r, cam, None, None, f"{type(e).__name__}: {str(e)[:300]}"
 
     with ThreadPoolExecutor(8) as ex:
         res = list(ex.map(run, sample))
@@ -102,6 +102,8 @@ def main() -> None:
     for r, cam, first, check, err in res:
         if err:
             errors += 1
+            if errors <= 3:
+                print("ERROR", cam.id, err)
             continue
         of, oc = json.loads(r["first"]), json.loads(r["chk"])
         for f in FIELDS:
