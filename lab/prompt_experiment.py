@@ -81,17 +81,19 @@ def main() -> None:
         k = key_of(p["path"]) if p else None
         return (Image.open(idx[k]).convert("RGB"), _local_label(p["ts"], cam.tz)) if k in idx else None
 
+    prevs = {r["id"]: prev_for(r, cam) for r, cam in sample}  # sqlite stays on this thread
+
     def run(item):
         r, cam = item
         frame = Image.open(idx[key_of(paths[r["id"]])]).convert("RGB")
         ref, _ = _ref(cam.id)
         try:
-            first = reader.call(reader.build_request(cam, [frame], _local_label(r["ts"], cam.tz), ref, prev_for(r, cam),
+            first = reader.call(reader.build_request(cam, [frame], _local_label(r["ts"], cam.tz), ref, prevs[r["id"]],
                                                      reader.DEFAULT_MODEL)).fields
             check = verify.call(verify.build_request(cam, frame, ref, verify.INITIAL_MODEL))
             return r, cam, first, check, None
         except Exception as e:
-            return r, cam, None, None, str(e)[:200]
+            return r, cam, None, None, f"{type(e).__name__}: {str(e)[:300]}"
 
     with ThreadPoolExecutor(8) as ex:
         res = list(ex.map(run, sample))
@@ -102,6 +104,8 @@ def main() -> None:
     for r, cam, first, check, err in res:
         if err:
             errors += 1
+            if errors <= 3:
+                print("ERROR", cam.id, err)
             continue
         of, oc = json.loads(r["first"]), json.loads(r["chk"])
         for f in FIELDS:

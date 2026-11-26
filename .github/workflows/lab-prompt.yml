@@ -40,7 +40,7 @@ jobs:
           mkdir -p frames
           gh api "repos/$GITHUB_REPOSITORY/actions/artifacts?per_page=100" \
             --jq '.artifacts[] | select(.expired==false and (.name|startswith("frames-"))) | [.id, .created_at] | @tsv' |
-          awk -F'\t' '{h=substr($2,12,2)+0; if (h>=14 && h<=21) print $1}' | head -14 |
+          awk -F'\t' '{h=substr($2,12,2)+0; if (h>=14 && h<=21) print $1}' | head -40 |
           while read id; do
             gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$id/zip" > "frames/$id.zip"
             mkdir -p "frames/$id" && unzip -q "frames/$id.zip" -d "frames/$id" && rm "frames/$id.zip"
