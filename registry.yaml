@@ -2892,6 +2892,7 @@ resorts:
       feed: hls
       url: "https://stream.resortcams.com/live/appskimtn.stream/playlist.m3u8"
       role: trail
+      usable: false   # base ice rink (profile 11-27 called it usable); no ski terrain
       describe: ''
   massanutten:
     name: "Massanutten"
