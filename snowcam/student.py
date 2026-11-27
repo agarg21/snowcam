@@ -17,7 +17,7 @@ from pathlib import Path
 import numpy as np
 
 ROOT = Path(__file__).resolve().parent.parent
-MODEL = ROOT / "models" / "student-v1.npz"
+MODEL = ROOT / "models" / "student-v2.npz"
 BACKBONE = ("ViT-B-32-quickgelu", "openai")
 
 SCHEMA = """

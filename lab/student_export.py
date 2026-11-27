@@ -14,7 +14,7 @@ from pathlib import Path
 import numpy as np
 from sklearn.linear_model import LogisticRegression
 
-from lab.student_train import FIELDS, lab, load
+from lab.student_train import FIELDS, lab, load, train_label
 
 
 def main() -> None:
@@ -38,7 +38,7 @@ def main() -> None:
             "cam_means": np.stack(list(cam_means.values())).astype(np.float32), "global_mean": glob.astype(np.float32)}
     fields = []
     for f in FIELDS:
-        tl = lambda r: lab(r["sonnet"], f) or lab(r["first"], f)
+        tl = lambda r: train_label(r, f)
         tr = [r for r in rows if tl(r) is not None]
         if len({tl(r) for r in tr}) < 2:
             continue

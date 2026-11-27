@@ -31,6 +31,16 @@ SCALE = {
     "precip_now": {"none": "none", "snow": "snow", "rain_or_mix": "wet"},
 }
 FIELDS = list(SCALE)
+# Fields trained on Sonnet labels only: the first read's labels disagreed with Sonnet often enough to
+# hurt (lab sweep 11-27, two splits: snow cover 78% -> 92% and 78% -> 84%; new cams 90% -> 95%).
+# Fresh snow gained 2 frames on seen cams but fell 98 -> 78 of 101 on new cams, so it keeps mixed labels.
+SONNET_ONLY = {"snow_cover"}
+
+
+def train_label(r: dict, f: str):
+    if f in SONNET_ONLY:
+        return lab(r["sonnet_any"], f)
+    return lab(r["sonnet_any"], f) or lab(r["first"], f)
 
 
 def lab(fields: dict | None, f: str):
@@ -54,9 +64,12 @@ def load(dataset: Path, emb_dir: Path):
         chk = j.get("check") or {}
         # Only random-sample checks count as the yardstick (spot tie-breaks happen because the
         # first read was disputed, which would bias the comparison against it).
-        sonnet = chk.get("fields") if "sonnet" in (chk.get("model") or "") and chk.get("phase") == "initial" else None
+        is_sonnet = "sonnet" in (chk.get("model") or "")
+        sonnet = chk.get("fields") if is_sonnet and chk.get("phase") == "initial" else None
         rows.append({"i": i, "key": k, "cam": j["cam"], "resort": j["resort"], "day": j["time_local"][:10],
-                     "first": j["teacher"]["fields"], "sonnet": sonnet})
+                     "first": j["teacher"]["fields"], "sonnet": sonnet,
+                     # any Sonnet answer is a good training label (tie-breaks included)
+                     "sonnet_any": chk.get("fields") if is_sonnet else None})
     return E, rows
 
 
@@ -90,7 +103,7 @@ def main() -> None:
           f"{len(test_new)} on new cams (from {a.test_from})")
     out["frames"]["test_new_cams"] = len(test_new)
     for f in FIELDS:
-        tl = lambda r: lab(r["sonnet"], f) or lab(r["first"], f)
+        tl = lambda r: train_label(r, f)
         tr = [r for r in train if tl(r) is not None]
         classes = sorted({tl(r) for r in tr})
         if len(classes) < 2 or len(tr) < 50:

@@ -1,0 +1,95 @@
+{
+ "frames": {
+  "train": 8177,
+  "test": 2021,
+  "test_new_cams": 203
+ },
+ "fields": {
+  "snow_cover": {
+   "classes": [
+    "good",
+    "thin"
+   ],
+   "train_labels": 2595,
+   "threshold": 0.65,
+   "student_vs_first": "1255/1620",
+   "sonnet_frames": 124,
+   "student_vs_sonnet": "114/124",
+   "first_vs_sonnet": "51/97",
+   "student_vs_sonnet_same_frames": "87/97",
+   "gated_coverage_all_test": "86%",
+   "gated_student_vs_sonnet": "92/98",
+   "new_cams_student_vs_first": "136/152",
+   "new_cams_student_vs_sonnet": "120/126"
+  },
+  "fresh_snow": {
+   "classes": [
+    "none",
+    "some"
+   ],
+   "train_labels": 6127,
+   "threshold": 0.5,
+   "student_vs_first": "1326/1367",
+   "sonnet_frames": 48,
+   "student_vs_sonnet": "45/48",
+   "first_vs_sonnet": "20/25",
+   "student_vs_sonnet_same_frames": "23/25",
+   "gated_coverage_all_test": "100%",
+   "gated_student_vs_sonnet": "45/48",
+   "new_cams_student_vs_first": "106/112",
+   "new_cams_student_vs_sonnet": "98/101"
+  },
+  "visibility": {
+   "classes": [
+    "clear",
+    "hazy",
+    "poor"
+   ],
+   "train_labels": 4573,
+   "threshold": 0.83,
+   "student_vs_first": "1040/1198",
+   "sonnet_frames": 85,
+   "student_vs_sonnet": "77/85",
+   "first_vs_sonnet": "65/77",
+   "student_vs_sonnet_same_frames": "69/77",
+   "gated_coverage_all_test": "59%",
+   "gated_student_vs_sonnet": "56/57",
+   "new_cams_student_vs_first": "77/95",
+   "new_cams_student_vs_sonnet": "78/83"
+  },
+  "snowmaking": {
+   "classes": [
+    "off",
+    "on"
+   ],
+   "train_labels": 5767,
+   "threshold": 0.89,
+   "student_vs_first": "1115/1193",
+   "sonnet_frames": 140,
+   "student_vs_sonnet": "133/140",
+   "first_vs_sonnet": "80/83",
+   "student_vs_sonnet_same_frames": "80/83",
+   "gated_coverage_all_test": "73%",
+   "gated_student_vs_sonnet": "88/88",
+   "new_cams_student_vs_first": "98/102",
+   "new_cams_student_vs_sonnet": "142/147"
+  },
+  "precip_now": {
+   "classes": [
+    "none",
+    "snow"
+   ],
+   "train_labels": 6850,
+   "threshold": 0.5,
+   "student_vs_first": "1741/1756",
+   "sonnet_frames": 125,
+   "student_vs_sonnet": "124/125",
+   "first_vs_sonnet": "122/122",
+   "student_vs_sonnet_same_frames": "121/122",
+   "gated_coverage_all_test": "100%",
+   "gated_student_vs_sonnet": "124/125",
+   "new_cams_student_vs_first": "163/164",
+   "new_cams_student_vs_sonnet": "155/157"
+  }
+ }
+}
