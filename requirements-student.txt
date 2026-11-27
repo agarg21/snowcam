@@ -1,0 +1,4 @@
+# Student reader (shadow mode): CPU-only torch + open_clip. Installed only on passes that read frames.
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch>=2.4
+open_clip_torch>=3

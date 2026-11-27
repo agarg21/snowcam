@@ -640,6 +640,10 @@ def main(argv=None) -> None:
     mg.add_argument("parts", nargs="+")
     sub.add_parser("savings", help="model calls skipped per day")
     sub.add_parser("stake-gate", help="clean-board gate (shadow) against Sonnet stake reads")
+    st = sub.add_parser("student-shadow", help="run the student reader beside this pass's reads (shadow)")
+    st.add_argument("--since-hours", type=float, default=0.5)
+    st.add_argument("--check-only", action="store_true", help="exit 0 only if there are frames to read")
+    sub.add_parser("student-report", help="student vs Haiku against the random Sonnet checks")
     cp = sub.add_parser("cost", help="actual model spend per day, from recorded token usage")
     cp.add_argument("--days", type=int, default=7)
     hc = sub.add_parser("health", help="daily health check, no model calls")
@@ -706,6 +710,17 @@ def main(argv=None) -> None:
         findings, spend_line = health.check(reg, con, runs, now)
         Path(a.out).write_text(health.render(findings, spend_line, now, prev))
         print(Path(a.out).read_text())
+    elif a.cmd == "student-shadow":
+        since = (now_utc() - timedelta(hours=a.since_hours)).isoformat()
+        if a.check_only:
+            n = con.execute("select count(*) from readings r join frames f on f.id=r.frame_id where r.ts>=? "
+                            "and f.gates like '%sun_elevation%' and f.path is not null", (since,)).fetchone()[0]
+            raise SystemExit(0 if n else 1)
+        from . import student
+        student.shadow(reg, con, since)
+    elif a.cmd == "student-report":
+        from . import student
+        print(student.report(con))
     elif a.cmd == "stake-gate":
         from . import stakegate
         print(stakegate.report(con))

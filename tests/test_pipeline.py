@@ -529,3 +529,22 @@ def test_batch_submit_and_collect(tmp_path, monkeypatch):
     assert verify.pending_count(con, "okemo") == 0
     assert reader.CALLS[0][1] == "check-batch" and abs(reader.CALLS[0][-1] - 0.5 * reader.price(verify.INITIAL_MODEL, {"input_tokens": 2000, "output_tokens": 300})) < 1e-9
     reader.CALLS.clear()
+
+
+def test_student_report_scores_against_random_sonnet_checks(tmp_path):
+    import sqlite3, json
+    from snowcam import store, verify, student
+    con = sqlite3.connect(tmp_path / "t.db"); con.row_factory = sqlite3.Row
+    con.executescript(store.SCHEMA); verify.ensure(con); con.executescript(student.SCHEMA)
+    f = lambda v, c=0.9: {"value": v, "conf": c}
+    for i, (stu, haiku, gold) in enumerate([("thin", "full", "patchy"), ("good", "full", "mostly"), ("good", "patchy", "full")]):
+        ts = "2099-01-01T15:00:00+00:00"
+        con.execute("insert into readings(id, frame_id, cam, ts, model, prompt_version, fields, notes, raw) values (?,?,?,?,?,?,?,?,?)",
+                    (i, i, "c", ts, "h", "v", json.dumps({"snow_cover": f(haiku)}), "", "{}"))
+        con.execute("insert into verifications(reading_id, cam, resort, ts, phase, model, fields, tiebreak, created) values (?,?,?,?,?,?,?,?,?)",
+                    (i, "c", "r", ts, "initial", "claude-sonnet-5-5", json.dumps({"snow_cover": f(gold)}), "{}", "t"))
+        con.execute("insert into student_preds(reading_id, frame_id, cam, ts, version, fields, sure) values (?,?,?,?,?,?,?)",
+                    (i, i, "c", ts, "v1", json.dumps({"snow_cover": {"value": stu, "conf": 0.9}}), json.dumps({"snow_cover": True})))
+    out = student.report(con, days=100000)
+    line = next(l for l in out.splitlines() if l.startswith("snow_cover"))
+    assert "100%" in line and "33%" in line and "n=3" in line   # student 3/3, Haiku 1/3

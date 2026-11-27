@@ -41,6 +41,9 @@ jobs:
         with:
           python-version: "3.12"
           cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-student.txt
 
       - run: pip install -r requirements.txt
 
@@ -61,6 +64,27 @@ jobs:
           python -m snowcam.cli savings || true
           python -m snowcam.cli cost --days 2 || true
           python -m snowcam.cli stake-gate || true
+
+      # Student reader in shadow mode (2026-11-27): a free CPU model answers beside Haiku on this
+      # pass's daytime frames; `student-report` scores both against the random Sonnet checks.
+      # Publishes nothing and can never fail the pass.
+      - name: Cache the student's image model
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface
+          key: clip-vit-b-32-quickgelu-openai
+      - name: Student reader (shadow)
+        if: always()
+        continue-on-error: true
+        timeout-minutes: 8
+        run: |
+          if python -m snowcam.cli student-shadow --check-only; then
+            pip install -q -r requirements-student.txt
+            python -m snowcam.cli student-shadow --since-hours 0.5
+            python -m snowcam.cli student-report || true
+          else
+            echo "no daytime reads this pass"
+          fi
 
       # Private dataset (owner, 2026-11-25): this pass's daytime reads as 640 px JPEGs with label
       # JSON, one part zip per pass. Never part of the public feed.
