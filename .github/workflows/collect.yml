@@ -77,7 +77,7 @@ jobs:
       - name: Student reader (shadow)
         if: always()
         continue-on-error: true
-        timeout-minutes: 8
+        timeout-minutes: 12
         env:
           GH_TOKEN: ${{ secrets.LAB_TOKEN || secrets.FEED_TOKEN }}
         run: |
