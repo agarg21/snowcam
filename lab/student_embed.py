@@ -21,9 +21,11 @@ def main() -> None:
     ap.add_argument("--model", default="ViT-B-32")
     ap.add_argument("--pretrained", default="openai")
     ap.add_argument("--chunk", type=int, default=512)
+    ap.add_argument("--timm", action="store_true", help="--model is a timm model name (e.g. DINOv2)")
+    ap.add_argument("--backbone", help="spec as in snowcam/student.py (overrides --model/--pretrained/--timm)")
+    ap.add_argument("--keys", help="file with one frame key per line: embed only those")
     a = ap.parse_args()
     import torch
-    import open_clip
     from PIL import Image
 
     torch.set_num_threads(max(1, torch.get_num_threads()))
@@ -33,10 +35,14 @@ def main() -> None:
     for f in out.glob("chunk-*.npz"):
         done.update(np.load(f, allow_pickle=True)["key"].tolist())
     jpgs = sorted(p for p in Path(a.dataset).rglob("*.jpg"))
+    if a.keys:
+        want = set(Path(a.keys).read_text().split())
+        jpgs = [p for p in jpgs if str(p.relative_to(a.dataset))[:-4] in want]
     todo = [p for p in jpgs if str(p.relative_to(a.dataset))[:-4] not in done]
     print(f"{len(jpgs)} frames, {len(done)} already embedded, {len(todo)} to go", flush=True)
-    model, _, prep = open_clip.create_model_and_transforms(a.model, pretrained=a.pretrained)
-    model.eval()
+    from snowcam.student import load_backbone
+    spec = a.backbone or (f"timm:{a.model}" if a.timm else f"open_clip:{a.model}:{a.pretrained}")
+    encode, prep = load_backbone(spec)
     t0, n = time.time(), 0
     for c in range(0, len(todo), a.chunk):
         part = todo[c:c + a.chunk]
@@ -50,14 +56,14 @@ def main() -> None:
                     tiles = [im.crop((x * w // 2, y * h // 2, (x + 1) * w // 2, (y + 1) * h // 2)) for y in (0, 1) for x in (0, 1)]
                     batch += [prep(t) for t in [im] + tiles]
                     ks.append(str(p.relative_to(a.dataset))[:-4])
-                e = model.encode_image(torch.stack(batch))
+                e = encode(torch.stack(batch))
                 e = (e / e.norm(dim=-1, keepdim=True)).numpy().astype(np.float32).reshape(len(ks), 5, -1)
                 embs.append(np.concatenate([e[:, 0], e[:, 1:].max(1)], 1))
                 keys += ks
         np.savez(out / f"chunk-{len(list(out.glob('chunk-*.npz'))):04d}.npz", emb=np.concatenate(embs), key=np.array(keys))
         n += len(part)
         print(f"{len(done) + n}/{len(jpgs)}  {(time.time() - t0) / n:.3f} s/frame", flush=True)
-    meta = {"model": a.model, "pretrained": a.pretrained, "features": "whole + max over 4 tiles"}
+    meta = {"backbone": spec, "features": "whole + max over 4 tiles"}
     (out / "meta.json").write_text(json.dumps(meta))
 
 

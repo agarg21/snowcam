@@ -1,5 +1,9 @@
-"""Student reader (shadow mode, 2026-11-27): a frozen CLIP image model plus small per-field
+"""Student reader (shadow mode, 2026-11-27): a frozen image model (CLIP or DINOv2) plus small per-field
 layers trained on our own labelled frames (labels: Sonnet checks, else confident first reads).
+
+v3 (11-27): snow cover and snowmaking read DINOv2-small features, the other fields CLIP B/32;
+snow cover is trained on Sonnet labels only. Lab, random Sonnet checks on cams it has seen, two
+test splits: snow cover 97% and 93% (CLIP-only v1: 78% and 78%; Haiku on the same frames: 53%).
 
 It runs on the runner's CPU beside the Haiku first read and logs its answers in student_preds;
 `snowcam student-report` scores both against the same random Sonnet checks. It publishes
@@ -17,8 +21,31 @@ from pathlib import Path
 import numpy as np
 
 ROOT = Path(__file__).resolve().parent.parent
-MODEL = ROOT / "models" / "student-v2.npz"
-BACKBONE = ("ViT-B-32-quickgelu", "openai")
+MODEL = ROOT / "models" / "student-v3.npz"
+# Frozen image model, stored in the model file as "open_clip:<name>:<pretrained>" or "timm:<name>".
+DEFAULT_BACKBONE = "open_clip:ViT-B-32-quickgelu:openai"
+
+
+def load_backbone(spec: str):
+    """(encode, preprocess) for a backbone spec; lab/student_embed.py uses the same function so
+    training and production embeddings match exactly."""
+    kind, _, rest = spec.partition(":")
+    if kind == "timm":
+        import timm
+        model = timm.create_model(rest, pretrained=True, num_classes=0, img_size=224)
+        cfg = timm.data.resolve_data_config({}, model=model)
+        cfg.update(input_size=(3, 224, 224), crop_pct=1.0)
+        prep = timm.data.create_transform(**cfg)
+        encode = model.forward
+    elif kind == "open_clip":
+        import open_clip
+        name, _, pretrained = rest.partition(":")
+        model, _, prep = open_clip.create_model_and_transforms(name, pretrained=pretrained)
+        encode = model.encode_image
+    else:
+        raise ValueError(f"unknown backbone {spec!r}")
+    model.eval()
+    return encode, prep
 
 SCHEMA = """
 create table if not exists student_preds (
@@ -33,28 +60,41 @@ class Student:
         z = np.load(path, allow_pickle=True)
         self.version = str(z["version"])
         self.fields = [str(f) for f in z["fields"]]
-        self.heads = {f: (z[f"{f}_coef"], z[f"{f}_intercept"], [str(c) for c in z[f"{f}_classes"]],
-                          float(z[f"{f}_threshold"])) for f in self.fields}
-        self.cam_means = dict(zip([str(c) for c in z["cams"]], z["cam_means"]))
-        self.global_mean = z["global_mean"]
-        import open_clip
         import torch
         self.torch = torch
-        self.model, _, self.prep = open_clip.create_model_and_transforms(*BACKBONE)
-        self.model.eval()
+        cams = [str(c) for c in z["cams"]]
+        if "encoders" in z:  # v3+: one or more encoders, each field reads one of them
+            n = len(z["encoders"])
+            specs = [str(z[f"enc{i}_backbone"]) for i in range(n)]
+            means = [(dict(zip(cams, z[f"enc{i}_cam_means"])), z[f"enc{i}_global_mean"]) for i in range(n)]
+            enc_of = {f: int(z[f"{f}_encoder"]) for f in self.fields}
+        else:  # v1/v2: a single encoder
+            specs = [str(z["backbone"]) if "backbone" in z else DEFAULT_BACKBONE]
+            means = [(dict(zip(cams, z["cam_means"])), z["global_mean"])]
+            enc_of = {f: 0 for f in self.fields}
+        self.backbones = specs
+        self.encoders = [load_backbone(s) for s in specs]
+        self.means = means
+        self.heads = {f: (enc_of[f], z[f"{f}_coef"], z[f"{f}_intercept"], [str(c) for c in z[f"{f}_classes"]],
+                          float(z[f"{f}_threshold"])) for f in self.fields}
 
-    def embed(self, im) -> np.ndarray:
+    def embed(self, im) -> list[np.ndarray]:
+        """One feature vector per encoder: the whole frame plus the max over its four tiles."""
         w, h = im.size
         tiles = [im.crop((x * w // 2, y * h // 2, (x + 1) * w // 2, (y + 1) * h // 2)) for y in (0, 1) for x in (0, 1)]
+        out = []
         with self.torch.no_grad():
-            e = self.model.encode_image(self.torch.stack([self.prep(t) for t in [im] + tiles]))
-            e = (e / e.norm(dim=-1, keepdim=True)).numpy().astype(np.float32)
-        return np.concatenate([e[0], e[1:].max(0)])
+            for encode, prep in self.encoders:
+                e = encode(self.torch.stack([prep(t) for t in [im] + tiles]))
+                e = (e / e.norm(dim=-1, keepdim=True)).numpy().astype(np.float32)
+                out.append(np.concatenate([e[0], e[1:].max(0)]))
+        return out
 
-    def predict(self, cam_id: str, emb: np.ndarray) -> tuple[dict, dict]:
-        x = np.concatenate([emb, emb - self.cam_means.get(cam_id, self.global_mean)])
+    def predict(self, cam_id: str, embs: list[np.ndarray]) -> tuple[dict, dict]:
         out, sure = {}, {}
-        for f, (coef, b, classes, thr) in self.heads.items():
+        for f, (k, coef, b, classes, thr) in self.heads.items():
+            cam_means, glob = self.means[k]
+            x = np.concatenate([embs[k], embs[k] - cam_means.get(cam_id, glob)])
             z = coef @ x + b
             if len(classes) == 2:  # sklearn binary: one row, positive class is classes[1]
                 p1 = 1 / (1 + np.exp(-z[0]))
@@ -62,9 +102,9 @@ class Student:
             else:
                 p = np.exp(z - z.max())
                 p = p / p.sum()
-            k = int(p.argmax())
-            out[f] = {"value": classes[k], "conf": round(float(p[k]), 3)}
-            sure[f] = bool(p[k] >= thr)
+            i = int(p.argmax())
+            out[f] = {"value": classes[i], "conf": round(float(p[i]), 3)}
+            sure[f] = bool(p[i] >= thr)
         return out, sure
 
 
