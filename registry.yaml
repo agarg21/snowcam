@@ -2875,8 +2875,8 @@ resorts:
     cam_page: "https://appskimtn.com/live-cams"
     publish: false
     cams:
-    - id: appalachian-ski-mtn-appskimtn
-      name: "appskimtn"
+    - id: appalachian-ski-mtn-main
+      name: "main"
       feed: hls
       url: "https://6182b61737503.streamlock.net/live/AppSkiMtn.stream/playlist.m3u8"
       role: trail
