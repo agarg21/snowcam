@@ -78,8 +78,14 @@ jobs:
         if: always()
         continue-on-error: true
         timeout-minutes: 8
+        env:
+          GH_TOKEN: ${{ secrets.LAB_TOKEN || secrets.FEED_TOKEN }}
         run: |
           if python -m snowcam.cli student-shadow --check-only; then
+            # the trained model lives in the private agarg21/snowcam-lab, not in this repo
+            m=$(python -c "from snowcam.student import MODEL; print(MODEL.relative_to(MODEL.parents[1]))")
+            mkdir -p models
+            gh api -H "Accept: application/vnd.github.raw" "repos/agarg21/snowcam-lab/contents/$m" > "$m" || { echo "student model not reachable"; exit 0; }
             pip install -q -r requirements-student.txt
             python -m snowcam.cli student-shadow --since-hours 0.5
             python -m snowcam.cli student-report || true

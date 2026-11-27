@@ -3,3 +3,4 @@ probe/
 __pycache__/
 .pytest_cache/
 feed/
+models/
