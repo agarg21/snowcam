@@ -6,9 +6,14 @@ video id seen), HDRelay snapshots and Roundshot "medium" stills. Each candidate 
 bytes changed is live. Writes probe.json plus one contact sheet per resort of its live stills
 (640 px wide tiles, numbered as in probe.json) for a quick look at what each cam shows.
 
+Pass 2 (11-27) adds hosts the first pass missed: Brownrice snapshots, resortcams thumbnails,
+ipcamlive snapshots, and still URLs found inside HDRelay and Angelcam player pages (one fetch per
+player page, robots.txt respected). GAP_SECONDS (env, default 300) sets the wait between fetches;
+slow cams (Roundshot, some YouTube live stills) need ~15 min.
+
 Usage: python3 auto_probe.py render.json OUT_DIR
 """
-import hashlib, io, json, re, sys, time, urllib.parse, urllib.robotparser
+import hashlib, io, json, os, re, sys, time, urllib.parse, urllib.robotparser
 from pathlib import Path
 
 import requests
@@ -52,7 +57,36 @@ def candidates(hits):
             c[f"https://backend.roundshot.com/cams/{m.group(1)}/medium"] = "roundshot"
         if re.search(r"\.jpe?g(\?|$)", h, re.I) and not SKIP.search(h) and "ytimg.com" not in h:
             c[h] = "still"
+        for sn in re.findall(r"brownrice\.com/(?:embed/|snapshot/|\?sn=|cam-images/)([A-Za-z0-9_-]+)", h):
+            c[f"https://player.brownrice.com/snapshot/{sn}"] = "brownrice"
+        m = re.search(r"preview\.resortcams\.com/thumbnail\?application=live&streamname=([A-Za-z0-9_.:-]+)", h)
+        if m:
+            c[f"https://preview.resortcams.com/thumbnail?application=live&streamname={m.group(1)}&size=1280x720"] = "resortcams"
+        m = re.search(r"(https://[a-z0-9]+\.ipcamlive\.com)/player/player\.php\?alias=([A-Za-z0-9_-]+)", h)
+        if m:
+            c[f"{m.group(1)}/player/snapshot.php?alias={m.group(2)}"] = "ipcamlive"
+        if re.search(r"manage\.hdrelay\.com/(?:player|webPlayer/iframe)/[0-9a-f-]{36}|v\.angelcam\.com/iframe\?v=", h):
+            c[h] = "player-page"
     return list(c.items())[:MAX_PER_RESORT]
+
+
+def expand_players(cands):
+    """Replace player pages by the still-image URLs their HTML names."""
+    out = []
+    for c in cands:
+        if c["kind"] != "player-page":
+            out.append(c); continue
+        if c["robots"] != "allow":
+            continue
+        try:
+            html = S.get(c["url"], timeout=20).text
+        except Exception:
+            continue
+        for u in sorted(set(re.findall(r"""https?://[^"'\s<>\\]+""", html))):
+            if re.search(r"snapshot|\.jpe?g(\?|$)|/frames/|thumbnail", u, re.I) and not SKIP.search(u):
+                out.append({"url": u.replace("&amp;", "&"), "kind": "from-player", "via": c["url"],
+                            "robots": "allow" if allowed(u) else "disallow"})
+    return out
 
 
 def fetch(url):
@@ -70,7 +104,8 @@ for resort, rec in render.items():
     cands = []
     for url, kind in candidates(rec.get("hits") or []):
         cands.append({"url": url, "kind": kind, "robots": "allow" if allowed(url) else "disallow"})
-    report[resort] = {"cam_page": rec.get("camUrl"), "render_error": rec.get("err"), "candidates": cands}
+    report[resort] = {"cam_page": rec.get("camUrl"), "render_error": rec.get("err"),
+                      "candidates": expand_players(cands)[:MAX_PER_RESORT]}
 for tag in ("a", "b"):
     for resort, r in report.items():
         for c in r["candidates"]:
@@ -80,7 +115,7 @@ for tag in ("a", "b"):
             if tag == "b" and data:
                 c["_img"] = data
     if tag == "a":
-        time.sleep(300)
+        time.sleep(int(os.environ.get("GAP_SECONDS", "300")))
 
 sheets = out / "sheets"; sheets.mkdir(exist_ok=True)
 for resort, r in report.items():

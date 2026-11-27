@@ -13,6 +13,15 @@ on:
       shards:
         description: number of shards (must match the matrix)
         default: "6"
+      reuse:
+        description: reuse render.json from the previous scan's release (yes/no)
+        default: "no"
+      gap:
+        description: seconds between the two fetches of each still
+        default: "300"
+      tag:
+        description: release tag suffix for this pass's zips
+        default: ""
 
 permissions:
   contents: read
@@ -32,6 +41,8 @@ jobs:
       - run: npm i playwright@1 && npx playwright install --with-deps chromium
       - run: pip install requests pillow >/dev/null
       - name: Robots, render, probe
+        env:
+          GH_TOKEN: ${{ secrets.LAB_TOKEN || secrets.FEED_TOKEN }}
         run: |
           d=docs/${{ inputs.dir }}
           python3 - <<'EOF'
@@ -40,11 +51,17 @@ jobs:
           n, k = int("${{ inputs.shards }}"), ${{ matrix.shard }}
           json.dump({name: url for i, (name, url) in enumerate(t.items()) if i % n == k}, open("/tmp/targets.json", "w"))
           EOF
-          python3 $d/robots_filter.py /tmp/targets.json /tmp/allowed.json | tee /tmp/robots.txt
-          node $d/render.js /tmp/allowed.json /tmp/render.json > /tmp/render.log 2>&1 || true
-          python3 $d/auto_probe.py /tmp/render.json /tmp/probe
+          if [ "${{ inputs.reuse }}" = "yes" ]; then
+            id=$(gh api "repos/agarg21/snowcam-lab/releases/tags/scan-${{ inputs.dir }}" --jq '.assets[] | select(.name=="scan-${{ matrix.shard }}.zip") | .id')
+            gh api -H "Accept: application/octet-stream" "repos/agarg21/snowcam-lab/releases/assets/$id" > /tmp/prev.zip
+            unzip -o -q /tmp/prev.zip render.json robots.txt -d /tmp
+          else
+            python3 $d/robots_filter.py /tmp/targets.json /tmp/allowed.json | tee /tmp/robots.txt
+            node $d/render.js /tmp/allowed.json /tmp/render.json > /tmp/render.log 2>&1 || true
+          fi
+          GAP_SECONDS=${{ inputs.gap }} python3 $d/auto_probe.py /tmp/render.json /tmp/probe
           cp /tmp/robots.txt /tmp/render.json /tmp/probe/
-          cd /tmp/probe && zip -qr /tmp/scan-${{ matrix.shard }}.zip .
+          cd /tmp/probe && zip -qr /tmp/scan-${{ matrix.shard }}${{ inputs.tag }}.zip .
       - name: Upload to snowcam-lab
         env:
           GH_TOKEN: ${{ secrets.LAB_TOKEN || secrets.FEED_TOKEN }}
@@ -53,4 +70,4 @@ jobs:
           tag="scan-${{ inputs.dir }}"
           gh release view "$tag" -R "$LAB" >/dev/null 2>&1 || gh release create "$tag" -R "$LAB" --title "$tag" --notes "Cam inventory scan (lab-scan-wide)" || true
           sleep $(( ${{ matrix.shard }} * 3 ))
-          gh release upload "$tag" /tmp/scan-${{ matrix.shard }}.zip -R "$LAB" --clobber
+          gh release upload "$tag" /tmp/scan-${{ matrix.shard }}${{ inputs.tag }}.zip -R "$LAB" --clobber
