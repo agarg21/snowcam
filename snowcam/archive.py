@@ -141,8 +141,11 @@ def merge(parts: list[Path], out: Path) -> int:
                                "role": lab["role"], "time_utc": lab["time_utc"], "teacher_model": lab["teacher"]["model"],
                                "checked": lab["check"] is not None}
                         for k in MANIFEST_FIELDS:
-                            row[k] = (f.get(k) or {}).get("value")
-                            row[k + "_conf"] = (f.get(k) or {}).get("conf")
+                            v = f.get(k)
+                            if not isinstance(v, dict):  # old prompts sometimes gave a bare value (no confidence)
+                                v = {"value": v, "conf": None} if v is not None else {}
+                            row[k] = v.get("value")
+                            row[k + "_conf"] = v.get("conf")
                         rows.append(row)
         buf = io.StringIO()
         if rows:
