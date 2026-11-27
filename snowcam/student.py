@@ -108,8 +108,12 @@ class Student:
         return out, sure
 
 
+EMB_DIR = ROOT / "data" / "student-emb"  # this pass only (never committed); the archive packs them
+
+
 def shadow(reg, con, since_iso: str) -> int:
-    """Run the student on every daytime frame read since since_iso and log its answers."""
+    """Run the student on every daytime frame read since since_iso and log its answers. Each frame's
+    embeddings are also saved for the archive, so retraining never has to re-embed frames."""
     from PIL import Image
     con.executescript(SCHEMA)
     rows = con.execute(
@@ -135,7 +139,11 @@ def shadow(reg, con, since_iso: str) -> int:
         im = Image.open(r["path"]).convert("RGB")
         if im.width > 640:  # trained on the 640 px archive copies
             im = im.resize((640, round(im.height * 640 / im.width)), Image.LANCZOS)
-        fields, sure = s.predict(r["cam"], s.embed(im))
+        embs = s.embed(im)
+        fields, sure = s.predict(r["cam"], embs)
+        EMB_DIR.mkdir(parents=True, exist_ok=True)
+        np.savez(EMB_DIR / f"{r['id']}.npz", backbones=np.array(s.backbones),
+                 **{f"enc{i}": e.astype(np.float16) for i, e in enumerate(embs)})
         con.execute("insert or ignore into student_preds(reading_id, frame_id, cam, ts, version, fields, sure) "
                     "values (?,?,?,?,?,?,?)", (r["id"], r["frame_id"], r["cam"], r["ts"], s.version,
                                                json.dumps(fields), json.dumps(sure)))

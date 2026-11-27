@@ -293,8 +293,9 @@ def test_cam_blocks_drop_a_disagreeing_cam_field(tmp_path):
     assert ev["detail"]["snow_cover"] == {"n": 20, "agreement": 1.0} and ev["ready"]
 
 
-def test_archive_part_and_merge(tmp_path):
+def test_archive_part_and_merge(tmp_path, monkeypatch):
     import sqlite3, json, zipfile
+    import numpy as np
     from PIL import Image
     from snowcam import store, verify, archive
     from snowcam.config import load_registry
@@ -311,10 +312,14 @@ def test_archive_part_and_merge(tmp_path):
     con.execute("insert into verifications(reading_id, cam, resort, ts, phase, model, fields, tiebreak, created) values "
                 "(1,'okemo-summit','okemo','2026-11-24T15:00:00+00:00','initial','claude-sonnet-5-5',?,?,'t')",
                 (json.dumps({"snow_cover": {"value": "bare", "conf": 0.7}}), json.dumps({"compare": {"snow_cover": True}, "false_fresh": False})))
+    monkeypatch.setattr(archive, "EMB_DIR", tmp_path / "emb")
+    (tmp_path / "emb").mkdir()
+    np.savez(tmp_path / "emb" / "1.npz", backbones=np.array(["x"]), enc0=np.zeros(4, np.float16))  # student's
     parts = archive.build_part(reg, con, "2026-11-24T00:00:00+00:00", tmp_path / "out", "a")
     assert [p.name for p in parts] == ["snowcam-2026-11-24-part-a.zip"]  # the night frame is left out
     with zipfile.ZipFile(parts[0]) as z:
-        names = sorted(z.namelist())
+        names = sorted(n for n in z.namelist() if not n.endswith(".emb.npz"))
+        assert "okemo/okemo-summit/2026-11-24T150000Z.emb.npz" in z.namelist()
         assert names == ["okemo/okemo-summit/2026-11-24T150000Z.jpg", "okemo/okemo-summit/2026-11-24T150000Z.json"]
         lab = json.loads(z.read(names[1]))
         assert lab["teacher"]["fields"]["snow_cover"] == {"value": "patchy", "conf": 0.8}

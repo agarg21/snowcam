@@ -22,6 +22,7 @@ from zoneinfo import ZoneInfo
 from PIL import Image
 
 from .gates import SUN_DARK_DEG
+from .student import EMB_DIR
 
 WIDTH = 640
 QUALITY = 82
@@ -110,6 +111,9 @@ def build_part(reg, con, since_iso: str, out_dir: Path, tag: str) -> list[Path]:
         stem = f"{lab['resort']}/{lab['cam']}/{lab['time_utc'].replace(':', '').replace('+0000', 'Z')}"
         zips[day].writestr(f"{stem}.jpg", _small(src, full=lab["role"] == "stake"))  # rulers need full size
         zips[day].writestr(f"{stem}.json", json.dumps(lab, indent=1))
+        emb = EMB_DIR / f"{r['id']}.npz"
+        if emb.exists():  # the student's embeddings of this frame (snowcam/student.py shadow)
+            zips[day].write(emb, f"{stem}.emb.npz")
         n += 1
     for z in zips.values():
         z.close()
