@@ -1,0 +1,48 @@
+name: lab-scan-video
+
+# Public live video streams on resort cam pages (owner 11-27): reuse the wide scan's renders, render a
+# few extra resorts, then hls_probe.py checks each unsigned stream with the collector's agent and
+# grabs one frame. Results go to the private snowcam-lab scan release.
+on:
+  workflow_dispatch:
+    inputs:
+      dir:
+        default: cam-inventory-2026-11-27
+      gap:
+        default: "900"
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      GH_TOKEN: ${{ secrets.LAB_TOKEN || secrets.FEED_TOKEN }}
+      LAB: agarg21/snowcam-lab
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg >/dev/null
+          npm i playwright@1 >/dev/null && npx playwright install --with-deps chromium >/dev/null
+          pip install requests pillow >/dev/null
+      - name: Renders
+        run: |
+          d=docs/${{ inputs.dir }}; tag="scan-${{ inputs.dir }}"; mkdir -p /tmp/r
+          for k in 0 1 2 3 4 5; do
+            id=$(gh api "repos/$LAB/releases/tags/$tag" --jq ".assets[] | select(.name==\"scan-$k.zip\") | .id")
+            gh api -H "Accept: application/octet-stream" "repos/$LAB/releases/assets/$id" > /tmp/r/$k.zip
+            unzip -o -q -p /tmp/r/$k.zip render.json > /tmp/r/render-$k.json
+          done
+          python3 $d/robots_filter.py $d/targets_video_extra.json /tmp/extra-allowed.json
+          node $d/render.js /tmp/extra-allowed.json /tmp/r/render-extra.json > /tmp/r/extra.log 2>&1 || true
+      - name: Probe streams
+        run: GAP_SECONDS=${{ inputs.gap }} python3 docs/${{ inputs.dir }}/hls_probe.py /tmp/hls /tmp/r/render-*.json
+      - name: Upload
+        run: |
+          cp /tmp/r/render-extra.json /tmp/hls/ || true
+          cd /tmp/hls && zip -qr /tmp/scan-video.zip .
+          gh release upload "scan-${{ inputs.dir }}" /tmp/scan-video.zip -R "$LAB" --clobber
