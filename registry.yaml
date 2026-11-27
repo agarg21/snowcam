@@ -2236,45 +2236,6 @@ resorts:
       url: "https://g1.ipcamlive.com/player/snapshot.php?alias=63485bb43c85b"
       role: trail
       describe: ''
-  loveland:
-    name: "Loveland"
-    state: CO
-    lat: 39.68
-    lon: -105.9
-    tz: America/Denver
-    cam_page: "https://skiloveland.com/webcams"
-    publish: false
-    cams:
-    - id: loveland-689090d5
-      name: "689090d5"
-      feed: still
-      url: "https://cams.skiloveland.com/snowcam/snowcam.jpg?time=1795791813329"
-      role: trail
-      describe: ''
-    - id: loveland-8e2163b4
-      name: "8e2163b4"
-      feed: still
-      url: "https://cams.skiloveland.com/lsacams/ptarmroost/ptarmroost.jpg?time=1795791813329"
-      role: trail
-      describe: ''
-    - id: loveland-f27da0ef
-      name: "f27da0ef"
-      feed: still
-      url: "https://cams.skiloveland.com/lsacams/chetstop/chetstop.jpg?time=1795791813329"
-      role: trail
-      describe: ''
-    - id: loveland-bbe0b594
-      name: "bbe0b594"
-      feed: still
-      url: "https://cams.skiloveland.com/lsacams/valleydeck/valleydeck.jpg?time=1795791813329"
-      role: trail
-      describe: ''
-    - id: loveland-50ba0780
-      name: "50ba0780"
-      feed: still
-      url: "https://cams.skiloveland.com/lsacams/lift9/lift9.jpg?time=1795791813329"
-      role: trail
-      describe: ''
   lutsen-mountains:
     name: "Lutsen Mountains"
     state: MN

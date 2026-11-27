@@ -20,3 +20,7 @@ Results (render.json, probe.json, contact sheets) are in the private agarg21/sno
 
 New cams enter without a description; the one-time Sonnet profile sets name, role and usability
 (non-ski views are dropped), and each resort publishes after the automated read check (D49).
+
+Loveland (5 cams) was taken back out on 11-27: its cam server returned images to the scan's agent
+but a web page to the collector's agent (`snowcam/0.1`), on every cam. Treated as a refusal; not
+worked around (no agent change). 52 resorts, 132 cams remain.
