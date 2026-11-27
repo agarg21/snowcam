@@ -1,0 +1,56 @@
+name: lab-scan-wide
+
+# Wide cam inventory: robots.txt check, headless render of each resort's cam page with an honest
+# user agent (render.js), then auto_probe.py fetches every still candidate twice 5 min apart and
+# keeps the live ones, with a contact sheet per resort. Six shards in parallel. Results go to a
+# release in the private agarg21/snowcam-lab (not run artifacts). No player is bypassed.
+on:
+  workflow_dispatch:
+    inputs:
+      dir:
+        description: inventory folder under docs/
+        default: cam-inventory-2026-11-27
+      shards:
+        description: number of shards (must match the matrix)
+        default: "6"
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: npm i playwright@1 && npx playwright install --with-deps chromium
+      - run: pip install requests pillow >/dev/null
+      - name: Robots, render, probe
+        run: |
+          d=docs/${{ inputs.dir }}
+          python3 - <<'EOF'
+          import json
+          t = json.load(open("docs/${{ inputs.dir }}/targets.json"))
+          n, k = int("${{ inputs.shards }}"), ${{ matrix.shard }}
+          json.dump({name: url for i, (name, url) in enumerate(t.items()) if i % n == k}, open("/tmp/targets.json", "w"))
+          EOF
+          python3 $d/robots_filter.py /tmp/targets.json /tmp/allowed.json | tee /tmp/robots.txt
+          node $d/render.js /tmp/allowed.json /tmp/render.json > /tmp/render.log 2>&1 || true
+          python3 $d/auto_probe.py /tmp/render.json /tmp/probe
+          cp /tmp/robots.txt /tmp/render.json /tmp/probe/
+          cd /tmp/probe && zip -qr /tmp/scan-${{ matrix.shard }}.zip .
+      - name: Upload to snowcam-lab
+        env:
+          GH_TOKEN: ${{ secrets.LAB_TOKEN || secrets.FEED_TOKEN }}
+          LAB: agarg21/snowcam-lab
+        run: |
+          tag="scan-${{ inputs.dir }}"
+          gh release view "$tag" -R "$LAB" >/dev/null 2>&1 || gh release create "$tag" -R "$LAB" --title "$tag" --notes "Cam inventory scan (lab-scan-wide)" || true
+          sleep $(( ${{ matrix.shard }} * 3 ))
+          gh release upload "$tag" /tmp/scan-${{ matrix.shard }}.zip -R "$LAB" --clobber
