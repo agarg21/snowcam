@@ -1,0 +1,80 @@
+name: backfill
+
+# One-off (owner, 2026-11-27): copy every labelled daytime frame from the old full-size frame
+# artifacts into the private dataset (snowcam-lab releases, same format as the daily archive),
+# then delete each artifact once its frames are safely uploaded. Frees the Actions storage quota.
+on:
+  workflow_dispatch:
+    inputs:
+      older_than_days:
+        description: only artifacts older than this
+        default: "3"
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    env:
+      LAB: agarg21/snowcam-lab
+      LAB_TOKEN: ${{ secrets.LAB_TOKEN || secrets.FEED_TOKEN }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore database from the data branch
+        run: |
+          git fetch origin data:data
+          mkdir -p data
+          git show data:snowcam.db > data/snowcam.db
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12", cache: pip }
+      - run: pip install -r requirements.txt
+      - name: Backfill and delete
+        run: |
+          cutoff=$(date -u -d "-${{ inputs.older_than_days }} days" +%Y-%m-%dT%H:%M:%SZ)
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts?per_page=100" --paginate \
+            --jq ".artifacts[] | select(.expired==false and (.name|startswith(\"frames-\")) and .created_at < \"$cutoff\") | .id" > ids.txt
+          echo "$(wc -l < ids.txt) artifacts older than $cutoff"
+          ok=0; kept=0
+          for id in $(cat ids.txt); do
+            rm -rf data/frames data/archive /tmp/parts
+            if ! gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$id/zip" > /tmp/a.zip; then echo "$id: download failed, kept"; kept=$((kept+1)); continue; fi
+            unzip -qo /tmp/a.zip 'frames/*' -d data || true
+            python -m snowcam.cli archive --since-hours 100000 --out /tmp/parts --tag "bf$id" | tail -1
+            up=1
+            for z in /tmp/parts/*.zip; do
+              [ -e "$z" ] || continue
+              day=$(basename "$z" | sed -E 's/^snowcam-([0-9-]+)-part-.*/\1/')
+              tag="day-$day"
+              GH_TOKEN=$LAB_TOKEN gh release view "$tag" -R "$LAB" >/dev/null 2>&1 || \
+                GH_TOKEN=$LAB_TOKEN gh release create "$tag" -R "$LAB" --title "Snow cam frames $day (US Eastern day)" \
+                  --notes "Daytime frames read by the snowcam reader on $day: 640 px JPEGs (stakes full size) with label JSON. Backfilled from run artifacts on 2026-11-27." || up=0
+              GH_TOKEN=$LAB_TOKEN gh release upload "$tag" "$z" -R "$LAB" --clobber || up=0
+            done
+            if [ $up = 1 ]; then
+              gh api -X DELETE "repos/$GITHUB_REPOSITORY/actions/artifacts/$id" && ok=$((ok+1))
+            else
+              echo "$id: upload failed, artifact kept"; kept=$((kept+1))
+            fi
+          done
+          echo "backfilled and deleted $ok artifacts; kept $kept"
+      - name: Merge each day's parts
+        env:
+          GH_TOKEN: ${{ secrets.LAB_TOKEN || secrets.FEED_TOKEN }}
+        run: |
+          today=$(TZ=America/New_York date +%F)
+          for tag in $(gh release list -R "$LAB" --limit 60 --json tagName --jq '.[].tagName'); do
+            day=${tag#day-}
+            [[ "$day" < "$today" ]] || continue
+            parts=$(gh release view "$tag" -R "$LAB" --json assets --jq '.assets[].name | select(contains("-part-"))')
+            [ -n "$parts" ] || continue
+            d=$(mktemp -d)
+            gh release download "$tag" -R "$LAB" -p "snowcam-$day*.zip" -D "$d"
+            python -m snowcam.cli archive-merge "$RUNNER_TEMP/snowcam-$day.zip" "$d"/*.zip
+            gh release upload "$tag" "$RUNNER_TEMP/snowcam-$day.zip" -R "$LAB" --clobber
+            for a in $parts; do gh release delete-asset "$tag" "$a" -R "$LAB" -y; done
+            rm -rf "$d" "$RUNNER_TEMP/snowcam-$day.zip"
+          done
