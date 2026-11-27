@@ -1,0 +1,1205 @@
+{
+ "Mount Sunapee": {
+  "skipped_signed_hosts": [],
+  "streams": [
+   {
+    "url": "https://live8.brownrice.com:444/sunapeesprucelodge/sunapeesprucelodge.stream/main_playlist.m3u8",
+    "cam_page": "https://www.mountsunapee.com/the-mountain/mountain-conditions/mountain-cams.aspx",
+    "robots": "allow",
+    "a": {
+     "status": 200,
+     "endlist": false,
+     "seq": 10517
+    },
+    "b": {
+     "status": 200,
+     "endlist": false,
+     "seq": 10970
+    },
+    "frame": true,
+    "ffmpeg": "",
+    "live": true,
+    "size": [
+     1920,
+     1080
+    ]
+   }
+  ],
+  "live": 1
+ },
+ "Wachusett": {
+  "skipped_signed_hosts": [
+   "wms-prod-5.wetmet.net"
+  ],
+  "streams": [],
+  "live": 0
+ },
+ "Spirit Mountain": {
+  "skipped_signed_hosts": [],
+  "streams": [
+   {
+    "url": "https://stream.resortcams.com/live/spiritmtn.stream/playlist.m3u8",
+    "cam_page": "https://spiritmt.com/live-cam/",
+    "robots": "allow",
+    "a": {
+     "status": 200,
+     "endlist": false,
+     "seq": 6562
+    },
+    "b": {
+     "status": 200,
+     "endlist": false,
+     "seq": 6653
+    },
+    "frame": true,
+    "ffmpeg": "",
+    "live": true,
+    "size": [
+     1280,
+     720
+    ]
+   }
+  ],
+  "live": 1
+ },
+ "Wilmot": {
+  "skipped_signed_hosts": [],
+  "streams": [
+   {
+    "url": "https://live8.brownrice.com:444/wilmottp/wilmottp.stream/main_playlist.m3u8",
+    "cam_page": "https://www.wilmotmountain.com/the-mountain/mountain-conditions/mountain-cams.aspx",
+    "robots": "allow",
+    "a": {
+     "status": 200,
+     "endlist": false,
+     "seq": 10517
+    },
+    "b": {
+     "status": 200,
+     "endlist": false,
+     "seq": 10972
+    },
+    "frame": true,
+    "ffmpeg": "",
+    "live": true,
+    "size": [
+     3840,
+     2160
+    ]
+   }
+  ],
+  "live": 1
+ },
+ "Wildcat": {
+  "skipped_signed_hosts": [],
+  "streams": [
+   {
+    "url": "https://live9.brownrice.com:444/wildcat1/wildcat1.stream/main_playlist.m3u8",
+    "cam_page": "https://www.skiwildcat.com/the-mountain/mountain-conditions/mountain-cams.aspx",
+    "robots": "allow",
+    "a": {
+     "status": 200,
+     "endlist": false,
+     "seq": 6799
+    },
+    "b": {
+     "status": 200,
+     "endlist": false,
+     "seq": 7094
+    },
+    "frame": true,
+    "ffmpeg": "",
+    "live": true,
+    "size": [
+     1280,
+     720
+    ]
+   }
+  ],
+  "live": 1
+ },
+ "Mohawk Mountain": {
+  "skipped_signed_hosts": [
+   "e1-na7.angelcam.com"
+  ],
+  "streams": [],
+  "live": 0
+ },
+ "Camelback": {
+  "skipped_signed_hosts": [
+   "wmso-us-ea1.wetmet.net"
+  ],
+  "streams": [],
+  "live": 0
+ },
+ "Bear Creek": {
+  "skipped_signed_hosts": [],
+  "streams": [
+   {
+    "url": "https://streamer6.brownrice.com/bearsnowsports/bearsnowsports.stream/main_playlist.m3u8",
+    "cam_page": "https://www.bcmountainresort.com/activities/ski-snowboarding/mountain-webcam/",
+    "robots": "allow",
+    "a": {
+     "error": "HTTPSConnectionPool(host='streamer6.brownrice.com', port=443): Max retries exceeded with url: /bearsnowsports/bearsnowsp"
+    },
+    "b": {
+     "error": "HTTPSConnectionPool(host='streamer6.brownrice.com', port=443): Max retries exceeded with url: /bearsnowsports/bearsnowsp"
+    },
+    "frame": true,
+    "ffmpeg": "",
+    "live": false,
+    "size": [
+     1920,
+     1080
+    ]
+   },
+   {
+    "url": "https://streamer5.brownrice.com/bearbase/bearbase.stream/main_playlist.m3u8",
+    "cam_page": "https://www.bcmountainresort.com/activities/ski-snowboarding/mountain-webcam/",
+    "robots": "allow",
+    "a": {
+     "error": "HTTPSConnectionPool(host='streamer5.brownrice.com', port=443): Max retries exceeded with url: /bearbase/bearbase.stream/"
+    },
+    "b": {
+     "error": "HTTPSConnectionPool(host='streamer5.brownrice.com', port=443): Max retries exceeded with url: /bearbase/bearbase.stream/"
+    },
+    "frame": true,
+    "ffmpeg": "",
+    "live": false,
+    "size": [
+     1920,
+     1080
+    ]
+   }
+  ],
+  "live": 0
+ },
+ "Wisp": {
+  "skipped_signed_hosts": [],
+  "streams": [
+   {
+    "url": "https://stream.resortcams.com/live/wispresort.stream/playlist.m3u8",
+    "cam_page": "https://www.wispresort.com/mountain-report-cams/",
+    "robots": "allow",
+    "a": {
+     "status": 200,
+     "endlist": false,
+     "seq": 17774
+    },
+    "b": {
+     "status": 200,
+     "endlist": false,
+     "seq": 17866
+    },
+    "frame": true,
+    "ffmpeg": "",
+    "live": true,
+    "size": [
+     1280,
+     720
+    ]
+   },
+   {
+    "url": "https://stream.resortcams.com/live/wispresortmountainpark.stream/playlist.m3u8",
+    "cam_page": "https://www.wispresort.com/mountain-report-cams/",
+    "robots": "allow",
+    "a": {
+     "status": 200,
+     "endlist": false,
+     "seq": 1381
+    },
+    "b": {
+     "status": 200,
+     "endlist": false,
+     "seq": 1473
+    },
+    "frame": true,
+    "ffmpeg": "",
+    "live": true,
+    "size": [
+     1920,
+     1080
+    ]
+   }
+  ],
+  "live": 2
+ },
+ "The Highlands MI": {
+  "skipped_signed_hosts": [
+   "manifest-oci-us-ashburn-1-vop1.edgemv.mux.com"
+  ],
+  "streams": [
+   {
+    "url": "https://stream.mux.com/w4K3HyCfqib1zfsZGmgfq6zW00M01iAWxgHwSB7iL2ue4.m3u8?redundant_streams=true",
+    "cam_page": null,
+    "robots": "allow",
+    "a": {
+     "status": 200,
+     "endlist": true,
+     "seq": null
+    },
+    "b": {
+     "status": 200,
+     "endlist": true,
+     "seq": null
+    },
+    "frame": true,
+    "ffmpeg": "",
+    "live": false,
+    "size": [
+     1080,
+     1920
+    ]
+   }
+  ],
+  "live": 0
+ },
+ "Devil's Head": {
+  "skipped_signed_hosts": [
+   "e1-na3.angelcam.com"
+  ],
+  "streams": [],
+  "live": 0
+ },
+ "Crotched Mountain": {
+  "skipped_signed_hosts": [],
+  "streams": [
+   {
+    "url": "https://live8.brownrice.com:444/crotchedrocket/crotchedrocket.stream/main_playlist.m3u8",
+    "cam_page": "https://www.crotchedmtn.com/the-mountain/mountain-conditions/mountain-cams.aspx",
+    "robots": "allow",
+    "a": {
+     "status": 200,
+     "endlist": false,
+     "seq": 10519
+    },
+    "b": {
+     "status": 200,
+     "endlist": false,
+     "seq": 10985
+    },
+    "frame": true,
+    "ffmpeg": "",
+    "live": true,
+    "size": [
+     1280,
+     720
+    ]
+   }
+  ],
+  "live": 1
+ },
+ "Plattekill": {
+  "skipped_signed_hosts": [
+   "usher.ttvnw.net"
+  ],
+  "streams": [],
+  "live": 0
+ },
+ "Blue Mountain PA": {
+  "skipped_signed_hosts": [
+   "wmso-us-ea1.wetmet.net"
+  ],
+  "streams": [],
+  "live": 0
+ },
+ "Wintergreen": {
+  "skipped_signed_hosts": [],
+  "streams": [
+   {
+    "url": "https://stream.resortcams.com/live/wintergreen1.stream/playlist.m3u8",
+    "cam_page": "https://www.wintergreenresort.com/mountain-report-cams/",
+    "robots": "allow",
+    "a": {
+     "status": 404,
+     "endlist": false,
+     "seq": null
+    },
+    "b": {
+     "status": 404,
+     "endlist": false,
+     "seq": null
+    },
+    "frame": true,
+    "ffmpeg": "",
+    "live": false,
+    "size": [
+     1920,
+     1080
+    ]
+   },
+   {
+    "url": "https://stream.resortcams.com/live/wintergreen3.stream/playlist.m3u8",
+    "cam_page": "https://www.wintergreenresort.com/mountain-report-cams/",
+    "robots": "allow",
+    "a": {
+     "status": 200,
+     "endlist": false,
+     "seq": 51592
+    },
+    "b": {
+     "status": 200,
+     "endlist": false,
+     "seq": 51966
+    },
+    "frame": true,
+    "ffmpeg": "",
+    "live": true,
+    "size": [
+     1280,
+     720
+    ]
+   },
+   {
+    "url": "https://stream.resortcams.com/live/wintergreen2.stream/playlist.m3u8",
+    "cam_page": "https://www.wintergreenresort.com/mountain-report-cams/",
+    "robots": "allow",
+    "a": {
+     "status": 200,
+     "endlist": false,
+     "seq": 12907
+    },
+    "b": {
+     "status": 200,
+     "endlist": false,
+     "seq": 13001
+    },
+    "frame": true,
+    "ffmpeg": "",
+    "live": true,
+    "size": [
+     1920,
+     1080
+    ]
+   }
+  ],
+  "live": 2
+ },
+ "Beech Mountain": {
+  "skipped_signed_hosts": [],
+  "streams": [
+   {
+    "url": "https://stream.resortcams.com/live/smil:beechsummit.smil/playlist.m3u8",
+    "cam_page": "https://www.beechmountainresort.com/mountain/webcams/",
+    "robots": "allow",
+    "a": {
+     "status": 200,
+     "endlist": false,
+     "seq": 3055
+    },
+    "b": {
+     "status": 200,
+     "endlist": false,
+     "seq": 3149
+    },
+    "frame": true,
+    "ffmpeg": "",
+    "live": true,
+    "size": [
+     1920,
+     1080
+    ]
+   }
+  ],
+  "live": 1
+ },
+ "Granby Ranch": {
+  "skipped_signed_hosts": [],
+  "streams": [
+   {
+    "url": "https://streamer8.brownrice.com/granby2/granby2.stream/main_playlist.m3u8",
+    "cam_page": "https://granbyranch.com/live-web-cams/",
+    "robots": "allow",
+    "a": {
+     "error": "HTTPSConnectionPool(host='streamer8.brownrice.com', port=443): Max retries exceeded with url: /granby2/granby2.stream/ma"
+    },
+    "b": {
+     "error": "HTTPSConnectionPool(host='streamer8.brownrice.com', port=443): Max retries exceeded with url: /granby2/granby2.stream/ma"
+    },
+    "frame": true,
+    "ffmpeg": "",
+    "live": false,
+    "size": [
+     1920,
+     1080
+    ]
+   }
+  ],
+  "live": 0
+ },
+ "Jack Frost Big Boulder": {
+  "skipped_signed_hosts": [],
+  "streams": [
+   {
+    "url": "https://live8.brownrice.com:444/jackfrost2/jackfrost2.stream/main_playlist.m3u8",
+    "cam_page": "https://www.jfbb.com/the-mountain/mountain-conditions/mountain-cams.aspx",
+    "robots": "allow",
+    "a": {
+     "status": 200,
+     "endlist": false,
+     "seq": 10519
+    },
+    "b": {
+     "status": 200,
+     "endlist": false,
+     "seq": 10990
+    },
+    "frame": true,
+    "ffmpeg": "",
+    "live": true,
+    "size": [
+     1280,
+     720
+    ]
+   }
+  ],
+  "live": 1
+ },
+ "Massanutten": {
+  "skipped_signed_hosts": [],
+  "streams": [
+   {
+    "url": "https://stream.resortcams.com/live/massresort3.stream/playlist.m3u8",
+    "cam_page": "https://www.massresort.com/snow-sports/conditions-webcams/",
+    "robots": "allow",
+    "a": {
+     "status": 200,
+     "endlist": false,
+     "seq": 9646
+    },
+    "b": {
+     "status": 200,
+     "endlist": false,
+     "seq": 9741
+    },
+    "frame": true,
+    "ffmpeg": "",
+    "live": true,
+    "size": [
+     1920,
+     1080
+    ]
+   },
+   {
+    "url": "https://stream.resortcams.com/live/massresort1.stream/playlist.m3u8",
+    "cam_page": "https://www.massresort.com/snow-sports/conditions-webcams/",
+    "robots": "allow",
+    "a": {
+     "status": 200,
+     "endlist": false,
+     "seq": 9661
+    },
+    "b": {
+     "status": 200,
+     "endlist": false,
+     "seq": 9755
+    },
+    "frame": true,
+    "ffmpeg": "",
+    "live": true,
+    "size": [
+     1920,
+     1080
+    ]
+   },
+   {
+    "url": "https://stream.resortcams.com/live/massresort2.stream/playlist.m3u8",
+    "cam_page": "https://www.massresort.com/snow-sports/conditions-webcams/",
+    "robots": "allow",
+    "a": {
+     "status": 200,
+     "endlist": false,
+     "seq": 9661
+    },
+    "b": {
+     "status": 200,
+     "endlist": false,
+     "seq": 9755
+    },
+    "frame": true,
+    "ffmpeg": "",
+    "live": true,
+    "size": [
+     1280,
+     720
+    ]
+   }
+  ],
+  "live": 3
+ },
+ "Big Powderhorn": {
+  "skipped_signed_hosts": [
+   "usher.ttvnw.net"
+  ],
+  "streams": [],
+  "live": 0
+ },
+ "Red Lodge": {
+  "skipped_signed_hosts": [
+   "e1-na3.angelcam.com",
+   "e1-na8.angelcam.com"
+  ],
+  "streams": [],
+  "live": 0
+ },
+ "Mt Ashland": {
+  "skipped_signed_hosts": [],
+  "streams": [
+   {
+    "url": "https://streamer9.brownrice.com/mtashlandcomer/mtashlandcomer.stream/main_playlist.m3u8",
+    "cam_page": "https://www.mtashland.com/webcams/",
+    "robots": "allow",
+    "a": {
+     "error": "HTTPSConnectionPool(host='streamer9.brownrice.com', port=443): Max retries exceeded with url: /mtashlandcomer/mtashlandc"
+    },
+    "b": {
+     "error": "HTTPSConnectionPool(host='streamer9.brownrice.com', port=443): Max retries exceeded with url: /mtashlandcomer/mtashlandc"
+    },
+    "frame": true,
+    "ffmpeg": "",
+    "live": false,
+    "size": [
+     1920,
+     1080
+    ]
+   },
+   {
+    "url": "https://streamer9.brownrice.com/mtashlandlodge/mtashlandlodge.stream/main_playlist.m3u8",
+    "cam_page": "https://www.mtashland.com/webcams/",
+    "robots": "allow",
+    "a": {
+     "error": "HTTPSConnectionPool(host='streamer9.brownrice.com', port=443): Max retries exceeded with url: /mtashlandlodge/mtashlandl"
+    },
+    "b": {
+     "error": "HTTPSConnectionPool(host='streamer9.brownrice.com', port=443): Max retries exceeded with url: /mtashlandlodge/mtashlandl"
+    },
+    "frame": true,
+    "ffmpeg": "",
+    "live": false,
+    "size": [
+     1920,
+     1080
+    ]
+   }
+  ],
+  "live": 0
+ },
+ "Sipapu": {
+  "skipped_signed_hosts": [],
+  "streams": [
+   {
+    "url": "https://live4.brownrice.com:444/sipapu2/sipapu2.stream/main_playlist.m3u8",
+    "cam_page": "https://www.sipapu.ski/the-mountain/sipapu-webcams/",
+    "robots": "allow",
+    "a": {
+     "status": 200,
+     "endlist": false,
+     "seq": 17519
+    },
+    "b": {
+     "status": 200,
+     "endlist": false,
+     "seq": 18475
+    },
+    "frame": true,
+    "ffmpeg": "",
+    "live": true,
+    "size": [
+     2560,
+     1440
+    ]
+   },
+   {
+    "url": "https://live4.brownrice.com:444/sipapu2/sipapu2.stream/playlist.m3u8",
+    "cam_page": "https://www.sipapu.ski/the-mountain/sipapu-webcams/",
+    "robots": "allow",
+    "a": {
+     "status": 200,
+     "endlist": false,
+     "seq": 17519
+    },
+    "b": {
+     "status": 200,
+     "endlist": false,
+     "seq": 18477
+    },
+    "frame": true,
+    "ffmpeg": "",
+    "live": true,
+    "size": [
+     2560,
+     1440
+    ]
+   },
+   {
+    "url": "https://live4.brownrice.com:444/sipapu1/sipapu1.stream/main_playlist.m3u8",
+    "cam_page": "https://www.sipapu.ski/the-mountain/sipapu-webcams/",
+    "robots": "allow",
+    "a": {
+     "status": 200,
+     "endlist": false,
+     "seq": 1182
+    },
+    "b": {
+     "status": 200,
+     "endlist": false,
+     "seq": 1788
+    },
+    "frame": true,
+    "ffmpeg": "",
+    "live": true,
+    "size": [
+     2560,
+     1440
+    ]
+   },
+   {
+    "url": "https://live4.brownrice.com:444/sipapu1/sipapu1.stream/playlist.m3u8",
+    "cam_page": "https://www.sipapu.ski/the-mountain/sipapu-webcams/",
+    "robots": "allow",
+    "a": {
+     "status": 200,
+     "endlist": false,
+     "seq": 1182
+    },
+    "b": {
+     "status": 200,
+     "endlist": false,
+     "seq": 1790
+    },
+    "frame": true,
+    "ffmpeg": "",
+    "live": true,
+    "size": [
+     2560,
+     1440
+    ]
+   }
+  ],
+  "live": 4
+ },
+ "Whitetail": {
+  "skipped_signed_hosts": [],
+  "streams": [
+   {
+    "url": "https://live8.brownrice.com:444/whitetail2/whitetail2.stream/main_playlist.m3u8",
+    "cam_page": "https://www.skiwhitetail.com/the-mountain/mountain-conditions/mountain-cams.aspx",
+    "robots": "allow",
+    "a": {
+     "status": 200,
+     "endlist": false,
+     "seq": 4200
+    },
+    "b": {
+     "status": 200,
+     "endlist": false,
+     "seq": 4392
+    },
+    "frame": true,
+    "ffmpeg": "",
+    "live": true,
+    "size": [
+     1920,
+     1080
+    ]
+   },
+   {
+    "url": "https://live8.brownrice.com:444/whitetail2/whitetail2.stream/playlist.m3u8",
+    "cam_page": "https://www.skiwhitetail.com/the-mountain/mountain-conditions/mountain-cams.aspx",
+    "robots": "allow",
+    "a": {
+     "status": 200,
+     "endlist": false,
+     "seq": 4200
+    },
+    "b": {
+     "status": 200,
+     "endlist": false,
+     "seq": 4393
+    },
+    "frame": true,
+    "ffmpeg": "",
+    "live": true,
+    "size": [
+     1920,
+     1080
+    ]
+   }
+  ],
+  "live": 2
+ },
+ "Bryce Resort": {
+  "skipped_signed_hosts": [],
+  "streams": [
+   {
+    "url": "https://stream.resortcams.com/live/bryceresort.stream/playlist.m3u8",
+    "cam_page": null,
+    "robots": "allow",
+    "a": {
+     "status": 200,
+     "endlist": false,
+     "seq": 17775
+    },
+    "b": {
+     "status": 200,
+     "endlist": false,
+     "seq": 17872
+    },
+    "frame": true,
+    "ffmpeg": "",
+    "live": true,
+    "size": [
+     1920,
+     1080
+    ]
+   }
+  ],
+  "live": 1
+ },
+ "Appalachian Ski Mtn": {
+  "skipped_signed_hosts": [],
+  "streams": [
+   {
+    "url": "https://6182b61737503.streamlock.net/live/AppSkiMtn.stream/playlist.m3u8",
+    "cam_page": "https://appskimtn.com/live-cams",
+    "robots": "allow",
+    "a": {
+     "status": 200,
+     "endlist": false,
+     "seq": 11693
+    },
+    "b": {
+     "status": 200,
+     "endlist": false,
+     "seq": 11790
+    },
+    "frame": true,
+    "ffmpeg": "",
+    "live": true,
+    "size": [
+     3840,
+     2160
+    ]
+   },
+   {
+    "url": "https://stream.resortcams.com/live/appskimtn2.stream/playlist.m3u8",
+    "cam_page": "https://appskimtn.com/live-cams",
+    "robots": "allow",
+    "a": {
+     "status": 200,
+     "endlist": false,
+     "seq": 11690
+    },
+    "b": {
+     "status": 200,
+     "endlist": false,
+     "seq": 11787
+    },
+    "frame": true,
+    "ffmpeg": "",
+    "live": true,
+    "size": [
+     1920,
+     1080
+    ]
+   },
+   {
+    "url": "https://stream.resortcams.com/live/appskimtn.stream/playlist.m3u8",
+    "cam_page": "https://appskimtn.com/live-cams",
+    "robots": "allow",
+    "a": {
+     "status": 200,
+     "endlist": false,
+     "seq": 17775
+    },
+    "b": {
+     "status": 200,
+     "endlist": false,
+     "seq": 17872
+    },
+    "frame": true,
+    "ffmpeg": "",
+    "live": true,
+    "size": [
+     640,
+     360
+    ]
+   }
+  ],
+  "live": 3
+ },
+ "Mt Brighton": {
+  "skipped_signed_hosts": [],
+  "streams": [
+   {
+    "url": "https://streamer8.brownrice.com/brightonlodge/brightonlodge.stream/main_playlist.m3u8",
+    "cam_page": "https://www.mtbrighton.com/the-mountain/mountain-conditions/mountain-cams.aspx",
+    "robots": "allow",
+    "a": {
+     "error": "HTTPSConnectionPool(host='streamer8.brownrice.com', port=443): Max retries exceeded with url: /brightonlodge/brightonlod"
+    },
+    "b": {
+     "error": "HTTPSConnectionPool(host='streamer8.brownrice.com', port=443): Max retries exceeded with url: /brightonlodge/brightonlod"
+    },
+    "frame": true,
+    "ffmpeg": "",
+    "live": false,
+    "size": [
+     3840,
+     2160
+    ]
+   }
+  ],
+  "live": 0
+ },
+ "Mad River Mountain": {
+  "skipped_signed_hosts": [],
+  "streams": [
+   {
+    "url": "https://live8.brownrice.com:444/madriver2/madriver2.stream/main_playlist.m3u8",
+    "cam_page": "https://www.skimadriver.com/the-mountain/mountain-conditions/mountain-cams.aspx",
+    "robots": "allow",
+    "a": {
+     "status": 200,
+     "endlist": false,
+     "seq": 10881
+    },
+    "b": {
+     "status": 200,
+     "endlist": false,
+     "seq": 11353
+    },
+    "frame": true,
+    "ffmpeg": "",
+    "live": true,
+    "size": [
+     1920,
+     1080
+    ]
+   }
+  ],
+  "live": 1
+ },
+ "Silver Mountain": {
+  "skipped_signed_hosts": [
+   "wmso-us-ea1.wetmet.net"
+  ],
+  "streams": [],
+  "live": 0
+ },
+ "Montage Mountain": {
+  "skipped_signed_hosts": [
+   "wmso-us-ea1.wetmet.net"
+  ],
+  "streams": [],
+  "live": 0
+ },
+ "Hidden Valley PA": {
+  "skipped_signed_hosts": [],
+  "streams": [
+   {
+    "url": "https://live8.brownrice.com:444/hiddenvalleyfrontface1/hiddenvalleyfrontface1.stream/main_playlist.m3u8",
+    "cam_page": "https://www.hiddenvalleyresort.com/the-mountain/mountain-conditions/mountain-cams.aspx",
+    "robots": "allow",
+    "a": {
+     "status": 200,
+     "endlist": false,
+     "seq": 7889
+    },
+    "b": {
+     "status": 200,
+     "endlist": false,
+     "seq": 8255
+    },
+    "frame": true,
+    "ffmpeg": "",
+    "live": true,
+    "size": [
+     1920,
+     1080
+    ]
+   },
+   {
+    "url": "https://live8.brownrice.com:444/hiddenvalleyfrontface1/hiddenvalleyfrontface1.stream/playlist.m3u8",
+    "cam_page": "https://www.hiddenvalleyresort.com/the-mountain/mountain-conditions/mountain-cams.aspx",
+    "robots": "allow",
+    "a": {
+     "status": 200,
+     "endlist": false,
+     "seq": 7889
+    },
+    "b": {
+     "status": 200,
+     "endlist": false,
+     "seq": 8256
+    },
+    "frame": true,
+    "ffmpeg": "",
+    "live": true,
+    "size": [
+     1920,
+     1080
+    ]
+   }
+  ],
+  "live": 2
+ },
+ "Cataloochee": {
+  "skipped_signed_hosts": [],
+  "streams": [
+   {
+    "url": "https://stream.resortcams.com/live/cataloochee1.stream/playlist.m3u8",
+    "cam_page": "https://cataloochee.com/the-mountain/webcams/",
+    "robots": "allow",
+    "a": {
+     "status": 200,
+     "endlist": false,
+     "seq": 17775
+    },
+    "b": {
+     "status": 200,
+     "endlist": false,
+     "seq": 17873
+    },
+    "frame": true,
+    "ffmpeg": "",
+    "live": true,
+    "size": [
+     1920,
+     1080
+    ]
+   }
+  ],
+  "live": 1
+ },
+ "Boston Mills Brandywine": {
+  "skipped_signed_hosts": [],
+  "streams": [
+   {
+    "url": "https://live8.brownrice.com:444/brandywine1/brandywine1.stream/main_playlist.m3u8",
+    "cam_page": "https://www.bmbw.com/the-mountain/mountain-conditions/mountain-cams.aspx",
+    "robots": "allow",
+    "a": {
+     "status": 200,
+     "endlist": false,
+     "seq": 10522
+    },
+    "b": {
+     "status": 200,
+     "endlist": false,
+     "seq": 11013
+    },
+    "frame": true,
+    "ffmpeg": "",
+    "live": true,
+    "size": [
+     2160,
+     3840
+    ]
+   }
+  ],
+  "live": 1
+ },
+ "Ski Cooper": {
+  "skipped_signed_hosts": [],
+  "streams": [
+   {
+    "url": "https://skicooper.com:8443/ridge/index.m3u8",
+    "cam_page": "https://www.skicooper.com/weather-webcams/",
+    "robots": "allow",
+    "a": {
+     "status": 200,
+     "endlist": false,
+     "seq": 5161
+    },
+    "b": {
+     "status": 200,
+     "endlist": false,
+     "seq": 5323
+    },
+    "frame": true,
+    "ffmpeg": "",
+    "live": true,
+    "size": [
+     2688,
+     1512
+    ]
+   },
+   {
+    "url": "https://skicooper.com:8443/stake/index.m3u8",
+    "cam_page": "https://www.skicooper.com/weather-webcams/",
+    "robots": "allow",
+    "a": {
+     "status": 200,
+     "endlist": false,
+     "seq": 5367
+    },
+    "b": {
+     "status": 200,
+     "endlist": false,
+     "seq": 5522
+    },
+    "frame": true,
+    "ffmpeg": "",
+    "live": true,
+    "size": [
+     1920,
+     1080
+    ]
+   },
+   {
+    "url": "https://skicooper.com:8443/top_mtn/index.m3u8",
+    "cam_page": "https://www.skicooper.com/weather-webcams/",
+    "robots": "allow",
+    "a": {
+     "status": 200,
+     "endlist": false,
+     "seq": 5655
+    },
+    "b": {
+     "status": 200,
+     "endlist": false,
+     "seq": 5840
+    },
+    "frame": true,
+    "ffmpeg": "",
+    "live": true,
+    "size": [
+     1920,
+     1080
+    ]
+   },
+   {
+    "url": "https://skicooper.com:8443/top_mtn/video1_stream.m3u8",
+    "cam_page": "https://www.skicooper.com/weather-webcams/",
+    "robots": "allow",
+    "a": {
+     "status": 200,
+     "endlist": false,
+     "seq": 5655
+    },
+    "b": {
+     "status": 200,
+     "endlist": false,
+     "seq": 5840
+    },
+    "frame": false,
+    "ffmpeg": "[in#0 @ 0x5f8a3d856d00] Error opening input: Server returned 401 Unauthorized (authorization failed)\nError opening input file https://skicooper.com:8443/top_mtn",
+    "live": false
+   },
+   {
+    "url": "https://skicooper.com:8443/ridge/video1_stream.m3u8",
+    "cam_page": "https://www.skicooper.com/weather-webcams/",
+    "robots": "allow",
+    "a": {
+     "status": 200,
+     "endlist": false,
+     "seq": 5161
+    },
+    "b": {
+     "status": 200,
+     "endlist": false,
+     "seq": 5324
+    },
+    "frame": false,
+    "ffmpeg": "[in#0 @ 0x605842c2ed00] Error opening input: Server returned 401 Unauthorized (authorization failed)\nError opening input file https://skicooper.com:8443/ridge/v",
+    "live": false
+   },
+   {
+    "url": "https://skicooper.com:8443/stake/video1_stream.m3u8",
+    "cam_page": "https://www.skicooper.com/weather-webcams/",
+    "robots": "allow",
+    "a": {
+     "status": 200,
+     "endlist": false,
+     "seq": 5367
+    },
+    "b": {
+     "status": 200,
+     "endlist": false,
+     "seq": 5522
+    },
+    "frame": false,
+    "ffmpeg": "[in#0 @ 0x608c2a63cd00] Error opening input: Server returned 401 Unauthorized (authorization failed)\nError opening input file https://skicooper.com:8443/stake/v",
+    "live": false
+   }
+  ],
+  "live": 3
+ },
+ "Brighton": {
+  "skipped_signed_hosts": [],
+  "streams": [
+   {
+    "url": "https://stream.mux.com/s5nb8Z7k6QMxrLuX69dVtINhMg4oAkkoR3Njy501vTMA.m3u8?redundant_streams=true",
+    "cam_page": null,
+    "robots": "allow",
+    "a": {
+     "status": 200,
+     "endlist": true,
+     "seq": null
+    },
+    "b": {
+     "status": 200,
+     "endlist": true,
+     "seq": null
+    },
+    "frame": true,
+    "ffmpeg": "",
+    "live": false,
+    "size": [
+     1920,
+     1080
+    ]
+   },
+   {
+    "url": "https://manifest-oci-us-ashburn-1-vop1.edgemv.mux.com/HBRqoxWN02pSwpiAJe1wZFHGibl01NJ2MPQXajzBGRuC0001bE02I5c5402qgH1xZpa91HJWZq7016wVSaIdWFeR02C4u8dHAcoYoWatxcy6MM1fjy00/rendition.m3u8?cdn=edgemv",
+    "cam_page": null,
+    "robots": "allow",
+    "a": {
+     "status": 403,
+     "endlist": false,
+     "seq": null
+    },
+    "b": {
+     "status": 403,
+     "endlist": false,
+     "seq": null
+    },
+    "frame": false,
+    "ffmpeg": "[in#0 @ 0x5db29d578d00] Error opening input: Server returned 403 Forbidden (access denied)\nError opening input file https://manifest-oci-us-ashburn-1-vop1.edgem",
+    "live": false
+   }
+  ],
+  "live": 0
+ },
+ "Big Sky": {
+  "skipped_signed_hosts": [
+   "manifest-oci-us-ashburn-1-vop1.fastly.mux.com"
+  ],
+  "streams": [
+   {
+    "url": "https://stream.mux.com/rP00y2rE5FuCTFcajU7Lr2YVdkcMi101Ozjb38AsKtNFU.m3u8?redundant_streams=true",
+    "cam_page": null,
+    "robots": "allow",
+    "a": {
+     "status": 200,
+     "endlist": true,
+     "seq": null
+    },
+    "b": {
+     "status": 200,
+     "endlist": true,
+     "seq": null
+    },
+    "frame": true,
+    "ffmpeg": "",
+    "live": false,
+    "size": [
+     1280,
+     720
+    ]
+   }
+  ],
+  "live": 0
+ }
+}

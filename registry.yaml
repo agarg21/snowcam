@@ -2863,3 +2863,132 @@ resorts:
       url: "https://ftp.resortcams.com/wisp-resort-mountain-park/image.jpg"
       role: trail
       describe: ''
+
+  # ---- Added 2026-11-27: public live video streams (owner: frames from public streams OK).
+  # Unsigned playlists only, collector's own agent, no Referer; 3-frame burst then disconnect.
+  appalachian-ski-mtn:
+    name: "Appalachian Ski Mtn"
+    state: NC
+    lat: 36.17
+    lon: -81.66
+    tz: America/New_York
+    cam_page: "https://appskimtn.com/live-cams"
+    publish: false
+    cams:
+    - id: appalachian-ski-mtn-appskimtn
+      name: "appskimtn"
+      feed: hls
+      url: "https://6182b61737503.streamlock.net/live/AppSkiMtn.stream/playlist.m3u8"
+      role: trail
+      describe: ''
+    - id: appalachian-ski-mtn-appskimtn2
+      name: "appskimtn2"
+      feed: hls
+      url: "https://stream.resortcams.com/live/appskimtn2.stream/playlist.m3u8"
+      role: trail
+      describe: ''
+    - id: appalachian-ski-mtn-appskimtn
+      name: "appskimtn"
+      feed: hls
+      url: "https://stream.resortcams.com/live/appskimtn.stream/playlist.m3u8"
+      role: trail
+      describe: ''
+  massanutten:
+    name: "Massanutten"
+    state: VA
+    lat: 38.41
+    lon: -78.74
+    tz: America/New_York
+    cam_page: "https://www.massresort.com/snow-sports/conditions-webcams/"
+    publish: false
+    cams:
+    - id: massanutten-massresort1
+      name: "massresort1"
+      feed: hls
+      url: "https://stream.resortcams.com/live/massresort1.stream/playlist.m3u8"
+      role: trail
+      describe: ''
+    - id: massanutten-massresort2
+      name: "massresort2"
+      feed: hls
+      url: "https://stream.resortcams.com/live/massresort2.stream/playlist.m3u8"
+      role: trail
+      describe: ''
+    - id: massanutten-massresort3
+      name: "massresort3"
+      feed: hls
+      url: "https://stream.resortcams.com/live/massresort3.stream/playlist.m3u8"
+      role: trail
+      describe: ''
+  ski-cooper:
+    name: "Ski Cooper"
+    state: CO
+    lat: 39.36
+    lon: -106.3
+    tz: America/Denver
+    cam_page: "https://www.skicooper.com/weather-webcams/"
+    publish: false
+    cams:
+    - id: ski-cooper-ridge
+      name: "ridge"
+      feed: hls
+      url: "https://skicooper.com:8443/ridge/index.m3u8"
+      role: trail
+      describe: ''
+    - id: ski-cooper-stake
+      name: "stake"
+      feed: hls
+      url: "https://skicooper.com:8443/stake/index.m3u8"
+      role: trail
+      describe: ''
+    - id: ski-cooper-top-mtn
+      name: "top-mtn"
+      feed: hls
+      url: "https://skicooper.com:8443/top_mtn/index.m3u8"
+      role: trail
+      describe: ''
+  spirit-mountain:
+    name: "Spirit Mountain"
+    state: MN
+    lat: 46.72
+    lon: -92.22
+    tz: America/Chicago
+    cam_page: "https://spiritmt.com/live-cam/"
+    publish: false
+    cams:
+    - id: spirit-mountain-spiritmtn
+      name: "spiritmtn"
+      feed: hls
+      url: "https://stream.resortcams.com/live/spiritmtn.stream/playlist.m3u8"
+      role: trail
+      describe: ''
+  bryce-resort:
+    name: "Bryce Resort"
+    state: VA
+    lat: 38.82
+    lon: -78.77
+    tz: America/New_York
+    cam_page: "https://www.bryceresort.com/"
+    publish: false
+    cams:
+    - id: bryce-resort-bryceresort
+      name: "bryceresort"
+      feed: hls
+      url: "https://stream.resortcams.com/live/bryceresort.stream/playlist.m3u8"
+      role: trail
+      describe: ''
+  cataloochee:
+    name: "Cataloochee"
+    state: NC
+    lat: 35.56
+    lon: -83.09
+    tz: America/New_York
+    cam_page: "https://cataloochee.com/the-mountain/webcams/"
+    publish: false
+    cams:
+    - id: cataloochee-cataloochee1
+      name: "cataloochee1"
+      feed: hls
+      url: "https://stream.resortcams.com/live/cataloochee1.stream/playlist.m3u8"
+      role: trail
+      describe: ''
