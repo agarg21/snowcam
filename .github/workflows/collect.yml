@@ -46,6 +46,12 @@ jobs:
             requirements-student.txt
 
       - run: pip install -r requirements.txt
+      - name: ffmpeg for video-stream cams
+        run: |
+          if grep -q "feed: hls" registry.yaml && ! command -v ffmpeg >/dev/null; then
+            sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends ffmpeg >/dev/null
+          fi
+          command -v ffmpeg || echo "no ffmpeg (no video cams)"
 
       - name: Collect, gate, read, fuse
         env:
